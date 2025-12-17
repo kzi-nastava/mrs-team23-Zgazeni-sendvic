@@ -1,0 +1,19 @@
+<nav class="navbar">
+  <div class="left">
+    <span class="logo" [routerLink]="['/']">DriveBy</span>
+  </div>
+
+  <div class="right">
+    <div class="button-container1">
+      <button mat-raised-button color="primary" [routerLink]="['/profile/user']">User Profile</button>
+      <button mat-raised-button color="primary" [routerLink]="['/profile/driver']">Driver Profile</button>
+      <button mat-raised-button color="primary" [routerLink]="['/profile/admin']">Admin Profile</button>
+    </div>
+    <div class="button-container">
+      <button type="button" class="logout" aria-label="Log out of your account">Log out</button>
+    </div>
+    <a [routerLink]="['/profile/user']" class="profile-link" aria-label="Go to your profile page">
+      <img src="assets/profiles/profile-placeholder.jpg" class="profile-pic" />
+    </a>
+  </div>
+</nav>
