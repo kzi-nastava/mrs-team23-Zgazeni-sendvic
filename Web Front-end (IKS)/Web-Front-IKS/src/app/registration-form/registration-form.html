@@ -22,7 +22,10 @@
 
     <mat-form-field appearance="fill">
       <mat-label>Password</mat-label>
-      <input matInput type="password" formControlName="password">
+      <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
+    <button mat-icon-button matSuffix (click)="togglePasswordVisibility()" type="button">
+        <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+    </button>
       @if (form.get('password')?.invalid && form.get('password')?.touched) {
     <mat-error>{{ getErrorMessage('password') }}</mat-error>
   }
@@ -30,7 +33,10 @@
 
     <mat-form-field appearance="fill">
       <mat-label>Confirm Password</mat-label>
-      <input matInput type="password" formControlName="confirmPassword">
+      <input matInput [type]="hideConfirmPassword ? 'password' : 'text'" formControlName="confirmPassword">
+    <button mat-icon-button matSuffix (click)="toggleConfirmPasswordVisibility()" type="button">
+        <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+    </button>
       @if (form.get('confirmPassword')?.invalid && form.get('confirmPassword')?.touched) {
     <mat-error>{{ getErrorMessage('confirmPassword') }}</mat-error>
   }

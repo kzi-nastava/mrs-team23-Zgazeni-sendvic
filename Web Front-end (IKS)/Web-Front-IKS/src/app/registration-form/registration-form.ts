@@ -5,6 +5,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { FormGroup } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
 
 
 @Component({
@@ -14,7 +15,8 @@ import { FormGroup } from '@angular/forms';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    CommonModule
+    CommonModule,
+    MatIconModule
     
    
   ],
@@ -23,6 +25,8 @@ import { FormGroup } from '@angular/forms';
 })
 export class RegistrationForm {
   form!: FormGroup;
+  hidePassword = true;  // Toggle password visibility
+  hideConfirmPassword = true;
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
@@ -43,6 +47,14 @@ export class RegistrationForm {
       return;
     }
     console.log('Form submitted:', this.form.value);
+  }
+
+  togglePasswordVisibility() {
+    this.hidePassword = !this.hidePassword;
+  }
+
+  toggleConfirmPasswordVisibility() {
+    this.hideConfirmPassword = !this.hideConfirmPassword;
   }
 
   getErrorMessage(fieldName: string): string {
