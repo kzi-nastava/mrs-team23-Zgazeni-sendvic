@@ -1,5 +1,5 @@
 <h2 class="title">Create an account</h2>
-
+<form [formGroup]="form">
 <div class="form-container">
 
   <!-- Left column: 4 fields -->
@@ -7,21 +7,33 @@
     <mat-form-field appearance="fill">
       <mat-label>First Name</mat-label>
       <input matInput formControlName="firstName">
+      @if (form.get('firstName')?.invalid && form.get('firstName')?.touched) {
+    <mat-error>{{ getErrorMessage('firstName') }}</mat-error>
+        }
     </mat-form-field>
 
     <mat-form-field appearance="fill">
       <mat-label>Email</mat-label>
       <input matInput formControlName="email">
+      @if (form.get('email')?.invalid && form.get('email')?.touched) {
+    <mat-error>{{ getErrorMessage('email') }}</mat-error>
+  }
     </mat-form-field>
 
     <mat-form-field appearance="fill">
       <mat-label>Password</mat-label>
       <input matInput type="password" formControlName="password">
+      @if (form.get('password')?.invalid && form.get('password')?.touched) {
+    <mat-error>{{ getErrorMessage('password') }}</mat-error>
+  }
     </mat-form-field>
 
     <mat-form-field appearance="fill">
       <mat-label>Confirm Password</mat-label>
       <input matInput type="password" formControlName="confirmPassword">
+      @if (form.get('confirmPassword')?.invalid && form.get('confirmPassword')?.touched) {
+    <mat-error>{{ getErrorMessage('confirmPassword') }}</mat-error>
+  }
     </mat-form-field>
 
     
@@ -33,18 +45,27 @@
     <mat-form-field appearance="fill">
       <mat-label>Last Name</mat-label>
       <input matInput formControlName="lastName">
+      @if (form.get('lastName')?.invalid && form.get('lastName')?.touched) {
+    <mat-error>{{ getErrorMessage('lastName') }}</mat-error>
+  }
     </mat-form-field>
 
 
     <mat-form-field appearance="fill">
       <mat-label>Address</mat-label>
       <input matInput formControlName="adress">
+      @if (form.get('adress')?.invalid && form.get('adress')?.touched) {
+    <mat-error>{{ getErrorMessage('adress') }}</mat-error>
+  }
     </mat-form-field>
   
 
     <mat-form-field appearance="fill">
       <mat-label>Phone</mat-label>
       <input matInput formControlName="phone">
+      @if (form.get('phone')?.invalid && form.get('phone')?.touched) {
+    <mat-error>{{ getErrorMessage('phone') }}</mat-error>
+  }
     </mat-form-field>
 
     <button mat-raised-button color="primary" (click)="submit()">Upload photo</button>
@@ -61,3 +82,4 @@
   <button mat-raised-button color="primary" (click)="submit()">Register</button>
   <span class="text-link">Have an account? Log In</span>
 </div>
+</form>
