@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { FormGroup } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { RouterModule } from '@angular/router';
 
 
 @Component({
@@ -16,7 +17,8 @@ import { MatIconModule } from '@angular/material/icon';
     MatInputModule,
     MatButtonModule,
     CommonModule,
-    MatIconModule
+    MatIconModule,
+    RouterModule
     
    
   ],

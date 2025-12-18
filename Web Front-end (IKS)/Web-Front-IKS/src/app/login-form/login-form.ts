@@ -5,6 +5,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-login-form',
@@ -14,7 +15,8 @@ import { CommonModule } from '@angular/common';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    CommonModule
+    CommonModule,
+    RouterModule
   ],
   templateUrl: './login-form.html',
   styleUrl: './login-form.css',

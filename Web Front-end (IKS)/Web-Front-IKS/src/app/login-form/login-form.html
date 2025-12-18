@@ -21,14 +21,11 @@
   </mat-form-field>
 
   <div class="actions">
-    <button mat-raised-button color="primary" type="submit" class="primary-btn">Login</button>
+    <button mat-raised-button color="primary" type="submit" class="primary-btn">Log in</button>
   </div>
 
   <div class="aux">
-    <label class="remember">
-      <input type="checkbox" [checked]="form.get('remember')?.value" (change)="form.get('remember')?.setValue($event.target.checked)">
-      Remember me
-    </label>
+    <a class="text-link" href="/register">Create account</a>
     <a class="forgot" href="#">Forgot password?</a>
   </div>
 </form>
