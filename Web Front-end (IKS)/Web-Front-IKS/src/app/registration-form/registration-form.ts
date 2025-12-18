@@ -57,14 +57,14 @@ export class RegistrationForm {
     this.hideConfirmPassword = !this.hideConfirmPassword;
   }
 
-  getErrorMessage(fieldName: string): string {
+  getErrorMessage(fieldName: string, labelName: string): string {
     const control = this.form.get(fieldName);
     if (!control || !control.errors) return '';
 
-    if (control.errors['required']) return `${fieldName} is required`;
-    if (control.errors['minlength']) return `${fieldName} must be at least ${control.errors['minlength'].requiredLength} characters`;
+    if (control.errors['required']) return `${labelName} is required`;
+    if (control.errors['minlength']) return `${labelName} must be at least ${control.errors['minlength'].requiredLength} characters`;
     if (control.errors['email']) return 'Invalid email format';
-    if (control.errors['pattern']) return `${fieldName} format is invalid`;
+    if (control.errors['pattern']) return `${labelName} format is invalid`;
     return 'Invalid input';
   }
 }

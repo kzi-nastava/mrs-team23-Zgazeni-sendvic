@@ -8,7 +8,7 @@
       <mat-label>First Name</mat-label>
       <input matInput formControlName="firstName">
       @if (form.get('firstName')?.invalid && form.get('firstName')?.touched) {
-    <mat-error>{{ getErrorMessage('firstName') }}</mat-error>
+    <mat-error>{{ getErrorMessage('firstName', 'First Name') }}</mat-error>
         }
     </mat-form-field>
 
@@ -16,7 +16,7 @@
       <mat-label>Email</mat-label>
       <input matInput formControlName="email">
       @if (form.get('email')?.invalid && form.get('email')?.touched) {
-    <mat-error>{{ getErrorMessage('email') }}</mat-error>
+    <mat-error>{{ getErrorMessage('email', 'Email') }}</mat-error>
   }
     </mat-form-field>
 
@@ -27,7 +27,7 @@
         <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
     </button>
       @if (form.get('password')?.invalid && form.get('password')?.touched) {
-    <mat-error>{{ getErrorMessage('password') }}</mat-error>
+    <mat-error>{{ getErrorMessage('password', 'Password') }}</mat-error>
   }
     </mat-form-field>
 
@@ -38,7 +38,7 @@
         <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
     </button>
       @if (form.get('confirmPassword')?.invalid && form.get('confirmPassword')?.touched) {
-    <mat-error>{{ getErrorMessage('confirmPassword') }}</mat-error>
+    <mat-error>{{ getErrorMessage('confirmPassword', 'Password Confirmation') }}</mat-error>
   }
     </mat-form-field>
 
@@ -52,7 +52,7 @@
       <mat-label>Last Name</mat-label>
       <input matInput formControlName="lastName">
       @if (form.get('lastName')?.invalid && form.get('lastName')?.touched) {
-    <mat-error>{{ getErrorMessage('lastName') }}</mat-error>
+    <mat-error>{{ getErrorMessage('lastName', 'Last Name') }}</mat-error>
   }
     </mat-form-field>
 
@@ -61,7 +61,7 @@
       <mat-label>Address</mat-label>
       <input matInput formControlName="adress">
       @if (form.get('adress')?.invalid && form.get('adress')?.touched) {
-    <mat-error>{{ getErrorMessage('adress') }}</mat-error>
+    <mat-error>{{ getErrorMessage('adress', 'Address') }}</mat-error>
   }
     </mat-form-field>
   
@@ -70,7 +70,7 @@
       <mat-label>Phone</mat-label>
       <input matInput formControlName="phone">
       @if (form.get('phone')?.invalid && form.get('phone')?.touched) {
-    <mat-error>{{ getErrorMessage('phone') }}</mat-error>
+    <mat-error>{{ getErrorMessage('phone', 'Phone Number') }}</mat-error>
   }
     </mat-form-field>
 
