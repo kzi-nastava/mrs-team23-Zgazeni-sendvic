@@ -1,3 +1,33 @@
+/* 
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: rgb(23, 25, 99);
+    flex-direction: row;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;  
+
+}
+
+.homeLink {
+    text-decoration: none;
+    color: inherit;
+    padding: 10px;
+    border: 2px solid rgb(49, 27, 214);
+    margin: 10px;
+}
+.horDriverLink {
+    text-decoration: none;
+    color: inherit;
+    padding: 10px;
+    border: 2px solid rgb(49, 27, 214);
+    margin: 10px;
+} */
+
 .home {
   min-height: 100vh;
   display: flex;

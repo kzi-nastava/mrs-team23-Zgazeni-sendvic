@@ -1,0 +1,31 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
+  <h2 class="title">Log in</h2>
+
+  <mat-form-field appearance="fill" class="full">
+    <mat-label>Email</mat-label>
+    <input matInput formControlName="email" autocomplete="email">
+    @if (form.get('email')?.invalid && form.get('email')?.touched) {
+      <mat-error>{{ getErrorMessage('Email', 'email') }}</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="fill" class="full">
+    <mat-label>Password</mat-label>
+    <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" autocomplete="current-password">
+    <button mat-icon-button matSuffix (click)="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility">
+      <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+    </button>
+    @if (form.get('password')?.invalid && form.get('password')?.touched) {
+      <mat-error>{{ getErrorMessage('Password', 'password') }}</mat-error>
+    }
+  </mat-form-field>
+
+  <div class="actions">
+    <button mat-raised-button color="primary" type="submit" class="primary-btn">Log in</button>
+  </div>
+
+  <div class="aux">
+    <a class="text-link" routerLink="/register">Create account</a>
+    <a class="forgot" routerLink="/forgot-password">Forgot password?</a>
+  </div>
+</form>
