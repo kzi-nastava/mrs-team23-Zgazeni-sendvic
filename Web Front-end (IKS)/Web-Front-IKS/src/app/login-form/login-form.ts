@@ -25,7 +25,7 @@ export class LoginForm {
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
-      username: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
       remember: [false],
     });
@@ -49,6 +49,7 @@ export class LoginForm {
     if (!control || !control.errors) return '';
 
     if (control.errors['required']) return `${label} is required`;
+    if (control.errors['email']) return `Please enter a valid ${label.toLowerCase()}`;
     if (control.errors['minlength']) {
       const min = control.errors['minlength'].requiredLength;
       return `${label} must be at least ${min} characters`;
