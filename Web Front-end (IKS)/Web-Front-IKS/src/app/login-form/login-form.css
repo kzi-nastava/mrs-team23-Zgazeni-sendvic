@@ -30,8 +30,8 @@
 }
 
 button[mat-raised-button] {
-  border-radius: 20px !important;  /* Rounded corners */
-  background-color: #41A79D !important;  /* Custom blue color */
+  border-radius: 20px !important;  
+  background-color: #41A79D !important;  
   color: white !important;
 }
 

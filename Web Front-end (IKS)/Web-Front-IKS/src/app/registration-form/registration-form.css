@@ -36,15 +36,15 @@
 }
 
 .bottom-section button {
-  width: 200px;  /* Make button bigger */
-  height: 50px;  /* Increase height */
-  font-size: 16px;  /* Larger text */
+  width: 200px;  
+  height: 50px;  
+  font-size: 16px;  
 }
 
 .text-link {
   margin-top: 8px;
   cursor: pointer;
-  color: #1976d2;  /* Material primary blue */
+  color: #1976d2;  
   text-decoration: none;
   font-size: 14px;
 }
@@ -54,8 +54,8 @@
 }
 
 button[mat-raised-button] {
-  border-radius: 20px !important;  /* Rounded corners */
-  background-color: #41A79D !important;  /* Custom blue color */
+  border-radius: 20px !important;  
+  background-color: #41A79D !important;  
   color: white !important;
 }
 

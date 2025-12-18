@@ -46,7 +46,7 @@ export class RegistrationForm {
   }
 
   submit() {
-  this.form.markAllAsTouched();   // ← ensure errors appear
+  this.form.markAllAsTouched();   
   if (this.form.invalid) {
     console.log('Form is invalid');
     return;
