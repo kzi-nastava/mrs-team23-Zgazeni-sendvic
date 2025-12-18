@@ -29,6 +29,7 @@ export class RegistrationForm {
   form!: FormGroup;
   hidePassword = true;  // Toggle password visibility
   hideConfirmPassword = true;
+  selectedPhotoFile: File | null = null;
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
@@ -58,6 +59,19 @@ export class RegistrationForm {
   toggleConfirmPasswordVisibility() {
     this.hideConfirmPassword = !this.hideConfirmPassword;
   }
+
+  onPhotoSelected(event: any) {
+  const file = event.target.files[0];
+  if (file && file.type.startsWith('image/')) {
+    this.selectedPhotoFile = file;
+    console.log('Photo selected:', file.name);
+  }
+}
+isHoveringUploadBtn = false;
+get photoButtonLabel(): string {
+  if (this.isHoveringUploadBtn) return 'Upload photo';
+  return this.selectedPhotoFile ? `✓ ${this.selectedPhotoFile.name}` : 'Upload photo';
+}
 
   getErrorMessage(fieldName: string, labelName: string): string {
     const control = this.form.get(fieldName);

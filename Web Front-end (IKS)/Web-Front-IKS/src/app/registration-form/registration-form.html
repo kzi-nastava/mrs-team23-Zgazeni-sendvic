@@ -74,7 +74,13 @@
   }
     </mat-form-field>
 
-    <button mat-raised-button color="primary" (click)="submit()">Upload photo</button>
+    <input #fileInput type="file" accept="image/*" (change)="onPhotoSelected($event)" hidden>
+<button mat-raised-button color="primary" (click)="fileInput.click()" type="button"
+    (mouseenter)="isHoveringUploadBtn = true"
+    (mouseleave)="isHoveringUploadBtn = false">
+  {{ photoButtonLabel }}
+</button>
+    
   </div>
 
     
