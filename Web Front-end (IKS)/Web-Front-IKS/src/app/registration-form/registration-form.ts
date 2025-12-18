@@ -46,12 +46,13 @@ export class RegistrationForm {
   }
 
   submit() {
-    if (this.form.invalid) {
-      console.log('Form is invalid');
-      return;
-    }
-    console.log('Form submitted:', this.form.value);
+  this.form.markAllAsTouched();   // ← ensure errors appear
+  if (this.form.invalid) {
+    console.log('Form is invalid');
+    return;
   }
+  console.log('Form submitted:', this.form.value);
+}
 
   togglePasswordVisibility() {
     this.hidePassword = !this.hidePassword;
