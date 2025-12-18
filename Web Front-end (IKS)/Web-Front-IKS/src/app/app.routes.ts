@@ -4,7 +4,6 @@ import { DriverProfile } from './profiles/driver-profile/driver-profile';
 import { AdminProfile } from './profiles/admin-profile/admin-profile';
 import { Home } from './layout/home/home';
 import { HorDriver } from './HOR-Driver/hor-driver';
-import { NavBar } from './layout/nav-bar/nav-bar';
 
 import { Registration } from './registration/registration';
 import { Login } from './login/login';
