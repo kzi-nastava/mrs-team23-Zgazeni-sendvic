@@ -1,0 +1,61 @@
+/* 
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: rgb(23, 25, 99);
+    flex-direction: row;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;  
+
+}
+
+.homeLink {
+    text-decoration: none;
+    color: inherit;
+    padding: 10px;
+    border: 2px solid rgb(49, 27, 214);
+    margin: 10px;
+}
+.horDriverLink {
+    text-decoration: none;
+    color: inherit;
+    padding: 10px;
+    border: 2px solid rgb(49, 27, 214);
+    margin: 10px;
+} */
+
+
+
+.home {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 80px;
+}
+
+h1 {
+  margin-bottom: 32px;
+}
+
+.links {
+  display: flex;
+  gap: 24px;
+}
+
+.links a {
+  padding: 12px 20px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  color: black;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.links a:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
