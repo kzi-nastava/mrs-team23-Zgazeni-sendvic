@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { FormGroup } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
+import { AbstractControl, ValidationErrors } from '@angular/forms';
 
 
 @Component({
@@ -41,7 +42,7 @@ export class RegistrationForm {
       username: ['', [Validators.required, Validators.minLength(3)]],
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', Validators.required],
-    });
+    }, { validators: this.passwordMatchValidator });
   }
 
   submit() {
@@ -59,6 +60,22 @@ export class RegistrationForm {
   toggleConfirmPasswordVisibility() {
     this.hideConfirmPassword = !this.hideConfirmPassword;
   }
+
+  passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+  const password = control.get('password');
+  const confirmPassword = control.get('confirmPassword');
+
+  if (!password || !confirmPassword) return null;
+  if (confirmPassword.errors && !confirmPassword.errors['passwordMismatch']) return null;
+
+  if (password.value !== confirmPassword.value) {
+    confirmPassword.setErrors({ passwordMismatch: true });
+    return { passwordMismatch: true };
+  } else {
+    confirmPassword.setErrors(null);
+    return null;
+  }
+}
 
   onPhotoSelected(event: any) {
   const file = event.target.files[0];
@@ -81,6 +98,7 @@ get photoButtonLabel(): string {
     if (control.errors['minlength']) return `${labelName} must be at least ${control.errors['minlength'].requiredLength} characters`;
     if (control.errors['email']) return 'Invalid email format';
     if (control.errors['pattern']) return `${labelName} format is invalid`;
+    if (control.errors['passwordMismatch']) return 'Passwords do not match';
     return 'Invalid input';
   }
 }
