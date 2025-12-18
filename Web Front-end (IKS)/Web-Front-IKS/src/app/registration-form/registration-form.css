@@ -1,0 +1,61 @@
+.title {
+  text-align: center;
+  margin-bottom: 24px;
+  font-family: ''Arial'';
+    font-size: 32px;
+}
+
+.form-container {
+  display: flex;
+  gap: 24px;
+  min-width: clamp(320px, 35vw, 1300px);
+}
+
+.left, .right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.right button {
+  align-self: center; 
+  justify-self: center;  
+  height: 40px;
+  width: 80%;  
+  
+  
+}
+
+.bottom-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.bottom-section button {
+  width: 200px;  
+  height: 50px;  
+  font-size: 16px;  
+}
+
+.text-link {
+  margin-top: 8px;
+  cursor: pointer;
+  color: #1976d2;  
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
+button[mat-raised-button] {
+  border-radius: 20px !important;  
+  background-color: #41A79D !important;  
+  color: white !important;
+}
+
