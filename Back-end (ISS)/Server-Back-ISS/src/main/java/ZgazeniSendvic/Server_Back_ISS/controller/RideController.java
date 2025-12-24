@@ -1,4 +1,4 @@
-package ZgazeniSendvic.Server_Back_ISS.controllers;
+package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.RouteEstimationDTO;
 import ZgazeniSendvic.Server_Back_ISS.entity.RideRoute;

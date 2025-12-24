@@ -1,4 +1,4 @@
-package ZgazeniSendvic.Server_Back_ISS.controllers;
+package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import org.springframework.web.bind.annotation.*;
 
