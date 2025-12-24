@@ -15,8 +15,29 @@ class AuthController {
     @PostMapping("register")
     public String register(@RequestBody String body){
 
-        return "Register info sent successfully";
+        return "Register info sent successfully \n" + body;
 
+    }
+
+    @GetMapping("login")
+    public String getLogin(){
+        return "Login Page requested Successfully";
+    }
+
+    @PostMapping("login")
+    public String login(@RequestBody String body){
+        return "Login info sent successfully \n" + body;
+    }
+
+    @GetMapping("forgotten-password/{email}")
+    public String forgotPassword(@PathVariable String email){
+        return "Sent Email: " + email;
+    }
+
+    @PostMapping("reset-password")
+    public String resetPassword(@RequestBody String body){
+
+        return "resetPass info sent!";
     }
 
 }
