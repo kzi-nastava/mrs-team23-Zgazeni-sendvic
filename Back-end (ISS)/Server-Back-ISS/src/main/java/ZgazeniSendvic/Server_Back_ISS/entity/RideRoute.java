@@ -12,6 +12,8 @@ public class RideRoute {
     private List<String> routes = new ArrayList<>();
     @Getter
     private int totalTime = 0;
+    private int id = 0;
+    // and some other stuff
 
     public RideRoute() {
         // default constructor

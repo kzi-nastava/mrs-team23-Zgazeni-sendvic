@@ -1,5 +1,6 @@
 package ZgazeniSendvic.Server_Back_ISS.controllers;
 
+import ZgazeniSendvic.Server_Back_ISS.dto.RouteEstimationDTO;
 import ZgazeniSendvic.Server_Back_ISS.entity.RideRoute;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,13 +17,14 @@ import java.util.List;
 @RequestMapping("/")
 class RideController {
     @GetMapping("ride-estimation/{arrival}/{destinationsStr}")
-    public ResponseEntity<RideRoute> estimateRide(@PathVariable String arrival, @PathVariable String destinationsStr){
+    public ResponseEntity<RouteEstimationDTO> estimateRide(@PathVariable String arrival, @PathVariable String destinationsStr){
         List<String> destinations = new ArrayList<>(Arrays.asList(destinationsStr.split(",")));
         RideRoute route = new RideRoute(destinations);
+        RouteEstimationDTO estimation = new RouteEstimationDTO(route.getRoutes(), route.getTotalTime());
 
         
 
-        return new ResponseEntity<RideRoute>(route, HttpStatus.OK);
+        return new ResponseEntity<RouteEstimationDTO>(estimation, HttpStatus.OK);
 
 
     }
