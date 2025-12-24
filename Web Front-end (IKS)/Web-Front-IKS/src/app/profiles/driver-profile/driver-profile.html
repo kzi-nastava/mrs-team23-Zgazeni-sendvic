@@ -1,6 +1,7 @@
 <div class="app-background">
   <div class="content">
     <app-profile-card
+      variant="driver"
       displayName="Marko-Driver"
       name="Marko"
       surname="Petrović"
@@ -8,6 +9,7 @@
       email="marko.driver@driveby.com"
       phone="+381 65 987 6543"
       password="password123"
+      [driverStatistic]="{ label: 'Total time spent driving (hours)', value: 342 }"
     ></app-profile-card>
   </div>
 </div>
