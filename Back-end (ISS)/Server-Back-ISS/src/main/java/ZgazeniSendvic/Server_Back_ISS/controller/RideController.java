@@ -19,7 +19,7 @@ import java.util.List;
 class RideController {
     @GetMapping(path = "ride-estimation/{arrival}/{destinationsStr}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RouteEstimationDTO>
-    estimateRide(@PathVariable String arrival, @PathVariable String destinationsStr){
+    estimateRide(@PathVariable String arrival, @PathVariable String destinationsStr)throws Exception{
 
         List<String> destinations = new ArrayList<>(Arrays.asList(destinationsStr.split(",")));
         RideRoute route = new RideRoute(destinations);
