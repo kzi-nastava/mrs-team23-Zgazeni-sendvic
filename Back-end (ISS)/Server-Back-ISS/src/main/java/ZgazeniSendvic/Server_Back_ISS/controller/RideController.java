@@ -61,15 +61,15 @@ class RideController {
         // here a service would go over the pageable and request params etc...
 
         ARideRequestedDTO ride = new ARideRequestedDTO(
-                UUID.randomUUID().toString(),                   //rideID
-                Arrays.asList("Stop A", "Stop B", "Stop C"),   //destinations
+                "asdasd12313",
+                Arrays.asList("Stop A", "Stop B", "Stop C"),
                 "Start Stop",
-                new Date(),                                     //beginning
-                new Date(System.currentTimeMillis() + 3600000),//ending (1 hour later)
-                false,                                          //wasCancelled
-                null,                                           //whoCancelled
-                29.99,                                          //price
-                false                                           //panic
+                new Date(),
+                new Date(System.currentTimeMillis() + 3600000),
+                false,
+                null,
+                29.99,
+                false
         );
 
         List<ARideRequestedDTO> allRides = new ArrayList<>();
