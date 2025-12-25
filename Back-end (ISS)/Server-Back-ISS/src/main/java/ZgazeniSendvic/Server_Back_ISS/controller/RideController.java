@@ -31,12 +31,12 @@ class RideController {
 
     }
 
-    @PutMapping(path = "ride-tracking/stop",consumes = MediaType.APPLICATION_JSON_VALUE,
+    @PutMapping(path = "ride-tracking/stop/{rideID}",consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RideStoppedDTO> stopRide(@RequestBody RideStopDTO stopReq)throws Exception{
+    public ResponseEntity<RideStoppedDTO> stopRide(@RequestBody RideStopDTO stopReq, @PathVariable String rideID)
+            throws Exception{
         RideStoppedDTO stopped = new RideStoppedDTO();
-        stopped.setRideID(stopReq.getRideID());
-        stopped.setDriverID((stopReq.getDriverID()));
+        stopped.setRideID(rideID);
         //now a service would determine all passsed destinations, remove not passed, and add current location as ending
         double newPrice = 45;
         //in reality it would have access to all so far passed dests
