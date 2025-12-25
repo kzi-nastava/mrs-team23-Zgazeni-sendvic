@@ -16,19 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/")
 class RideController {
-    @GetMapping("ride-estimation/{arrival}/{destinationsStr}")
-    public ResponseEntity<RouteEstimationDTO> estimateRide(@PathVariable String arrival, @PathVariable String destinationsStr){
-        List<String> destinations = new ArrayList<>(Arrays.asList(destinationsStr.split(",")));
-        RideRoute route = new RideRoute(destinations);
-        RouteEstimationDTO estimation = new RouteEstimationDTO(route.getRoutes(), route.getTotalTime());
-
-        
-
-        return new ResponseEntity<RouteEstimationDTO>(estimation, HttpStatus.OK);
-
-
-    }
-
+    
     @PutMapping(path = "ride-tracking",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DriveCancelledDTO> cancelDrive(@RequestBody DriveCancelDTO cancelRequest) throws Exception{
