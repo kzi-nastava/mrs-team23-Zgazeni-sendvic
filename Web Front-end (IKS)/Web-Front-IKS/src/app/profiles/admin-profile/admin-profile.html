@@ -1,6 +1,7 @@
 <div class="app-background">
   <div class="content">
     <app-profile-card
+      variant="admin"
       displayName="Ana-Administrator"
       name="Ana"
       surname="Jovanović"
@@ -8,6 +9,8 @@
       email="admin@driveby.com"
       phone="+381 64 000 1111"
       password="password123"
+      [adminButton]="{ label: 'Ban Accounts' }"
+      (adminButtonClick)="onBanAccounts()"
     ></app-profile-card>
   </div>
 </div>

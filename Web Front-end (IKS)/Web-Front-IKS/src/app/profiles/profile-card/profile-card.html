@@ -11,6 +11,11 @@
 
   <hr />
 
+  <div *ngIf="driverStatistic" class="driver-statistic">
+    <div class="statistic-label">{{ driverStatistic.label }}</div>
+    <div class="statistic-value">{{ driverStatistic.value }}</div>
+  </div>
+
   <div class="info">
     <div class="grid-row">
       <div class="field">
@@ -46,4 +51,12 @@
     </div>
   </div>
 
+  <div class="action-buttons">
+    <button class="hor-action-btn" [routerLink]="getRouteLink()" *ngIf="variant">
+      <p>History of rides</p>
+    </button>
+    <button *ngIf="adminButton" class="admin-action-btn" (click)="onAdminButtonClick()">
+      {{ adminButton.label }}
+    </button>
+  </div>
 </div>
