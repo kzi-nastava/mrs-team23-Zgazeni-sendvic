@@ -1,14 +1,13 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
+import ZgazeniSendvic.Server_Back_ISS.dto.RideStopDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.RideStoppedDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.RouteEstimationDTO;
 import ZgazeniSendvic.Server_Back_ISS.entity.RideRoute;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,4 +30,27 @@ class RideController {
 
 
     }
+
+    @PutMapping(path = "ride-tracking/stop",consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RideStoppedDTO> stopRide(@RequestBody RideStopDTO stopReq)throws Exception{
+        RideStoppedDTO stopped = new RideStoppedDTO();
+        stopped.setRideID(stopReq.getRideID());
+        stopped.setDriverID((stopReq.getDriverID()));
+        //now a service would determine all passsed destinations, remove not passed, and add current location as ending
+        double newPrice = 45;
+        //in reality it would have access to all so far passed dests
+        List<String> newDests = new ArrayList<String>();
+        newDests.add(stopReq.getCurrentLocation());
+
+        stopped.setNewPrice(45);
+        stopped.setUpdatedDestinations(newDests);
+        //backend info would also be updated
+
+        return new ResponseEntity<RideStoppedDTO>(stopped, HttpStatus.OK);
+
+    }
+
+
+
 }
