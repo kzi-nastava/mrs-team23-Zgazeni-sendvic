@@ -1,9 +1,6 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
-import ZgazeniSendvic.Server_Back_ISS.dto.ARideRequestedDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.RideStopDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.RideStoppedDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.RouteEstimationDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.entity.RideRoute;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -82,7 +79,22 @@ class RideController {
 
     }
 
+    @GetMapping(path = "admin-HOR-Detailed/{targedID}",consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ARideDetailsRequestedDTO> adminRetrieveDetailed(@PathVariable String targetID)
+            throws Exception{
 
+        //would find based on id in service
+
+        List<UserDTO> passengers = Arrays.asList(new UserDTO(), new UserDTO());
+        UserDTO driver = new UserDTO();
+        List<String> reports = Arrays.asList("Passenger was late","Driver was friendly");
+        List<Integer> ratings = Arrays.asList(5, 4, 5);
+        ARideDetailsRequestedDTO detailed = new ARideDetailsRequestedDTO(passengers,driver,reports,ratings);
+
+        return new ResponseEntity<ARideDetailsRequestedDTO>(detailed, HttpStatus.OK);
+
+    }
 
 
 }
