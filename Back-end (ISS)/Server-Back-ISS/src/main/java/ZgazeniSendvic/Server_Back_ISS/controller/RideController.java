@@ -79,7 +79,7 @@ class RideController {
 
     }
 
-    @GetMapping(path = "admin-HOR-Detailed/{targedID}",consumes = MediaType.APPLICATION_JSON_VALUE,
+    @GetMapping(path = "admin-HOR-Detailed/{targetID}",consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ARideDetailsRequestedDTO> adminRetrieveDetailed(@PathVariable String targetID)
             throws Exception{
