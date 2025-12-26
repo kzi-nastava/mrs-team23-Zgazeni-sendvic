@@ -3,6 +3,7 @@ package ZgazeniSendvic.Server_Back_ISS.controller;
 import ZgazeniSendvic.Server_Back_ISS.dto.CreateDriverDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.CreatedDriverDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
+import ZgazeniSendvic.Server_Back_ISS.model.Route;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/driver")
@@ -21,7 +24,8 @@ public class DriverController {
 
         savedDriver.setId(1L);
         savedDriver.setAccount(new Account(1L, driver.getEmail(), driver.getPassword(), driver.getName(),
-                driver.getLastName(), driver.getAddress(), driver.getPhoneNumber(), driver.getImgString()));
+                driver.getLastName(), driver.getAddress(), driver.getPhoneNumber(), driver.getImgString(),
+                new ArrayList<Route>()));
         savedDriver.setVehicle(driver.getVehicle());
 
         return new ResponseEntity<CreatedDriverDTO>(savedDriver, HttpStatus.CREATED);
