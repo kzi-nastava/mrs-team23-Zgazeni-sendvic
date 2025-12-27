@@ -8,4 +8,9 @@ import { ProfileCard } from '../../profiles/profile-card/profile-card';
   templateUrl: './admin-profile.html',
   styleUrls: ['./admin-profile.css']
 })
-export class AdminProfile {}
+export class AdminProfile {
+  onBanAccounts() {
+    console.log('Ban Accounts clicked');
+    // TODO: Implement ban accounts functionality
+  }
+}
