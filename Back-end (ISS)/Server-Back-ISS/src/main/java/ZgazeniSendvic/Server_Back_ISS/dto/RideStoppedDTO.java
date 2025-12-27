@@ -5,23 +5,18 @@ import java.util.List;
 
 public class RideStoppedDTO {
 
-    private String driverID;
     private String rideID;
     private double newPrice;
     private List<String> updatedDestinations;
 
     public RideStoppedDTO(){}
-    public RideStoppedDTO(String driverID, String rideID, double newPrice, List<String> updatedDestinations) {
-        this.driverID = driverID;
+    public RideStoppedDTO(String rideID, double newPrice, List<String> updatedDestinations) {
         this.rideID = rideID;
         this.newPrice = newPrice;
         this.updatedDestinations = updatedDestinations;
     }
 
 
-    public String getDriverID() {
-        return driverID;
-    }
 
     public String getRideID() {
         return rideID;
@@ -35,9 +30,6 @@ public class RideStoppedDTO {
         return updatedDestinations;
     }
 
-    public void setDriverID(String driverID) {
-        this.driverID = driverID;
-    }
 
     public void setRideID(String rideID) {
         this.rideID = rideID;
