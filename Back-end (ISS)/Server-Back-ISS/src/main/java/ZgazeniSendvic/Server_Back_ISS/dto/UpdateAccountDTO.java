@@ -1,9 +1,6 @@
-package ZgazeniSendvic.Server_Back_ISS.model;
+package ZgazeniSendvic.Server_Back_ISS.dto;
 
-import java.util.ArrayList;
-
-public class Account {
-    private Long id;
+public class UpdateAccountDTO {
     private String email;
     private String password;
     private String name;
@@ -11,31 +8,6 @@ public class Account {
     private String address;
     private String phoneNumber;
     private String imgString;
-    private ArrayList<Route> faveRoutes;
-
-    public Account() { super(); }
-
-    public Account(Long id, String email, String password, String name, String lastName,
-                   String address, String phoneNumber, String imgString, ArrayList<Route> faveRoutes) {
-        super();
-        this.id = id;
-        this.email = email;
-        this.password = password;
-        this.name = name;
-        this.lastName = lastName;
-        this.address = address;
-        this.phoneNumber = phoneNumber;
-        this.imgString = imgString;
-        this.faveRoutes = faveRoutes;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getEmail() {
         return email;
@@ -91,13 +63,5 @@ public class Account {
 
     public void setImgString(String imgString) {
         this.imgString = imgString;
-    }
-
-    public ArrayList<Route> getFaveRoutes() {
-        return faveRoutes;
-    }
-
-    public void setFaveRoutes(ArrayList<Route> faveRoutes) {
-        this.faveRoutes = faveRoutes;
     }
 }

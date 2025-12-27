@@ -1,31 +1,14 @@
-package ZgazeniSendvic.Server_Back_ISS.model;
+package ZgazeniSendvic.Server_Back_ISS.dto;
 
 import java.util.ArrayList;
 
-public class RideRequest {
-    private Long id;
+public class CreateRideRequestDTO {
     private String start;
     private String destination;
     private ArrayList<String> midPoints;
     private String vehicleSelection;
 
-    public RideRequest() { super(); }
-
-    public RideRequest(Long id, String start, String destination, ArrayList<String> midPoints, String vehicleSelection) {
-        this.id = id;
-        this.start = start;
-        this.destination = destination;
-        this.midPoints = midPoints;
-        this.vehicleSelection = vehicleSelection;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public CreateRideRequestDTO() { super(); }
 
     public String getStart() {
         return start;
