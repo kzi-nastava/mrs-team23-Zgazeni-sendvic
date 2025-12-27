@@ -4,12 +4,12 @@ public class LoginRequestedDTO {
 
     private String token;
     private String tokenType;
-    private UserDTO user;
+    private UserLoginDTO user;
 
     public LoginRequestedDTO() {
     }
 
-    public LoginRequestedDTO(String token, String tokenType, UserDTO user) {
+    public LoginRequestedDTO(String token, String tokenType, UserLoginDTO user) {
         this.token = token;
         this.tokenType = tokenType;
         this.user = user;
@@ -31,11 +31,11 @@ public class LoginRequestedDTO {
         this.tokenType = tokenType;
     }
 
-    public UserDTO getUser() {
+    public UserLoginDTO getUser() {
         return user;
     }
 
-    public void setUser(UserDTO user) {
+    public void setUser(UserLoginDTO user) {
         this.user = user;
     }
 }
