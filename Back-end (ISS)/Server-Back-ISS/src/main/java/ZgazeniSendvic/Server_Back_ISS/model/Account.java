@@ -14,6 +14,20 @@ public class Account {
     private ArrayList<Route> faveRoutes;
 
     public Account() { super(); }
+  
+  public Account(Long id, String email, String password, String name, String lastName,
+                   String address, String phoneNumber, String imgString) {
+        super();
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.name = name;
+        this.lastName = lastName;
+        this.address = address;
+        this.phoneNumber = phoneNumber;
+        this.imgString = imgString;
+        
+    }
 
     public Account(Long id, String email, String password, String name, String lastName,
                    String address, String phoneNumber, String imgString, ArrayList<Route> faveRoutes) {
