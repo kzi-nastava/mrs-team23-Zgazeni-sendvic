@@ -1,38 +1,22 @@
 package ZgazeniSendvic.Server_Back_ISS.dto;
 
-import java.util.List;
-
 public class UserDTO {
 
     private String email;
-    private String userID;
     private String firstName;
     private String lastName;
-    private String address;
     private String phoneNum;
-    private String pictUrl;
-    private List<String> roles;
-
-    public List<String> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<String> roles) {
-        this.roles = roles;
-    }
+    private String address;
 
     public UserDTO() {
     }
 
-    public UserDTO(String email, String userID, String firstName, String lastName,
-                   String address, String phoneNum, String pictUrl) {
+    public UserDTO(String email, String firstName, String lastName, String phoneNum, String address) {
         this.email = email;
-        this.userID = userID;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.address = address;
         this.phoneNum = phoneNum;
-        this.pictUrl = pictUrl;
+        this.address = address;
     }
 
     public String getEmail() {
@@ -41,14 +25,6 @@ public class UserDTO {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getUserID() {
-        return userID;
-    }
-
-    public void setUserID(String userID) {
-        this.userID = userID;
     }
 
     public String getFirstName() {
@@ -67,14 +43,6 @@ public class UserDTO {
         this.lastName = lastName;
     }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
     public String getPhoneNum() {
         return phoneNum;
     }
@@ -83,11 +51,11 @@ public class UserDTO {
         this.phoneNum = phoneNum;
     }
 
-    public String getPictUrl() {
-        return pictUrl;
+    public String getAddress() {
+        return address;
     }
 
-    public void setPictUrl(String pictUrl) {
-        this.pictUrl = pictUrl;
+    public void setAddress(String address) {
+        this.address = address;
     }
 }
