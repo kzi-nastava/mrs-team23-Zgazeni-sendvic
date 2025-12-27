@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="Server-Back-ISS" target="17" />
+    </bytecodeTargetLevel>
     <annotationProcessing>
       <profile name="Annotation profile for Server-Back-ISS" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
