@@ -35,7 +35,7 @@ class AuthController {
 
         LoginRequestedDTO requested = new LoginRequestedDTO("2131","bearer",new UserLoginDTO());
 
-        return new ResponseEntity<LoginRequestedDTO>(requested,HttpStatus.OK);
+        return new ResponseEntity<LoginRequestedDTO>(requested,HttpStatus.CREATED);
     }
 
     @PostMapping(path = "forgot-password", consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -43,7 +43,7 @@ class AuthController {
     public ResponseEntity<String> sendResetEmail(@RequestBody PasswordResetRequestDTO request) throws Exception {
         //would check whether exists etc...
 
-        return new ResponseEntity<String>("Link sent if email exists", HttpStatus.OK);
+        return new ResponseEntity<String>("Link sent if email exists", HttpStatus.CREATED);
     }
 
     @PostMapping(path = "reset-password", consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -52,7 +52,7 @@ class AuthController {
             throws Exception {
         //would change the password etc.;
 
-        return new ResponseEntity<String>("Password Reset successful", HttpStatus.OK);
+        return new ResponseEntity<String>("Password Reset successful", HttpStatus.CREATED);
         //redirection to login would ensue? or auto login?
     }
 
