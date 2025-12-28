@@ -1,29 +1,21 @@
 package ZgazeniSendvic.Server_Back_ISS.dto;
 
-import org.springframework.stereotype.Component;
-
 
 public class DriveCancelDTO {
-    // has to contain info on who sent it, as well as ability to detect which ride it really is
-    private int requesterID;
-    private int rideID;
+    // has to contain info on who sent it
+    private Long requesterID;
     private String reason;
     private String time;
 
     public DriveCancelDTO(){}
-    public DriveCancelDTO(int requesterID, int rideID, String reason, String time) {
+    public DriveCancelDTO(Long requesterID, String reason, String time) {
         this.requesterID = requesterID;
-        this.rideID = rideID;
         this.reason = reason;
         this.time = time;
     }
 
-    public void setRequesterID(int requesterID) {
+    public void setRequesterID(Long requesterID) {
         this.requesterID = requesterID;
-    }
-
-    public void setRideID(int rideID) {
-        this.rideID = rideID;
     }
 
     public void setReason(String reason) {
@@ -34,12 +26,8 @@ public class DriveCancelDTO {
         this.time = time;
     }
 
-    public int getRequesterID() {
+    public Long getRequesterID() {
         return requesterID;
-    }
-
-    public int getRideID() {
-        return rideID;
     }
 
     public String getReason() {

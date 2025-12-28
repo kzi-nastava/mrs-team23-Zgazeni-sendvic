@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 public class ARideRequestedDTO {
-    private String rideID;
+    private Long rideID;
     private List<String> destinations;
     private String arrivingPoint;
     private Date beginning;
@@ -16,7 +16,7 @@ public class ARideRequestedDTO {
 
     public ARideRequestedDTO(){};
 
-    public ARideRequestedDTO(String rideID, List<String> destinations, String arrivingPoint,
+    public ARideRequestedDTO(Long rideID, List<String> destinations, String arrivingPoint,
                              Date beginning, Date ending, boolean wasCancelled, String whoCancelled,
                              double price, boolean panic) {
         this.rideID = rideID;
@@ -30,11 +30,11 @@ public class ARideRequestedDTO {
         this.panic = panic;
     }
 
-    public String getRideID() {
+    public Long getRideID() {
         return rideID;
     }
 
-    public void setRideID(String rideID) {
+    public void setRideID(Long rideID) {
         this.rideID = rideID;
     }
 

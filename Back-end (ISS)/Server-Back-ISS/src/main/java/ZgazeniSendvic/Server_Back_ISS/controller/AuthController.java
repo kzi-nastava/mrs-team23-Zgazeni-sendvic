@@ -16,9 +16,13 @@ class AuthController {
     public ResponseEntity<LoginRequestedDTO> register(@RequestBody RegisterRequestDTO body) throws Exception{
 
         //would check whether creation is acceptable here
+        boolean passed = true; //would be handled with service
+        if(!passed)
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+
         //successful
-        UserLoginDTO userDto = new UserLoginDTO(body.getEmail(), "82340248SAsdad", body.getFirstName(), body.getLastName(),
-                body.getAddress(), body.getPhoneNum(), body.getPictUrl());
+        UserLoginDTO userDto = new UserLoginDTO(body.getEmail(), 84L, body.getFirstName(), body.getLastName(),
+                body.getPictUrl());
 
         //login immediately
         LoginRequestedDTO loginDTO = new LoginRequestedDTO("3424asd", "bearer", userDto);
@@ -32,10 +36,13 @@ class AuthController {
     public ResponseEntity<LoginRequestedDTO> login(@RequestBody LoginRequestDTO request) throws Exception {
 
         //would check login logic here
+        boolean passed = true; //would be handled with service
+        if(!passed)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         LoginRequestedDTO requested = new LoginRequestedDTO("2131","bearer",new UserLoginDTO());
 
-        return new ResponseEntity<LoginRequestedDTO>(requested,HttpStatus.OK);
+        return new ResponseEntity<LoginRequestedDTO>(requested,HttpStatus.CREATED);
     }
 
     @PostMapping(path = "forgot-password", consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -43,7 +50,7 @@ class AuthController {
     public ResponseEntity<String> sendResetEmail(@RequestBody PasswordResetRequestDTO request) throws Exception {
         //would check whether exists etc...
 
-        return new ResponseEntity<String>("Link sent if email exists", HttpStatus.OK);
+        return new ResponseEntity<String>("Link has been sent if the email is correct", HttpStatus.CREATED);
     }
 
     @PostMapping(path = "reset-password", consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -52,7 +59,7 @@ class AuthController {
             throws Exception {
         //would change the password etc.;
 
-        return new ResponseEntity<String>("Password Reset successful", HttpStatus.OK);
+        return new ResponseEntity<String>("Password Reset successful", HttpStatus.CREATED);
         //redirection to login would ensue? or auto login?
     }
 
