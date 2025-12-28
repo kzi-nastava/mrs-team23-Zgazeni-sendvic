@@ -5,7 +5,6 @@ import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.entity.RideRoute;
 
 
-import ZgazeniSendvic.Server_Back_ISS.entity.RideRoute;
 import org.springframework.format.annotation.DateTimeFormat;
 // removed import of all dto's, might break
 
@@ -70,7 +69,7 @@ class RideController {
 
     @PutMapping(path = "ride-tracking/stop/{rideID}",consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RideStoppedDTO> stopRide(@RequestBody RideStopDTO stopReq, @PathVariable String rideID)
+    public ResponseEntity<RideStoppedDTO> stopRide(@RequestBody RideStopDTO stopReq, @PathVariable Long rideID)
             throws Exception{
         RideStoppedDTO stopped = new RideStoppedDTO();
         stopped.setRideID(rideID);
@@ -91,7 +90,7 @@ class RideController {
     @GetMapping(path = "admin-HOR/{targetID}",consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<ARideRequestedDTO>> adminRetrieveRides
-            (@PathVariable String targetID,
+            (@PathVariable Long targetID,
             Pageable pageable,
              @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
              @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate)
@@ -99,7 +98,7 @@ class RideController {
         // here a service would go over the pageable and request params etc...
 
         ARideRequestedDTO ride = new ARideRequestedDTO(
-                "asdasd12313",
+                7L,
                 Arrays.asList("Stop A", "Stop B", "Stop C"),
                 "Start Stop",
                 new Date(),
@@ -119,7 +118,7 @@ class RideController {
 
     @GetMapping(path = "admin-HOR-Detailed/{targetID}",consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ARideDetailsRequestedDTO> adminRetrieveDetailed(@PathVariable String targetID)
+    public ResponseEntity<ARideDetailsRequestedDTO> adminRetrieveDetailed(@PathVariable Long targetID)
             throws Exception{
 
         //would find based on id in service

@@ -4,7 +4,7 @@ import java.util.List;
 
 public class User {
 
-    private String ID;
+    private Long ID;
     private String email;
     private String password;
     private String firstName;
@@ -25,7 +25,7 @@ public class User {
     public User() {
     }
 
-    public User(String ID, String email, String password,
+    public User(Long ID, String email, String password,
                 String firstName, String lastName, String address, String phoneNum, String pictUrl) {
         this.ID = ID;
         this.email = email;
@@ -37,11 +37,11 @@ public class User {
         this.pictUrl = pictUrl;
     }
 
-    public String getID() {
+    public Long getID() {
         return ID;
     }
 
-    public void setID(String ID) {
+    public void setID(Long ID) {
         this.ID = ID;
     }
 

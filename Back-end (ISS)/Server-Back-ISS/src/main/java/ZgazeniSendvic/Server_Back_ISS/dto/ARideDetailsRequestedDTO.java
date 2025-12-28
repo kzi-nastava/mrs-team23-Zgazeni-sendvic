@@ -4,9 +4,9 @@ import java.util.List;
 
 public class ARideDetailsRequestedDTO {
 
-    private String rideID;
+    private Long rideID;
 
-    public ARideDetailsRequestedDTO(String rideID, List<UserDTO> passengers,
+    public ARideDetailsRequestedDTO(Long rideID, List<UserDTO> passengers,
                                     UserDTO driver, List<String> reports, List<Integer> ratings) {
         this.rideID = rideID;
         this.passengers = passengers;
@@ -15,11 +15,11 @@ public class ARideDetailsRequestedDTO {
         this.ratings = ratings;
     }
 
-    public String getRideID() {
+    public Long getRideID() {
         return rideID;
     }
 
-    public void setRideID(String rideID) {
+    public void setRideID(Long rideID) {
         this.rideID = rideID;
     }
 

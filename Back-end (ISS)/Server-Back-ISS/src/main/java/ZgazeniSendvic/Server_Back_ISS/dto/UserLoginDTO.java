@@ -5,7 +5,7 @@ import java.util.List;
 public class UserLoginDTO {
 
     private String email;
-    private String userID;
+    private Long userID;
     private String firstName;
     private String lastName;
     private String pictUrl;
@@ -25,7 +25,7 @@ public class UserLoginDTO {
     public UserLoginDTO() {
     }
 
-    public UserLoginDTO(String email, String userID, String firstName, String lastName,
+    public UserLoginDTO(String email, Long userID, String firstName, String lastName,
                         String pictUrl) {
         this.email = email;
         this.userID = userID;
@@ -42,11 +42,11 @@ public class UserLoginDTO {
         this.email = email;
     }
 
-    public String getUserID() {
+    public Long getUserID() {
         return userID;
     }
 
-    public void setUserID(String userID) {
+    public void setUserID(Long userID) {
         this.userID = userID;
     }
 

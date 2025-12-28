@@ -5,8 +5,8 @@ import java.util.List;
 
 public class Ride {
 
-    private String rideID;
-    private String driverID;
+    private Long rideID;
+    private Long driverID;
     private List<String> passengerIDs;
     private String vehicleID;
     private List<String> destinations;
@@ -15,7 +15,7 @@ public class Ride {
     private double price;
 
     public Ride(){}
-    public Ride(String rideID, String driverID, List<String> passengerIDs,
+    public Ride(Long rideID, Long driverID, List<String> passengerIDs,
                 String vehicleID, List<String> destinations, Date beginning, Date ending, double price) {
         this.rideID = rideID;
         this.driverID = driverID;
@@ -28,11 +28,11 @@ public class Ride {
     }
 
 
-    public String getRideID() {
+    public Long getRideID() {
         return rideID;
     }
 
-    public String getDriverID() {
+    public Long getDriverID() {
         return driverID;
     }
 
@@ -60,11 +60,11 @@ public class Ride {
         return price;
     }
 
-    public void setRideID(String rideID) {
+    public void setRideID(Long rideID) {
         this.rideID = rideID;
     }
 
-    public void setDriverID(String driverID) {
+    public void setDriverID(Long driverID) {
         this.driverID = driverID;
     }
 
