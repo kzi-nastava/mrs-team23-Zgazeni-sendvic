@@ -32,13 +32,18 @@ class RideController {
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DriveCancelledDTO> cancelDrive(@RequestBody DriveCancelDTO cancelRequest) throws Exception{
 
+        //process that would decide whether to or not to
+        boolean isCancelled = true;
+        if(!isCancelled)
+            return ResponseEntity.status(HttpStatus.CONFLICT).build(); //bad reason/ too late etc.
+
         DriveCancelledDTO cancelled = new DriveCancelledDTO();
         cancelled.setReason(cancelRequest.getReason());
         cancelled.setRideID(cancelRequest.getRideID());
         cancelled.setTime(cancelRequest.getTime());
         cancelled.setRequesterID(cancelRequest.getRequesterID());
 
-        //process that would decide whether to or not to
+
         cancelled.setCancelled(true);
 
         return new ResponseEntity<DriveCancelledDTO>(cancelled, HttpStatus.OK);

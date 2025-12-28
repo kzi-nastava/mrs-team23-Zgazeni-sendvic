@@ -16,6 +16,10 @@ class AuthController {
     public ResponseEntity<LoginRequestedDTO> register(@RequestBody RegisterRequestDTO body) throws Exception{
 
         //would check whether creation is acceptable here
+        boolean passed = true; //would be handled with service
+        if(!passed)
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+
         //successful
         UserLoginDTO userDto = new UserLoginDTO(body.getEmail(), "82340248SAsdad", body.getFirstName(), body.getLastName(),
                 body.getAddress(), body.getPhoneNum(), body.getPictUrl());
@@ -32,6 +36,9 @@ class AuthController {
     public ResponseEntity<LoginRequestedDTO> login(@RequestBody LoginRequestDTO request) throws Exception {
 
         //would check login logic here
+        boolean passed = true; //would be handled with service
+        if(!passed)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         LoginRequestedDTO requested = new LoginRequestedDTO("2131","bearer",new UserLoginDTO());
 
@@ -43,7 +50,7 @@ class AuthController {
     public ResponseEntity<String> sendResetEmail(@RequestBody PasswordResetRequestDTO request) throws Exception {
         //would check whether exists etc...
 
-        return new ResponseEntity<String>("Link sent if email exists", HttpStatus.CREATED);
+        return new ResponseEntity<String>("Link has been sent if email exists", HttpStatus.CREATED);
     }
 
     @PostMapping(path = "reset-password", consumes = MediaType.APPLICATION_JSON_VALUE,
