@@ -6,8 +6,8 @@ public class ARideDetailsRequestedDTO {
 
     private Long rideID;
 
-    public ARideDetailsRequestedDTO(Long rideID, List<UserDTO> passengers,
-                                    UserDTO driver, List<String> reports, List<Integer> ratings) {
+    public ARideDetailsRequestedDTO(Long rideID, List<AHORAccountDetailsDTO> passengers,
+                                    AHORAccountDetailsDTO driver, List<String> reports, List<Integer> ratings) {
         this.rideID = rideID;
         this.passengers = passengers;
         this.driver = driver;
@@ -23,15 +23,15 @@ public class ARideDetailsRequestedDTO {
         this.rideID = rideID;
     }
 
-    private List<UserDTO> passengers;
-    private UserDTO driver;
+    private List<AHORAccountDetailsDTO> passengers;
+    private AHORAccountDetailsDTO driver;
     private List<String> reports;
     private List<Integer> ratings;
 
     public ARideDetailsRequestedDTO() {
     }
 
-    public ARideDetailsRequestedDTO(List<UserDTO> passengers, UserDTO driver,
+    public ARideDetailsRequestedDTO(List<AHORAccountDetailsDTO> passengers, AHORAccountDetailsDTO driver,
                                     List<String> reports, List<Integer> ratings) {
         this.passengers = passengers;
         this.driver = driver;
@@ -39,19 +39,19 @@ public class ARideDetailsRequestedDTO {
         this.ratings = ratings;
     }
 
-    public List<UserDTO> getPassengers() {
+    public List<AHORAccountDetailsDTO> getPassengers() {
         return passengers;
     }
 
-    public void setPassengers(List<UserDTO> passengers) {
+    public void setPassengers(List<AHORAccountDetailsDTO> passengers) {
         this.passengers = passengers;
     }
 
-    public UserDTO getDriver() {
+    public AHORAccountDetailsDTO getDriver() {
         return driver;
     }
 
-    public void setDriver(UserDTO driver) {
+    public void setDriver(AHORAccountDetailsDTO driver) {
         this.driver = driver;
     }
 

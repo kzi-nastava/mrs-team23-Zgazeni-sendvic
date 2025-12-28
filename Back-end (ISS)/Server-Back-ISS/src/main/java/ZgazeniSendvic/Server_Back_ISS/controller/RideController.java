@@ -57,8 +57,8 @@ class RideController {
     estimateRide(@PathVariable String arrival, @PathVariable String destinationsStr)throws Exception{
 
         List<String> destinations = new ArrayList<>(Arrays.asList(destinationsStr.split(",")));
-        RideRoute route = new RideRoute(destinations);
-        RouteEstimationDTO estimation = new RouteEstimationDTO(route.getRoutes(), route.getTotalTime());
+        //would make route, calculate etc..
+        RouteEstimationDTO estimation = new RouteEstimationDTO(destinations, 28);
 
         
 
@@ -123,8 +123,8 @@ class RideController {
 
         //would find based on id in service
 
-        List<UserDTO> passengers = Arrays.asList(new UserDTO(), new UserDTO());
-        UserDTO driver = new UserDTO();
+        List<AHORAccountDetailsDTO> passengers = Arrays.asList(new AHORAccountDetailsDTO(), new AHORAccountDetailsDTO());
+        AHORAccountDetailsDTO driver = new AHORAccountDetailsDTO();
         List<String> reports = Arrays.asList("Passenger was late","Driver was friendly");
         List<Integer> ratings = Arrays.asList(5, 4, 5);
         ARideDetailsRequestedDTO detailed = new ARideDetailsRequestedDTO(targetID,passengers,driver,reports,ratings);

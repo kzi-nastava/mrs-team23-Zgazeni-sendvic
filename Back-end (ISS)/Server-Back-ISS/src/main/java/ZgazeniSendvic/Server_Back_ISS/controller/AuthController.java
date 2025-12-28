@@ -21,7 +21,7 @@ class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
 
         //successful
-        UserLoginDTO userDto = new UserLoginDTO(body.getEmail(), 84L, body.getFirstName(), body.getLastName(),
+        AccountLoginDTO userDto = new AccountLoginDTO(body.getEmail(), 84L, body.getFirstName(), body.getLastName(),
                 body.getPictUrl());
 
         //login immediately
@@ -40,7 +40,7 @@ class AuthController {
         if(!passed)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        LoginRequestedDTO requested = new LoginRequestedDTO("2131","bearer",new UserLoginDTO());
+        LoginRequestedDTO requested = new LoginRequestedDTO("2131","bearer",new AccountLoginDTO());
 
         return new ResponseEntity<LoginRequestedDTO>(requested,HttpStatus.CREATED);
     }
