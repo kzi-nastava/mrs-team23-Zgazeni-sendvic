@@ -4,14 +4,14 @@ package ZgazeniSendvic.Server_Back_ISS.dto;
 
 public class DriveCancelledDTO {
 
-    private int requesterID;
-    private int rideID;
+    private Long requesterID;
+    private Long rideID;
     private String reason;
     private String time;
     private boolean isCancelled;
 
     public DriveCancelledDTO(){}
-    public DriveCancelledDTO(int requesterID, int rideID, String reason, String time, boolean isCancelled) {
+    public DriveCancelledDTO(Long requesterID, Long rideID, String reason, String time, boolean isCancelled) {
         this.requesterID = requesterID;
         this.rideID = rideID;
         this.reason = reason;
@@ -19,11 +19,11 @@ public class DriveCancelledDTO {
         this.isCancelled = isCancelled;
     }
 
-    public int getRequesterID() {
+    public Long getRequesterID() {
         return requesterID;
     }
 
-    public int getRideID() {
+    public Long getRideID() {
         return rideID;
     }
 
@@ -39,11 +39,11 @@ public class DriveCancelledDTO {
         return isCancelled;
     }
 
-    public void setRequesterID(int requesterID) {
+    public void setRequesterID(Long requesterID) {
         this.requesterID = requesterID;
     }
 
-    public void setRideID(int rideID) {
+    public void setRideID(Long rideID) {
         this.rideID = rideID;
     }
 

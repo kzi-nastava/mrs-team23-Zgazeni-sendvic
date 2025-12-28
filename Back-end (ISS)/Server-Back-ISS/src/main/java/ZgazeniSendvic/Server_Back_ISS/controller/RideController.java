@@ -28,9 +28,10 @@ import java.time.LocalDate;
 class RideController {
 
     
-    @PutMapping(path = "ride-tracking",
+    @PutMapping(path = "ride-cancel/{rideID}",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<DriveCancelledDTO> cancelDrive(@RequestBody DriveCancelDTO cancelRequest) throws Exception{
+    public ResponseEntity<DriveCancelledDTO> cancelDrive(@RequestBody DriveCancelDTO cancelRequest,
+                                                         @PathVariable Long rideID) throws Exception{
 
         //process that would decide whether to or not to
         boolean isCancelled = true;
@@ -39,7 +40,7 @@ class RideController {
 
         DriveCancelledDTO cancelled = new DriveCancelledDTO();
         cancelled.setReason(cancelRequest.getReason());
-        cancelled.setRideID(cancelRequest.getRideID());
+        cancelled.setRideID(rideID);
         cancelled.setTime(cancelRequest.getTime());
         cancelled.setRequesterID(cancelRequest.getRequesterID());
 
