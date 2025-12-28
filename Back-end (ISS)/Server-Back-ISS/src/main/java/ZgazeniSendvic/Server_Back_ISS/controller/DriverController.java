@@ -24,8 +24,7 @@ public class DriverController {
 
         savedDriver.setId(1L);
         savedDriver.setAccount(new Account(1L, driver.getEmail(), driver.getPassword(), driver.getName(),
-                driver.getLastName(), driver.getAddress(), driver.getPhoneNumber(), driver.getImgString(),
-                new ArrayList<Route>()));
+                driver.getLastName(), driver.getAddress(), driver.getPhoneNumber(), driver.getImgString()));
         savedDriver.setVehicle(driver.getVehicle());
 
         return new ResponseEntity<CreatedDriverDTO>(savedDriver, HttpStatus.CREATED);

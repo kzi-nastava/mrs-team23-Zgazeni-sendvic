@@ -1,6 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Account {
     private Long id;
@@ -12,11 +13,12 @@ public class Account {
     private String phoneNumber;
     private String imgString;
     private ArrayList<Route> faveRoutes;
+    private ArrayList<String> roles;
 
     public Account() { super(); }
 
     public Account(Long id, String email, String password, String name, String lastName,
-                   String address, String phoneNumber, String imgString, ArrayList<Route> faveRoutes) {
+                   String address, String phoneNumber, String imgString) {
         super();
         this.id = id;
         this.email = email;
@@ -26,7 +28,6 @@ public class Account {
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.imgString = imgString;
-        this.faveRoutes = faveRoutes;
     }
 
     public Long getId() {
@@ -99,5 +100,13 @@ public class Account {
 
     public void setFaveRoutes(ArrayList<Route> faveRoutes) {
         this.faveRoutes = faveRoutes;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(ArrayList<String> roles) {
+        this.roles = roles;
     }
 }

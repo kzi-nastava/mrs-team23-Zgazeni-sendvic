@@ -38,7 +38,7 @@ class RideController {
         cancelled.setTime(cancelRequest.getTime());
         cancelled.setRequesterID(cancelRequest.getRequesterID());
 
-        //process that would decide wether to or not to
+        //process that would decide whether to or not to
         cancelled.setCancelled(true);
 
         return new ResponseEntity<DriveCancelledDTO>(cancelled, HttpStatus.OK);
@@ -68,9 +68,9 @@ class RideController {
             throws Exception{
         RideStoppedDTO stopped = new RideStoppedDTO();
         stopped.setRideID(rideID);
-        //now a service would determine all passsed destinations, remove not passed, and add current location as ending
+        //now a service would determine all passed destinations, remove not passed, and add current location as ending
         double newPrice = 45;
-        //in reality it would have access to all so far passed dests
+        //in reality, it would have access to all so far passed destinations
         List<String> newDests = new ArrayList<String>();
         newDests.add(stopReq.getCurrentLocation());
 

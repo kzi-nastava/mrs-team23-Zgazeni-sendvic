@@ -15,7 +15,7 @@ class AuthController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LoginRequestedDTO> register(@RequestBody RegisterRequestDTO body) throws Exception{
 
-        //would check wether creation is acceptable here
+        //would check whether creation is acceptable here
         //successful
         UserLoginDTO userDto = new UserLoginDTO(body.getEmail(), "82340248SAsdad", body.getFirstName(), body.getLastName(),
                 body.getAddress(), body.getPhoneNum(), body.getPictUrl());
@@ -41,7 +41,7 @@ class AuthController {
     @PostMapping(path = "forgot-password", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> sendResetEmail(@RequestBody PasswordResetRequestDTO request) throws Exception {
-        //would check wether exists etc...
+        //would check whether exists etc...
 
         return new ResponseEntity<String>("Link sent if email exists", HttpStatus.OK);
     }
