@@ -2,8 +2,6 @@ package ZgazeniSendvic.Server_Back_ISS.controller;
 
 
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
-import ZgazeniSendvic.Server_Back_ISS.entity.RideRoute;
-
 
 import org.springframework.format.annotation.DateTimeFormat;
 // removed import of all dto's, might break
