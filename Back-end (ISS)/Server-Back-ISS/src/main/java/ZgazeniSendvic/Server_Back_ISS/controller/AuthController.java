@@ -22,7 +22,7 @@ class AuthController {
 
         //successful
         UserLoginDTO userDto = new UserLoginDTO(body.getEmail(), "82340248SAsdad", body.getFirstName(), body.getLastName(),
-                body.getAddress(), body.getPhoneNum(), body.getPictUrl());
+                body.getPictUrl());
 
         //login immediately
         LoginRequestedDTO loginDTO = new LoginRequestedDTO("3424asd", "bearer", userDto);

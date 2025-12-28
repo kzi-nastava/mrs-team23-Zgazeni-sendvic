@@ -8,10 +8,11 @@ public class UserLoginDTO {
     private String userID;
     private String firstName;
     private String lastName;
-    private String address;
-    private String phoneNum;
     private String pictUrl;
     private List<String> roles;
+
+    // For writing ratings and such, the backend could always, based on ID, find the information required.
+    // Since that's the case, the client needn't at all times know stuff such ass address/phoneNum
 
     public List<String> getRoles() {
         return roles;
@@ -25,13 +26,11 @@ public class UserLoginDTO {
     }
 
     public UserLoginDTO(String email, String userID, String firstName, String lastName,
-                        String address, String phoneNum, String pictUrl) {
+                        String pictUrl) {
         this.email = email;
         this.userID = userID;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.address = address;
-        this.phoneNum = phoneNum;
         this.pictUrl = pictUrl;
     }
 
@@ -65,22 +64,6 @@ public class UserLoginDTO {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getPhoneNum() {
-        return phoneNum;
-    }
-
-    public void setPhoneNum(String phoneNum) {
-        this.phoneNum = phoneNum;
     }
 
     public String getPictUrl() {

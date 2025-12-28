@@ -4,6 +4,25 @@ import java.util.List;
 
 public class ARideDetailsRequestedDTO {
 
+    private String rideID;
+
+    public ARideDetailsRequestedDTO(String rideID, List<UserDTO> passengers,
+                                    UserDTO driver, List<String> reports, List<Integer> ratings) {
+        this.rideID = rideID;
+        this.passengers = passengers;
+        this.driver = driver;
+        this.reports = reports;
+        this.ratings = ratings;
+    }
+
+    public String getRideID() {
+        return rideID;
+    }
+
+    public void setRideID(String rideID) {
+        this.rideID = rideID;
+    }
+
     private List<UserDTO> passengers;
     private UserDTO driver;
     private List<String> reports;

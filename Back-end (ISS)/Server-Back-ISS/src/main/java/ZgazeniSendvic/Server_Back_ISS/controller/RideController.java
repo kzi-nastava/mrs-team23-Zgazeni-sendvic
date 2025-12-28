@@ -87,7 +87,7 @@ class RideController {
 
     }
 
-    @GetMapping(path = "admin-HOR/{targedID}",consumes = MediaType.APPLICATION_JSON_VALUE,
+    @GetMapping(path = "admin-HOR/{targetID}",consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<ARideRequestedDTO>> adminRetrieveRides
             (@PathVariable String targetID,
@@ -127,7 +127,7 @@ class RideController {
         UserDTO driver = new UserDTO();
         List<String> reports = Arrays.asList("Passenger was late","Driver was friendly");
         List<Integer> ratings = Arrays.asList(5, 4, 5);
-        ARideDetailsRequestedDTO detailed = new ARideDetailsRequestedDTO(passengers,driver,reports,ratings);
+        ARideDetailsRequestedDTO detailed = new ARideDetailsRequestedDTO(targetID,passengers,driver,reports,ratings);
 
         return new ResponseEntity<ARideDetailsRequestedDTO>(detailed, HttpStatus.OK);
 
