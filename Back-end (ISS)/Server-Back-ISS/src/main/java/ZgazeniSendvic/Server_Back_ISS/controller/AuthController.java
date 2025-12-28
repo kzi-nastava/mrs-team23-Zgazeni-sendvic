@@ -1,4 +1,4 @@
-package ZgazeniSendvic.Server_Back_ISS.controllers;
+package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import org.springframework.http.HttpStatus;
@@ -33,7 +33,7 @@ class AuthController {
 
         //would check login logic here
 
-        LoginRequestedDTO requested = new LoginRequestedDTO("2131","bearer",new UserDTO());
+        LoginRequestedDTO requested = new LoginRequestedDTO("2131","bearer",new UserLoginDTO());
 
         return new ResponseEntity<LoginRequestedDTO>(requested,HttpStatus.OK);
     }
@@ -50,7 +50,7 @@ class AuthController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> confirmPasswordReset(@RequestBody PasswordResetConfirmedRequestDTO request)
             throws Exception {
-        //would change the password etc;
+        //would change the password etc.;
 
         return new ResponseEntity<String>("Password Reset successful", HttpStatus.OK);
         //redirection to login would ensue? or auto login?
