@@ -1,6 +1,6 @@
 package ZgazeniSendvic.Server_Back_ISS.dto;
 
-public class UserDTO {
+public class AHORAccountDetailsDTO {
 
     private String email;
     private String firstName;
@@ -8,10 +8,10 @@ public class UserDTO {
     private String phoneNum;
     private String address;
 
-    public UserDTO() {
+    public AHORAccountDetailsDTO() {
     }
 
-    public UserDTO(String email, String firstName, String lastName, String phoneNum, String address) {
+    public AHORAccountDetailsDTO(String email, String firstName, String lastName, String phoneNum, String address) {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;

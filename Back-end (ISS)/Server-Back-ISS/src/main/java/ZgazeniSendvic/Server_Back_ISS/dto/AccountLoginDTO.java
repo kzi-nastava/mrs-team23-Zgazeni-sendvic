@@ -2,7 +2,7 @@ package ZgazeniSendvic.Server_Back_ISS.dto;
 
 import java.util.List;
 
-public class UserLoginDTO {
+public class AccountLoginDTO {
 
     private String email;
     private Long userID;
@@ -22,11 +22,11 @@ public class UserLoginDTO {
         this.roles = roles;
     }
 
-    public UserLoginDTO() {
+    public AccountLoginDTO() {
     }
 
-    public UserLoginDTO(String email, Long userID, String firstName, String lastName,
-                        String pictUrl) {
+    public AccountLoginDTO(String email, Long userID, String firstName, String lastName,
+                           String pictUrl) {
         this.email = email;
         this.userID = userID;
         this.firstName = firstName;
