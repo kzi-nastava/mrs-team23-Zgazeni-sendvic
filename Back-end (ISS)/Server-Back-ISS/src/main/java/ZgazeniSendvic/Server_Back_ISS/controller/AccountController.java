@@ -20,6 +20,10 @@ public class AccountController {
             return new ResponseEntity<GetAccountDTO>(HttpStatus.NOT_FOUND);
         }
 
+        acc.setId(1L);
+        acc.setEmail("user@gmail.com");
+        acc.setPassword("user123456");
+
         return new ResponseEntity<GetAccountDTO>(acc, HttpStatus.OK);
     }
 
