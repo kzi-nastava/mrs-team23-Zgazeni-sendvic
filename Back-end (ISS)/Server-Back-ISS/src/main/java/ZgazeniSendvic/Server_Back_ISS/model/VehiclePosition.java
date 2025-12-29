@@ -1,4 +1,4 @@
-package ZgazeniSendvic.Server_Back_ISS.module;
+package ZgazeniSendvic.Server_Back_ISS.model;
 
 public class VehiclePosition{
     private Long id;
