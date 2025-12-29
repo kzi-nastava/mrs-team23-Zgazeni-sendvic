@@ -3,6 +3,7 @@ package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 
+import ZgazeniSendvic.Server_Back_ISS.service.*;
 import org.springframework.format.annotation.DateTimeFormat;
 // removed import of all dto's, might break
 
@@ -131,6 +132,81 @@ class RideController {
 
     }
 
+    @GetMapping(value = "api/future-rides",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<FutureRidesDTO> getFutureRides() {
+        FutureRidesService futureRidesService = new FutureRidesService();
+        FutureRidesDTO futureRidesDTO = futureRidesService.getFutureRides();
+        return new ResponseEntity<FutureRidesDTO>(futureRidesDTO, HttpStatus.OK);
+    }
 
+    @GetMapping(value = "api/history-of-rides/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HistoryOfRidesDTO> HistoryOfRidesController( @PathVariable Long userId) {
+        HistoryOfRidesService historyOfRidesService = new HistoryOfRidesService();
+        HistoryOfRidesDTO historyOfRidesDTO = historyOfRidesService.getHistoryOfRides(userId);
+        return ResponseEntity.ok(historyOfRidesDTO);
+    }
+
+    @GetMapping(value = "api/next-ride/{filter}",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<NextRideDTO> getNextRide(@PathVariable("filter") String filter) {
+        NextRideService nextRideService = new NextRideService();
+        NextRideDTO nextRideDTO = new NextRideDTO();
+        if (filter.equals("1")) {
+            nextRideDTO = nextRideService.getNextRideClosest();
+        } else if (filter.equals("2")) {
+            nextRideDTO = nextRideService.getNextRideCostliest();
+        }
+        return new ResponseEntity<NextRideDTO>(nextRideDTO, HttpStatus.OK);
+    }
+
+    @PostMapping(value="api/ride-driver-rating/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> rideDriverRating(@PathVariable("userId") Long userId, @RequestBody RideDriverRatingDTO rideDriverRatingDTO) {
+        boolean success = RideDriverRatingService.saveRating(rideDriverRatingDTO);
+        if (success) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @PutMapping(value="api/ride-end/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> rideEnd(@PathVariable("userId") Long userId, @RequestBody RideEndDTO rideEndDTO) {
+        RideEndService rideEndService = new RideEndService();
+        boolean success = rideEndService.RideEndService(rideEndDTO);
+        if (success) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @PostMapping(value = "api/ride-noting-user/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> noteRide(@PathVariable("userId") Long userId, @RequestBody RideNoteDTO rideNoteDTO) {
+        NoteAddingService noteAddingService = new NoteAddingService();
+        boolean success = noteAddingService.addNoteToRide(rideNoteDTO.getRideId(), userId, rideNoteDTO.getNote());
+        if (success) {
+            System.out.println("Ride "+ rideNoteDTO.getRideId() +", note: " + rideNoteDTO.getNote());
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @GetMapping(value = "api/ride-tracking-user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<VehicleTrackerDTO> rideTracking( @PathVariable("id") Long id) {
+        VehicleTrackerService vehicleTrackerService = new VehicleTrackerService();
+        VehicleTrackerDTO vehicleTrackerDTO = vehicleTrackerService.getVehicleTrackingData(id);
+        if (vehicleTrackerDTO == null) {
+            return new ResponseEntity<VehicleTrackerDTO>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<VehicleTrackerDTO>(vehicleTrackerDTO, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "api/vehicle-positions", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<VehiclePositionsDTO> getVehiclePositions() {
+        VehiclePositionsService vehiclePositionsService = new VehiclePositionsService();
+        List<VehiclePositionDTO> vehiclePositions = vehiclePositionsService.getAllVehiclePositions();
+        VehiclePositionsDTO responseDTO = new VehiclePositionsDTO(vehiclePositions);
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+    }
 
 }

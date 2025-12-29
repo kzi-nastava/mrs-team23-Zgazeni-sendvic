@@ -19,7 +19,7 @@ import java.util.List;
 @RequestMapping("/api/route")
 public class RouteController {
 
-    @GetMapping(path = "/favorites", value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/favorites/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetRouteDTO>> getFavoriteRoutes(@PathVariable("id") Long id) {
         Collection<GetRouteDTO> routes = new ArrayList<>();
         GetRouteDTO route1 = new GetRouteDTO();
