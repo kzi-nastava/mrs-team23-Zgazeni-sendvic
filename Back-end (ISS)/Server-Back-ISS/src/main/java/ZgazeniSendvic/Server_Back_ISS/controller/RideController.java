@@ -40,7 +40,11 @@ class RideController {
         cancelled.setReason(cancelRequest.getReason());
         cancelled.setRideID(rideID);
         cancelled.setTime(cancelRequest.getTime());
-        cancelled.setRequesterID(cancelRequest.getRequesterID());
+        cancelled.setRequesterName("pera");
+        cancelled.setRequesterSecondName("peric");
+        cancelled.setStartingDestination("Novi Sad 1");
+        cancelled.setStartingDestination("Novi Sad 2");
+        cancelled.setBeginningDate(LocalDate.of(2025, 1, 1));
 
 
         cancelled.setCancelled(true);
