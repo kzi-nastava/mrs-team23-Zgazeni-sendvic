@@ -1,31 +1,27 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
+import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/api/auth")
 class AuthController {
+
+    @Autowired
+    AccountServiceImpl accountService;
 
 
     @PostMapping(path = "register", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LoginRequestedDTO> register(@RequestBody RegisterRequestDTO body) throws Exception{
 
-        //would check whether creation is acceptable here
-        boolean passed = true; //would be handled with service
-        if(!passed)
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
 
-        //successful
-        AccountLoginDTO userDto = new AccountLoginDTO(body.getEmail(), 84L, body.getFirstName(), body.getLastName(),
-                body.getPictUrl());
-
-        //login immediately
-        LoginRequestedDTO loginDTO = new LoginRequestedDTO("3424asd", "bearer", userDto);
+        LoginRequestedDTO loginDTO = accountService.registerAccount(body);
 
         return new ResponseEntity<LoginRequestedDTO>(loginDTO, HttpStatus.CREATED);
 
