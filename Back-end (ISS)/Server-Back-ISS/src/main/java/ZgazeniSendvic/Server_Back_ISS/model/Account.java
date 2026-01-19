@@ -1,20 +1,23 @@
 package ZgazeniSendvic.Server_Back_ISS.model;
 
-import com.fasterxml.jackson.annotation.JsonTypeId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(
+        name = "account",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "email")
+        }
+)
 public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false, unique = true)
     private String email;
     private String password;
     private String name;
@@ -23,14 +26,14 @@ public class Account {
     private String phoneNumber;
     private String imgString;
     private ArrayList<Route> faveRoutes;
-    private ArrayList<String> roles;
+    private ArrayList<Role> roles;
 
     public Account() { super(); }
 
     public Account(Long id, String email, String password, String name, String lastName,
                    String address, String phoneNumber, String imgString) {
         super();
-        this.id = id;
+        //this.id = id;
         this.email = email;
         this.password = password;
         this.name = name;
@@ -112,11 +115,11 @@ public class Account {
         this.faveRoutes = faveRoutes;
     }
 
-    public List<String> getRoles() {
+    public List<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(ArrayList<String> roles) {
+    public void setRoles(ArrayList<Role> roles) {
         this.roles = roles;
     }
 }
