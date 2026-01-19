@@ -54,6 +54,7 @@ public class Account {
         this.address = request.getAddress();
         this.phoneNumber = request.getPhoneNum();
         this.imgString = request.getPictUrl();
+        roles = new ArrayList<>();
         roles.add(Role.User);
     }
 
