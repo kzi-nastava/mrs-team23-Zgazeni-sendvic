@@ -1,5 +1,6 @@
 package ZgazeniSendvic.Server_Back_ISS.model;
 
+import ZgazeniSendvic.Server_Back_ISS.dto.RegisterRequestDTO;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -41,6 +42,19 @@ public class Account {
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.imgString = imgString;
+    }
+
+    public Account(RegisterRequestDTO request){
+        super();
+        //this.id = id;
+        this.email = request.getEmail();
+        this.password = request.getPassword();
+        this.name = request.getFirstName();
+        this.lastName = request.getLastName();
+        this.address = request.getAddress();
+        this.phoneNumber = request.getPhoneNum();
+        this.imgString = request.getPictUrl();
+        roles.add(Role.User);
     }
 
     public Long getId() {
