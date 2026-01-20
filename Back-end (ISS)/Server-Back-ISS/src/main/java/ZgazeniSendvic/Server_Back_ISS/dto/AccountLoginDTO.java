@@ -45,7 +45,7 @@ public class AccountLoginDTO {
         this.lastName = account.getLastName();
         this.pictUrl = account.getImgString();
         roles = new ArrayList<>();
-        roles.addAll(account.getRoles());
+        roles.addAll(account.getRoles()); //might not work, but roles will be done differently through JWT
     }
 
     public String getEmail() {

@@ -31,14 +31,9 @@ class AuthController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LoginRequestedDTO> login(@RequestBody LoginRequestDTO request) throws Exception {
 
-        //would check login logic here
-        boolean passed = true; //would be handled with service
-        if(!passed)
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        LoginRequestedDTO loginDTO = accountService.login(request);
 
-        LoginRequestedDTO requested = new LoginRequestedDTO("2131","bearer",new AccountLoginDTO());
-
-        return new ResponseEntity<LoginRequestedDTO>(requested,HttpStatus.CREATED);
+        return new ResponseEntity<LoginRequestedDTO>(loginDTO, HttpStatus.CREATED);
     }
 
     @PostMapping(path = "forgot-password", consumes = MediaType.APPLICATION_JSON_VALUE,
