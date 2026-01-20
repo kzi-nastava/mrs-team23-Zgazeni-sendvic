@@ -4,7 +4,9 @@ import ZgazeniSendvic.Server_Back_ISS.dto.RegisterRequestDTO;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(
@@ -27,7 +29,8 @@ public class Account {
     private String phoneNumber;
     private String imgString;
     private ArrayList<Route> faveRoutes;
-    private ArrayList<Role> roles;
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<Role> roles;
 
     public Account() { super(); }
 
@@ -54,7 +57,7 @@ public class Account {
         this.address = request.getAddress();
         this.phoneNumber = request.getPhoneNum();
         this.imgString = request.getPictUrl();
-        roles = new ArrayList<>();
+        roles = new HashSet<>();
         roles.add(Role.User);
     }
 
@@ -130,11 +133,11 @@ public class Account {
         this.faveRoutes = faveRoutes;
     }
 
-    public List<Role> getRoles() {
+    public Set<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(ArrayList<Role> roles) {
+    public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 }

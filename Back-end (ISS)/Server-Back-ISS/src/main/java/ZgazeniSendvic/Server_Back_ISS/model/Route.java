@@ -7,6 +7,9 @@ public class Route {
     private Location start;
     private Location destination;
     private ArrayList<Location> midPoints;
+    //should a route have a single owner? multiple? any at all?
+    //perhaps it having a single owner would allow for a manyToOne notation.
+    //would be easer IMO
 
     public Route() { super(); }
 
