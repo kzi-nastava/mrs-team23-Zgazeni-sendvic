@@ -5,15 +5,15 @@ import ZgazeniSendvic.Server_Back_ISS.dto.DriveCancelledDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.beans.Transient;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+@Service
 public class RideServiceImpl implements IRideService {
 
     @Autowired
@@ -73,6 +73,26 @@ public class RideServiceImpl implements IRideService {
 
 
 
+
+    }
+
+    public void DummyRideInit(){
+
+        Ride dummyRide = new Ride(
+                1L,                         // id
+                "New York",                 // origin
+                "Los Angeles",              // destination
+                new Date(),                 // departureTime
+                "30 minutes",               // timeLeft
+                40.7128,                    // latitude
+                -74.0060,                   // longitude
+                false,                      // panic
+                false,                      // canceled
+                99.99,                      // price
+                Arrays.asList("Chicago", "Denver") // locationsPassed
+        );
+
+        insert(dummyRide);
 
     }
 

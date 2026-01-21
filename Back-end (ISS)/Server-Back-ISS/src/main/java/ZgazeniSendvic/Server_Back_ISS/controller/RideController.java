@@ -27,7 +27,7 @@ import java.time.LocalDate;
 class RideController {
 
     @Autowired
-    IRideService rideService;
+    RideServiceImpl rideService;
     
     @PutMapping(path = "ride-cancel/{rideID}",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
