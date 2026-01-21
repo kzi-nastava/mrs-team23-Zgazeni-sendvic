@@ -48,7 +48,6 @@ public class RideServiceImpl implements IRideService {
     }
 
     @Override
-    @Transient
     public DriveCancelledDTO updateCancel(Long rideID, DriveCancelDTO rideDTO) {
         Optional<Ride> found = allRides.findById(rideID);
         if(found.isEmpty()){
@@ -60,6 +59,8 @@ public class RideServiceImpl implements IRideService {
         //this is if it canceled
         Ride ride = found.get();
         ride.setCanceled(true);
+        allRides.save(ride);
+        allRides.flush();
 
         //some basic info to be showcased to everyone who needs to see it, if anyone except the one who ordered the rid
         DriveCancelledDTO cancelled = new DriveCancelledDTO();
@@ -79,7 +80,7 @@ public class RideServiceImpl implements IRideService {
     public void DummyRideInit(){
 
         Ride dummyRide = new Ride(
-                1L,                         // id
+                                      // id
                 "New York",                 // origin
                 "Los Angeles",              // destination
                 new Date(),                 // departureTime

@@ -39,7 +39,9 @@ class RideController {
         // for example if its a driver check the reason, otherwise check if too late, by comparing dates
         //if the check passes, ride is cancelled as showcased below
 
-        DriveCancelledDTO cancelled = rideService.updateCancel(rideID,cancelRequest );
+        //rideService.DummyRideInit();
+        //rideService.DummyRideInit();
+        DriveCancelledDTO cancelled = rideService.updateCancel(rideID,cancelRequest);
 
 
         return new ResponseEntity<DriveCancelledDTO>(cancelled, HttpStatus.OK);

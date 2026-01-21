@@ -48,8 +48,8 @@ public class Ride {
 
     public Ride() {}
 
-    public Ride(Long id, String origin, String destination, Date departureTime, String timeLeft, Double latitude, Double longitude, boolean panic, Boolean canceled, Double price) {
-        this.id = id;
+    public Ride( String origin, String destination, Date departureTime, String timeLeft, Double latitude, Double longitude, boolean panic, Boolean canceled, Double price) {
+        //this.id = id;
         this.origin = origin;
         this.destination = destination;
         this.departureTime = departureTime;
@@ -61,10 +61,10 @@ public class Ride {
         this.price = price;
     }
 
-    public Ride(Long id, String origin, String destination, Date departureTime, String timeLeft,
+    public Ride(String origin, String destination, Date departureTime, String timeLeft,
                 Double latitude, Double longitude, boolean panic, boolean canceled, Double price,
                 List<String> locationsPassed) {
-        this.id = id;
+
         this.origin = origin;
         this.destination = destination;
         this.departureTime = departureTime;
