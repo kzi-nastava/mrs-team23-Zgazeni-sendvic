@@ -1,6 +1,8 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
 
+import ZgazeniSendvic.Server_Back_ISS.dto.DriveCancelDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.DriveCancelledDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
 
 import java.util.Collection;
@@ -10,8 +12,9 @@ public interface IRideService {
 
     public Ride findRide(Long rideId);
     public Ride insert(Ride Ride);
-    public Ride update(Ride Ride);
+    public Ride update(Long rideID, DriveCancelDTO rideDTO);
     public Ride delete(Long rideId);
     public void deleteAll();
+    public DriveCancelledDTO updateCancel(Long rideID, DriveCancelDTO rideDTO);
 }
 

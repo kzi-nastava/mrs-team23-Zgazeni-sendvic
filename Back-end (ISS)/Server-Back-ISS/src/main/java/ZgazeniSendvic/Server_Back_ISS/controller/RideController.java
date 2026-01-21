@@ -4,6 +4,7 @@ package ZgazeniSendvic.Server_Back_ISS.controller;
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 
 import ZgazeniSendvic.Server_Back_ISS.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 // removed import of all dto's, might break
 
@@ -25,6 +26,8 @@ import java.time.LocalDate;
 @RequestMapping("/")
 class RideController {
 
+    @Autowired
+    IRideService rideService;
     
     @PutMapping(path = "ride-cancel/{rideID}",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -36,18 +39,8 @@ class RideController {
         if(!isCancelled)
             return ResponseEntity.status(HttpStatus.CONFLICT).build(); //bad reason/ too late etc.
 
-        DriveCancelledDTO cancelled = new DriveCancelledDTO();
-        cancelled.setReason(cancelRequest.getReason());
-        cancelled.setRideID(rideID);
-        cancelled.setTime(cancelRequest.getTime());
-        cancelled.setRequesterName("pera");
-        cancelled.setRequesterSecondName("peric");
-        cancelled.setStartingDestination("Novi Sad 1");
-        cancelled.setStartingDestination("Novi Sad 2");
-        cancelled.setBeginningDate(LocalDate.of(2025, 1, 1));
+        DriveCancelledDTO cancelled = rideService.updateCancel(rideID,cancelRequest );
 
-
-        cancelled.setCancelled(true);
 
         return new ResponseEntity<DriveCancelledDTO>(cancelled, HttpStatus.OK);
 

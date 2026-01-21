@@ -21,13 +21,13 @@ public class Ride {
     @Getter @Setter
     private boolean panic;
     @Getter @Setter
-    private String canceled;
+    private boolean canceled;
     @Getter @Setter
     private String price;
 
     public Ride() {}
 
-    public Ride(Long id, String origin, String destination, String departureTime, String timeLeft, Double latitude, Double longitude, boolean panic, String canceled, String price) {
+    public Ride(Long id, String origin, String destination, String departureTime, String timeLeft, Double latitude, Double longitude, boolean panic, Boolean canceled, String price) {
         this.id = id;
         this.origin = origin;
         this.destination = destination;

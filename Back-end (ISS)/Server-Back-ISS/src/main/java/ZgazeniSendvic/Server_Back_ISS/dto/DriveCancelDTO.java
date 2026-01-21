@@ -3,19 +3,19 @@ package ZgazeniSendvic.Server_Back_ISS.dto;
 
 public class DriveCancelDTO {
     // has to contain info on who sent it
-    private Long requesterID;
+    private String requesterName;
     private String reason;
     private String time;
 
     public DriveCancelDTO(){}
-    public DriveCancelDTO(Long requesterID, String reason, String time) {
-        this.requesterID = requesterID;
+    public DriveCancelDTO(String requesterID, String reason, String time) {
+        this.requesterName = requesterID;
         this.reason = reason;
         this.time = time;
     }
 
-    public void setRequesterID(Long requesterID) {
-        this.requesterID = requesterID;
+    public void setRequesterID(String requesterID) {
+        this.requesterName = requesterID;
     }
 
     public void setReason(String reason) {
@@ -26,8 +26,8 @@ public class DriveCancelDTO {
         this.time = time;
     }
 
-    public Long getRequesterID() {
-        return requesterID;
+    public String getRequesterID() {
+        return requesterName;
     }
 
     public String getReason() {
