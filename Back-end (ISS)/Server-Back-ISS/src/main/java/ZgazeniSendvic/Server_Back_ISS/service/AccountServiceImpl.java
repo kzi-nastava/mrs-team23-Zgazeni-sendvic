@@ -16,6 +16,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -26,6 +27,9 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
 
     @Autowired
     AccountRepository allAccounts;
+
+    @Autowired
+    PasswordEncoder encoder;
 
     @Override
     public Collection<Account> getAll() {
@@ -41,6 +45,8 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
     @Override
     public Account insert(Account account) {
         try {
+            //password encoding
+            account.setPassword(encoder.encode(account.getPassword()));
             allAccounts.save(account);
             allAccounts.flush();
             return account;
