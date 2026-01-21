@@ -6,6 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,6 +19,11 @@ class AuthController {
 
     @Autowired
     AccountServiceImpl accountService;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+
+
 
 
     @PostMapping(path = "register", consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -30,6 +40,18 @@ class AuthController {
     @PostMapping(path = "login", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LoginRequestedDTO> login(@RequestBody LoginRequestDTO request) throws Exception {
+
+        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(
+                request.getEmail(), request.getPassword());
+
+        //remember, here is called the service
+        Authentication auth = authenticationManager.authenticate(authReq);
+
+        // Security context, contains whos session it is,
+        SecurityContext sc = SecurityContextHolder.getContext();
+        sc.setAuthentication(auth);
+
+        //jwt Stuff here
 
         LoginRequestedDTO loginDTO = accountService.login(request);
 

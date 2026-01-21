@@ -9,16 +9,20 @@ import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
 @Service
-public class AccountServiceImpl implements IAccountService {
+public class AccountServiceImpl implements IAccountService, UserDetailsService {
 
     @Autowired
     AccountRepository allAccounts;
@@ -95,6 +99,22 @@ public class AccountServiceImpl implements IAccountService {
 
     @Override
     public void deleteAll() {
+
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Optional<Account> account = allAccounts.findByEmail(email);
+        if(account.isPresent()){
+            return org.springframework.security.core.userdetails.User
+                    .withUsername(email)
+                    .password(account.get().getPassword())
+                    .roles(account.get().getRoles().toString())
+                    .build();
+
+        }else{
+            throw new UsernameNotFoundException("No account with such email exists: " + email);
+        }
 
     }
 }
