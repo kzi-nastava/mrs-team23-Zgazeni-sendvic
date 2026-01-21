@@ -6,6 +6,18 @@
     android:orientation="vertical"
     android:background="@drawable/bg_gradient">
 
+
+    <Button
+        android:id="@+id/horDriverButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/hor_driver_button_text"
+        app:layout_constraintBottom_toTopOf="@+id/textView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.308" />
+
     <!-- Main content -->
     <FrameLayout
         android:id="@+id/mainFragmentContainer"
