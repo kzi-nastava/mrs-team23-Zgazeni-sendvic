@@ -9,7 +9,6 @@ import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -29,7 +28,7 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
     AccountRepository allAccounts;
 
     @Autowired
-    PasswordEncoder encoder;
+    PasswordEncoder passwordEncoder;
 
     @Override
     public Collection<Account> getAll() {
@@ -46,7 +45,7 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
     public Account insert(Account account) {
         try {
             //password encoding
-            account.setPassword(encoder.encode(account.getPassword()));
+            account.setPassword(passwordEncoder.encode(account.getPassword()));
             allAccounts.save(account);
             allAccounts.flush();
             return account;
@@ -79,14 +78,14 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         //will Have to be reworked probably
 
         Optional<Account> account = allAccounts.findByEmail(requestDTO.getEmail());
-        if(account.isEmpty() || !Objects.equals(requestDTO.getPassword(), account.get().getPassword())){
+        if(account.isEmpty() || !passwordEncoder.matches(requestDTO.getPassword(), account.get().getPassword())){
 
             throw new BadCredentialsException("Invalid email or password");
 
 
         }
 
-        //otherwise equals
+        //otherwise it has been found
         Account found = account.get();
 
         return new LoginRequestedDTO("1", "1", new AccountLoginDTO(found));
