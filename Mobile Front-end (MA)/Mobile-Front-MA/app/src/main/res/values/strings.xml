@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Mobile-Front-MA</string>
+    <string name="hor_driver_button_text">History of Rides</string>
+    <string name="hor_driver_back_button_text">Home</string>
+    <string name="app_name_toolbar">DriveBy</string>
+    <string name="hor_title_text">History of Rides</string>
 </resources>
