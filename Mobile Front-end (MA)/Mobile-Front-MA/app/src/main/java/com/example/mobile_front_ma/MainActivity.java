@@ -2,23 +2,45 @@ package com.example.mobile_front_ma;
 
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 
-public class MainActivity extends AppCompatActivity {
+import com.example.mobile_front_ma.ui.map.MapFragment;
+import com.example.mobile_front_ma.ui.navbar.NavBarFragment;
+
+public class MainActivity extends AppCompatActivity
+        implements NavBarFragment.NavBarListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+
+        if (savedInstanceState == null) {
+            // Load default fragments
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.mainFragmentContainer, new MapFragment())
+                    .replace(R.id.navBarContainer, new NavBarFragment())
+                    .commit();
+        }
+    }
+
+    @Override
+    public void onHomeClicked() {
+        navigateTo(new com.example.mobile_front_ma.ui.map.MapFragment());
+    }
+
+    @Override
+    public void onProfileClicked() {
+        navigateTo(new com.example.mobile_front_ma.ui.profile.ProfileCardFragment());
+    }
+
+    private void navigateTo(Fragment fragment) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.mainFragmentContainer, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 }
