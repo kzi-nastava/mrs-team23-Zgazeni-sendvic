@@ -68,17 +68,9 @@ class RideController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RideStoppedDTO> stopRide(@RequestBody RideStopDTO stopReq, @PathVariable Long rideID)
             throws Exception{
-        RideStoppedDTO stopped = new RideStoppedDTO();
-        stopped.setRideID(rideID);
-        //now a service would determine all passed destinations, remove not passed, and add current location as ending
-        double newPrice = 45;
-        //in reality, it would have access to all so far passed destinations
-        List<String> newDests = new ArrayList<String>();
-        newDests.add(stopReq.getCurrentLocation());
 
-        stopped.setNewPrice(45);
-        stopped.setUpdatedDestinations(newDests);
-        //backend info would also be updated
+        RideStoppedDTO stopped  =  rideService.stopRide(rideID,stopReq);
+
 
         return new ResponseEntity<RideStoppedDTO>(stopped, HttpStatus.OK);
 

@@ -1,17 +1,13 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
-import ZgazeniSendvic.Server_Back_ISS.dto.DriveCancelDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.DriveCancelledDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.RouteEstimationDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.beans.Transient;
 import java.util.*;
 
 @Service
@@ -85,7 +81,7 @@ public class RideServiceImpl implements IRideService {
                 "New York",                 // origin
                 "Los Angeles",              // destination
                 new Date(),                 // departureTime
-                "30 minutes",               // timeLeft
+                new Date(),               // timeLeft
                 40.7128,                    // latitude
                 -74.0060,                   // longitude
                 false,                      // panic
@@ -109,6 +105,32 @@ public class RideServiceImpl implements IRideService {
 
         RouteEstimationDTO route = new RouteEstimationDTO(locations, locations.size()*10);
         return route;
+
+
+    }
+
+
+    public RideStoppedDTO stopRide(Long rideID, RideStopDTO stopReq){
+
+        Optional<Ride> found = allRides.findById(rideID);
+        if (found.isEmpty()) {
+            String value = "Ride was not found";
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, value);
+        }
+
+        ArrayList<String> passedLocations = new ArrayList<String> (List.of(stopReq.getPassedLocations().split(",")));
+
+        Ride ride = found.get();
+        ride.changeLocations(passedLocations);
+        ride.setFinalDestTime(stopReq.getCurrentTime());
+        allRides.save(ride);
+        allRides.flush();
+
+        RideStoppedDTO stopped = new RideStoppedDTO(rideID, ride.getPrice(),  ride.getAllDestinations());
+        return stopped;
+
+
+
 
 
     }

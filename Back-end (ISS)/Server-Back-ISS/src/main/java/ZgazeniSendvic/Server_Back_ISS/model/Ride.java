@@ -22,7 +22,7 @@ public class Ride {
     @Getter @Setter
     private Date departureTime;
     @Getter @Setter
-    private String timeLeft;
+    private Date finalDestTime;
     @Getter @Setter
     private Double latitude;
     @Getter @Setter
@@ -44,46 +44,45 @@ public class Ride {
     @OneToOne(cascade={CascadeType.ALL})
     private Account driver;
     */@Getter @Setter
-    private List<String> LocationsPassed;
+    private List<String> midpoints;
+
+    //Perhaps there shouldn't be destination/origin/midpoints/locationsPassed
+    //rather just locations, and then methods which return/edit only the first/last locations
+    //perhaps shouldnt even be a list, but a string that gets converted to a list compile time
 
     public Ride() {}
 
-    public Ride( String origin, String destination, Date departureTime, String timeLeft, Double latitude, Double longitude, boolean panic, Boolean canceled, Double price) {
+    public Ride( String origin, String destination, Date departureTime, Date finalDestTime,
+                Double latitude, Double longitude, boolean panic, boolean canceled, Double price,
+                List<String> locationsPassed) {
         //this.id = id;
         this.origin = origin;
         this.destination = destination;
         this.departureTime = departureTime;
-        this.timeLeft = timeLeft;
+        this.finalDestTime = finalDestTime;
         this.latitude = latitude;
         this.longitude = longitude;
         this.panic = panic;
         this.canceled = canceled;
         this.price = price;
-    }
-
-    public Ride(String origin, String destination, Date departureTime, String timeLeft,
-                Double latitude, Double longitude, boolean panic, boolean canceled, Double price,
-                List<String> locationsPassed) {
-
-        this.origin = origin;
-        this.destination = destination;
-        this.departureTime = departureTime;
-        this.timeLeft = timeLeft;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.panic = panic;
-        this.canceled = canceled;
-        this.price = price;
-        this.LocationsPassed = locationsPassed;
+        midpoints = locationsPassed;
     }
 
     public void changeLocations(ArrayList<String> newLocations){
-        LocationsPassed = newLocations;
+        midpoints = newLocations;
 
-        if(!LocationsPassed.isEmpty()){
-            destination = LocationsPassed.get(LocationsPassed.size() - 1);
-            calculatePrice();
+        if(!newLocations.isEmpty()){
+            origin = newLocations.get(0);
         }
+        if(newLocations.size() > 1){
+            destination = newLocations.get(newLocations.size()-1);
+        }
+
+        if(newLocations.size() > 2){
+            midpoints  = newLocations.subList(1, newLocations.size() - 1);
+        }
+
+        calculatePrice();
 
     }
 
@@ -92,5 +91,17 @@ public class Ride {
         price = 20.0;
         return price;
     }
+
+    public ArrayList<String> getAllDestinations(){
+
+        ArrayList<String> allDestinations = new ArrayList<>();
+        allDestinations.add(origin);
+        allDestinations.addAll(midpoints);
+        allDestinations.add(destination);
+        return allDestinations;
+
+    }
+
+
 
 }

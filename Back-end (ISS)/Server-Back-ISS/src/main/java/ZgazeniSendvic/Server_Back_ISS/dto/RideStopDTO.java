@@ -5,19 +5,19 @@ import java.util.Date;
 public class RideStopDTO {
 
 
-    private String currentLocation;
+    private String passedLocations;
     private Date currentTime;
 
         RideStopDTO(){}
-    public RideStopDTO(String currentLocation, Date currentTime) {
+    public RideStopDTO(String passedLocations, Date currentTime) {
 
-        this.currentLocation = currentLocation;
+        this.passedLocations = passedLocations;
         this.currentTime = currentTime;
     }
 
 
-    public String getCurrentLocation() {
-        return currentLocation;
+    public String getPassedLocations() {
+        return passedLocations;
     }
 
     public Date getCurrentTime() {
@@ -25,8 +25,8 @@ public class RideStopDTO {
     }
 
 
-    public void setCurrentLocation(String currentLocation) {
-        this.currentLocation = currentLocation;
+    public void setPassedLocations(String currentLocation) {
+        this.passedLocations = currentLocation;
     }
 
     public void setCurrentTime(Date currentTime) {
