@@ -100,7 +100,12 @@ public class RideServiceImpl implements IRideService {
 
     public RouteEstimationDTO routeEstimate(String destinationsStr){
         //would calculate based on route, however still not implemented so return is fixed for now
+        //google maps has API for this
+        //replace any whitespace, + = all instances
+        destinationsStr = destinationsStr.replaceAll("\\s+", "");
+
         List<String> locations = List.of(destinationsStr.split(","));
+
 
         RouteEstimationDTO route = new RouteEstimationDTO(locations, locations.size()*10);
         return route;
