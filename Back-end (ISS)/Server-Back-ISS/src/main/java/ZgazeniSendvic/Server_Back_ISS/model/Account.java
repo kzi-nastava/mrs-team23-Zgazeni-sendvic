@@ -1,10 +1,26 @@
 package ZgazeniSendvic.Server_Back_ISS.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import ZgazeniSendvic.Server_Back_ISS.dto.RegisterRequestDTO;
+import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@Entity
+@Table(
+        name = "account",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "email")
+        }
+)
 public class Account {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false, unique = true)
     private String email;
     private String password;
     private String name;
@@ -13,14 +29,15 @@ public class Account {
     private String phoneNumber;
     private String imgString;
     private ArrayList<Route> faveRoutes;
-    private ArrayList<String> roles;
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<Role> roles;
 
     public Account() { super(); }
 
     public Account(Long id, String email, String password, String name, String lastName,
                    String address, String phoneNumber, String imgString) {
         super();
-        this.id = id;
+        //this.id = id;
         this.email = email;
         this.password = password;
         this.name = name;
@@ -28,6 +45,20 @@ public class Account {
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.imgString = imgString;
+    }
+
+    public Account(RegisterRequestDTO request){
+        super();
+        //this.id = id;
+        this.email = request.getEmail();
+        this.password = request.getPassword();
+        this.name = request.getFirstName();
+        this.lastName = request.getLastName();
+        this.address = request.getAddress();
+        this.phoneNumber = request.getPhoneNum();
+        this.imgString = request.getPictUrl();
+        roles = new HashSet<>();
+        roles.add(Role.User);
     }
 
     public Long getId() {
@@ -102,11 +133,11 @@ public class Account {
         this.faveRoutes = faveRoutes;
     }
 
-    public List<String> getRoles() {
+    public Set<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(ArrayList<String> roles) {
+    public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 }

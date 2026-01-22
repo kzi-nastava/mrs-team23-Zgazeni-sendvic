@@ -4,6 +4,7 @@ package ZgazeniSendvic.Server_Back_ISS.controller;
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 
 import ZgazeniSendvic.Server_Back_ISS.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 // removed import of all dto's, might break
 
@@ -25,29 +26,23 @@ import java.time.LocalDate;
 @RequestMapping("/")
 class RideController {
 
+    @Autowired
+    RideServiceImpl rideService;
     
     @PutMapping(path = "ride-cancel/{rideID}",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DriveCancelledDTO> cancelDrive(@RequestBody DriveCancelDTO cancelRequest,
                                                          @PathVariable Long rideID) throws Exception{
 
-        //process that would decide whether to or not to
-        boolean isCancelled = true;
-        if(!isCancelled)
-            return ResponseEntity.status(HttpStatus.CONFLICT).build(); //bad reason/ too late etc.
+       //here I would pull out the email out of token if token is present
+        // then would commence attaining the id based on that, by which I would decide wether or not to allow cancelling
+        // for example if its a driver check the reason, otherwise check if too late, by comparing dates
+        //if the check passes, ride is cancelled as showcased below
 
-        DriveCancelledDTO cancelled = new DriveCancelledDTO();
-        cancelled.setReason(cancelRequest.getReason());
-        cancelled.setRideID(rideID);
-        cancelled.setTime(cancelRequest.getTime());
-        cancelled.setRequesterName("pera");
-        cancelled.setRequesterSecondName("peric");
-        cancelled.setStartingDestination("Novi Sad 1");
-        cancelled.setStartingDestination("Novi Sad 2");
-        cancelled.setBeginningDate(LocalDate.of(2025, 1, 1));
+        //rideService.DummyRideInit();
+        //rideService.DummyRideInit();
+        DriveCancelledDTO cancelled = rideService.updateCancel(rideID,cancelRequest);
 
-
-        cancelled.setCancelled(true);
 
         return new ResponseEntity<DriveCancelledDTO>(cancelled, HttpStatus.OK);
 
@@ -59,11 +54,10 @@ class RideController {
     public ResponseEntity<RouteEstimationDTO>
     estimateRide(@PathVariable String arrival, @PathVariable String destinationsStr)throws Exception{
 
-        List<String> destinations = new ArrayList<>(Arrays.asList(destinationsStr.split(",")));
-        //would make route, calculate etc..
-        RouteEstimationDTO estimation = new RouteEstimationDTO(destinations, 28);
 
-        
+        RouteEstimationDTO estimation = rideService.routeEstimate(arrival + "," + destinationsStr);
+
+
 
         return new ResponseEntity<RouteEstimationDTO>(estimation, HttpStatus.OK);
 
@@ -74,17 +68,9 @@ class RideController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RideStoppedDTO> stopRide(@RequestBody RideStopDTO stopReq, @PathVariable Long rideID)
             throws Exception{
-        RideStoppedDTO stopped = new RideStoppedDTO();
-        stopped.setRideID(rideID);
-        //now a service would determine all passed destinations, remove not passed, and add current location as ending
-        double newPrice = 45;
-        //in reality, it would have access to all so far passed destinations
-        List<String> newDests = new ArrayList<String>();
-        newDests.add(stopReq.getCurrentLocation());
 
-        stopped.setNewPrice(45);
-        stopped.setUpdatedDestinations(newDests);
-        //backend info would also be updated
+        RideStoppedDTO stopped  =  rideService.stopRide(rideID,stopReq);
+
 
         return new ResponseEntity<RideStoppedDTO>(stopped, HttpStatus.OK);
 
