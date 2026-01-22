@@ -54,11 +54,10 @@ class RideController {
     public ResponseEntity<RouteEstimationDTO>
     estimateRide(@PathVariable String arrival, @PathVariable String destinationsStr)throws Exception{
 
-        List<String> destinations = new ArrayList<>(Arrays.asList(destinationsStr.split(",")));
-        //would make route, calculate etc..
-        RouteEstimationDTO estimation = new RouteEstimationDTO(destinations, 28);
 
-        
+        RouteEstimationDTO estimation = rideService.routeEstimate(arrival + "," + destinationsStr);
+
+
 
         return new ResponseEntity<RouteEstimationDTO>(estimation, HttpStatus.OK);
 

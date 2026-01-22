@@ -2,6 +2,7 @@ package ZgazeniSendvic.Server_Back_ISS.service;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.DriveCancelDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.DriveCancelledDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.RouteEstimationDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +95,16 @@ public class RideServiceImpl implements IRideService {
         );
 
         insert(dummyRide);
+
+    }
+
+    public RouteEstimationDTO routeEstimate(String destinationsStr){
+        //would calculate based on route, however still not implemented so return is fixed for now
+        List<String> locations = List.of(destinationsStr.split(","));
+
+        RouteEstimationDTO route = new RouteEstimationDTO(locations, locations.size()*10);
+        return route;
+
 
     }
 
