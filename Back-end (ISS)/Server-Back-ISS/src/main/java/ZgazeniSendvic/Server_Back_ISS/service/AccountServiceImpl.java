@@ -1,9 +1,6 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
-import ZgazeniSendvic.Server_Back_ISS.dto.AccountLoginDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.LoginRequestDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.LoginRequestedDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.RegisterRequestDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 
@@ -20,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Service
 public class AccountServiceImpl implements IAccountService, UserDetailsService {
@@ -30,6 +28,12 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    private static final Pattern EMAIL_PATTERN =
+            Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+
+    private static final Pattern PHONE_PATTERN =
+            Pattern.compile("^\\+?[0-9]{8,15}$");
+
     @Override
     public Collection<Account> getAll() {
         System.out.println(allAccounts.findAll());
@@ -37,8 +41,8 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
     }
 
     @Override
-    public Account findAccount(Long studentId) {
-        return null;
+    public Account findAccount(Long accountId) {
+        return allAccounts.findById(accountId).orElse(null);
     }
 
     @Override
@@ -94,7 +98,40 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
 
     @Override
     public Account update(Account account) {
-        return null;
+        return allAccounts.save(account);
+    }
+
+    public Account updateAccount(Long id, UpdateAccountDTO dto) {
+
+        Account account = findAccount(id);
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found");
+        }
+
+        if (dto.getEmail() != null) {
+            if (!EMAIL_PATTERN.matcher(dto.getEmail()).matches()) {
+                throw new IllegalArgumentException("Invalid email format");
+            }
+            account.setEmail(dto.getEmail());
+        }
+
+        if (dto.getPhoneNumber() != null) {
+            if (!PHONE_PATTERN.matcher(dto.getPhoneNumber()).matches()) {
+                throw new IllegalArgumentException("Invalid phone number format");
+            }
+            account.setPhoneNumber(dto.getPhoneNumber());
+        }
+
+        if (dto.getPassword() != null) {
+            account.setPassword(dto.getPassword()); // hash later
+        }
+
+        account.setName(dto.getName());
+        account.setLastName(dto.getLastName());
+        account.setAddress(dto.getAddress());
+        account.setImgString(dto.getImgString());
+
+        return allAccounts.save(account);
     }
 
     @Override
