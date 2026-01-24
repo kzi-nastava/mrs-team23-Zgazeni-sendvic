@@ -2,31 +2,43 @@ package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.CreateDriverDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.CreatedDriverDTO;
-import ZgazeniSendvic.Server_Back_ISS.model.Account;
-import ZgazeniSendvic.Server_Back_ISS.model.Route;
+import ZgazeniSendvic.Server_Back_ISS.model.Driver;
+import ZgazeniSendvic.Server_Back_ISS.service.IDriverService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.ArrayList;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/driver")
 public class DriverController {
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedDriverDTO> createDriver(@RequestBody CreateDriverDTO driver) throws Exception {
-        CreatedDriverDTO savedDriver = new CreatedDriverDTO();
+    @Autowired
+    IDriverService driverService;
 
-        savedDriver.setId(1L);
-        savedDriver.setAccount(new Account(1L, driver.getEmail(), driver.getPassword(), driver.getName(),
-                driver.getLastName(), driver.getAddress(), driver.getPhoneNumber(), driver.getImgString()));
-        savedDriver.setVehicle(driver.getVehicle());
+    @PostMapping(
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<?> createDriver(@RequestBody CreateDriverDTO dto) {
 
-        return new ResponseEntity<CreatedDriverDTO>(savedDriver, HttpStatus.CREATED);
+        try {
+            Driver saved = driverService.registerDriver(dto);
+
+            CreatedDriverDTO response = new CreatedDriverDTO();
+            response.setId(saved.getId());
+            response.setAccount(saved);
+            response.setVehicle(saved.getVehicle());
+
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
     }
 }

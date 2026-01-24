@@ -3,9 +3,7 @@ package ZgazeniSendvic.Server_Back_ISS.model;
 import ZgazeniSendvic.Server_Back_ISS.dto.RegisterRequestDTO;
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -15,36 +13,39 @@ import java.util.Set;
                 @UniqueConstraint(columnNames = "email")
         }
 )
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "account_type")
 public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
     private String password;
+
     private String name;
     private String lastName;
     private String address;
     private String phoneNumber;
     private String imgString;
-    private ArrayList<Route> faveRoutes;
+
+    /* ---------- ROLES ---------- */
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<Role> roles;
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(
+            name = "account_roles",
+            joinColumns = @JoinColumn(name = "account_id")
+    )
+    @Column(name = "role")
+    private Set<Role> roles = new HashSet<>();
 
-    public Account() { super(); }
-
-    public Account(Long id, String email, String password, String name, String lastName,
-                   String address, String phoneNumber, String imgString) {
+    public Account() {
         super();
-        //this.id = id;
-        this.email = email;
-        this.password = password;
-        this.name = name;
-        this.lastName = lastName;
-        this.address = address;
-        this.phoneNumber = phoneNumber;
-        this.imgString = imgString;
+        this.roles.add(Role.User);
     }
 
     public Account(RegisterRequestDTO request){
@@ -57,87 +58,34 @@ public class Account {
         this.address = request.getAddress();
         this.phoneNumber = request.getPhoneNum();
         this.imgString = request.getPictUrl();
-        roles = new HashSet<>();
-        roles.add(Role.User);
+        this.roles.add(Role.User);
     }
+    /* ---------- GETTERS / SETTERS ---------- */
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public String getEmail() {
-        return email;
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getPassword() {
-        return password;
-    }
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
-    public String getName() {
-        return name;
-    }
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getImgString() { return imgString; }
+    public void setImgString(String imgString) { this.imgString = imgString; }
 
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getImgString() {
-        return imgString;
-    }
-
-    public void setImgString(String imgString) {
-        this.imgString = imgString;
-    }
-
-    public ArrayList<Route> getFaveRoutes() {
-        return faveRoutes;
-    }
-
-    public void setFaveRoutes(ArrayList<Route> faveRoutes) {
-        this.faveRoutes = faveRoutes;
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
+    public Set<Role> getRoles() { return roles; }
+    public void setRoles(Set<Role> roles) { this.roles = roles; }
 }
+
