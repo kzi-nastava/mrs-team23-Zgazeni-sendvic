@@ -1,7 +1,9 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
+import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
+import ZgazeniSendvic.Server_Back_ISS.util.TokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -11,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.token.TokenService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,6 +24,8 @@ class AuthController {
     AccountServiceImpl accountService;
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    TokenUtils tokenUtils;
 
 
 
@@ -44,14 +49,21 @@ class AuthController {
         UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(
                 request.getEmail(), request.getPassword());
 
-        //remember, here is called the service
+        // The func from the UserDetailsService is called here
         Authentication auth = authenticationManager.authenticate(authReq);
 
-        // Security context, contains whos session it is,
+        // If the login is successful, sc gets set
         SecurityContext sc = SecurityContextHolder.getContext();
         sc.setAuthentication(auth);
 
-        //jwt Stuff here
+        //JWT created for the user
+        // This would eventually work, though Account would I think need to implement UserDetails
+        // Also userDetailsService would maybe need to return Account as well, as it does in certain examples
+        //Account account = (Account) auth.getPrincipal();
+
+        Account account = 
+        String jwt = tokenUtils.generateToken(account);
+
 
         LoginRequestedDTO loginDTO = accountService.login(request);
 
