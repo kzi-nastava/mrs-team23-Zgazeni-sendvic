@@ -28,6 +28,8 @@ class RideController {
 
     @Autowired
     RideServiceImpl rideService;
+    @Autowired
+    OrsRoutingService orsRoutingService;
     
     @PutMapping(path = "ride-cancel/{rideID}",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -51,15 +53,16 @@ class RideController {
 
 
     @GetMapping(path = "ride-estimation/{arrival}/{destinationsStr}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RouteEstimationDTO>
+    public ResponseEntity<OrsRouteResult>
     estimateRide(@PathVariable String arrival, @PathVariable String destinationsStr)throws Exception{
 
 
-        RouteEstimationDTO estimation = rideService.routeEstimate(arrival + "," + destinationsStr);
+        //RouteEstimationDTO estimation = rideService.routeEstimate(arrival + "," + destinationsStr);
+        OrsRouteResult result = orsRoutingService.getFastestRouteAddresses(arrival, destinationsStr);
 
 
-
-        return new ResponseEntity<RouteEstimationDTO>(estimation, HttpStatus.OK);
+        orsRoutingService.addressToCordinates("Novi Sad");
+        return new ResponseEntity<OrsRouteResult>(result, HttpStatus.OK);
 
 
     }
