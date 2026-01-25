@@ -2,7 +2,6 @@ package ZgazeniSendvic.Server_Back_ISS.model;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.RegisterRequestDTO;
 import jakarta.persistence.*;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -60,7 +59,7 @@ public class Account {
         this.phoneNumber = request.getPhoneNum();
         this.imgString = request.getPictUrl();
         roles = new HashSet<>();
-        roles.add(Role.User);
+        roles.add(Role.ACCOUNT);
     }
 
     public Long getId() {
@@ -137,6 +136,14 @@ public class Account {
 
     public Set<Role> getRoles() {
         return roles;
+    }
+
+    public List<String> getRolesList(){
+        List<String> rolesList = new ArrayList<>();
+        for (Role role: roles){
+            rolesList.add(role.toString());
+        }
+        return rolesList;
     }
 
     public void setRoles(Set<Role> roles) {

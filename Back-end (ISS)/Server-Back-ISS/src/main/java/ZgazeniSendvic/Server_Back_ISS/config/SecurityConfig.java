@@ -84,7 +84,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/register").permitAll()
-                        .anyRequest().authenticated() //for testing purposes
+                        .anyRequest().permitAll() //for testing purposes
 
 
                 ).sessionManagement(session -> { // do not use cookies

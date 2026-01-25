@@ -114,7 +114,7 @@ class RideController {
 
         List<AHORAccountDetailsDTO> passengers = Arrays.asList(new AHORAccountDetailsDTO(), new AHORAccountDetailsDTO());
         AHORAccountDetailsDTO driver = new AHORAccountDetailsDTO();
-        List<String> reports = Arrays.asList("Passenger was late","Driver was friendly");
+        List<String> reports = Arrays.asList("Passenger was late","DRIVER was friendly");
         List<Integer> ratings = Arrays.asList(5, 4, 5);
         ARideDetailsRequestedDTO detailed = new ARideDetailsRequestedDTO(targetID,passengers,driver,reports,ratings);
 

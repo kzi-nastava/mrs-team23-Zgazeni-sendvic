@@ -111,6 +111,8 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
 
     }
 
+    //The get roles here are the exact Roles the account possesses.
+    //annotations
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Optional<Account> account = allAccounts.findByEmail(email);
@@ -118,7 +120,7 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
             return org.springframework.security.core.userdetails.User
                     .withUsername(email)
                     .password(account.get().getPassword())
-                    .roles(account.get().getRoles().toString())
+                    .roles(account.get().getRolesList().toArray(new String[0]))
                     .build();
 
         }else{

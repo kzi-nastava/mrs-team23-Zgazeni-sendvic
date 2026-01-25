@@ -49,7 +49,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
                 if(email != null) {
                     // Loading of userDetails, implemented in AccountService, based on email
-                    // LoadUser returns User in practice example, here not. thats why it cracks
+                    // LoadUser returns ACCOUNT in practice example, here not. thats why it cracks
                     // perhaps I should change that, as I had planned to anyway.
                     UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
@@ -64,7 +64,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                                         userDetails,
                                         null,
                                         userDetails.getAuthorities()
-                                );
+
+                                ); //System.out.println(userDetails.getAuthorities());
 
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     }
