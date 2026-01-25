@@ -2,6 +2,7 @@ package ZgazeniSendvic.Server_Back_ISS.model;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.RegisterRequestDTO;
 import jakarta.persistence.*;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,6 +16,7 @@ import java.util.Set;
                 @UniqueConstraint(columnNames = "email")
         }
 )
+// auth.getPrincipal() returns your Account IF UserDetails is implemented. (as is in practice example)
 public class Account {
 
     @Id

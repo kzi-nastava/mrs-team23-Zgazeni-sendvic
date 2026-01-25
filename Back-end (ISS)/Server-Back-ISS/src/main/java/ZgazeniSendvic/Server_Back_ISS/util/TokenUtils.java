@@ -173,7 +173,8 @@ public class TokenUtils {
      * not sure exactly how one part functions, will come back to it
      */
     public Boolean validateToken(String token, UserDetails userDetails) {
-        Account account = (Account) userDetails;
+        //Would work if the userDetails was Accound which it isnt
+        //Account account = (Account) userDetails;
         final String email = getUsernameFromToken(token);
         final Date created = getIssuedAtDateFromToken(token);
 
