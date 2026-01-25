@@ -41,6 +41,10 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         return null;
     }
 
+    public Account findAccountByEmail(String email) {
+        return allAccounts.findByEmail(email).get();
+    }
+
     @Override
     public Account insert(Account account) {
         try {
@@ -70,7 +74,7 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         Account account = new Account(requestDTO);
         insert(account);
 
-        return new LoginRequestedDTO("1", "1", new AccountLoginDTO(account));
+        return new LoginRequestedDTO("1", 1, new AccountLoginDTO(account));
 
     }
 
@@ -88,7 +92,7 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         //otherwise it has been found
         Account found = account.get();
 
-        return new LoginRequestedDTO("1", "1", new AccountLoginDTO(found));
+        return new LoginRequestedDTO("1", 1, new AccountLoginDTO(found));
 
     }
 

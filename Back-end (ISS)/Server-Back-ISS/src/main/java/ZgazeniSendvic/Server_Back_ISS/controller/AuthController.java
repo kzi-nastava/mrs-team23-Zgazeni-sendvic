@@ -61,11 +61,13 @@ class AuthController {
         // Also userDetailsService would maybe need to return Account as well, as it does in certain examples
         //Account account = (Account) auth.getPrincipal();
 
-        Account account = 
+        //as previous checks passed, account must exist
+        Account account = accountService.findAccountByEmail(request.getEmail());
         String jwt = tokenUtils.generateToken(account);
+        int expiresIn = tokenUtils.getExpiredIn();
 
 
-        LoginRequestedDTO loginDTO = accountService.login(request);
+        LoginRequestedDTO loginDTO = new LoginRequestedDTO(jwt, expiresIn, new AccountLoginDTO(account));
 
         return new ResponseEntity<LoginRequestedDTO>(loginDTO, HttpStatus.CREATED);
     }

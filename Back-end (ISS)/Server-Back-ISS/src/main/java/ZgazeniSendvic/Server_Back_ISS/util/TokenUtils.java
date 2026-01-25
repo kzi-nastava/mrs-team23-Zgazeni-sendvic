@@ -20,7 +20,7 @@ public class TokenUtils {
     private String APP_NAME;
 
     // Secret
-    @Value("Sendic")
+    @Value("SendicSendicSendicSendicSendicSendicSendicSendicSendicSendicSendicSendicSendicSendicSendicSendicSendic")
     public String SECRET;
 
     // Validity time - 30 min
