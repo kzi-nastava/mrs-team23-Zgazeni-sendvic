@@ -2,7 +2,10 @@ package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.CreateDriverDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.CreatedDriverDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.RegisterVehicleDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.RegisteredVehicleDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Driver;
+import ZgazeniSendvic.Server_Back_ISS.model.Vehicle;
 import ZgazeniSendvic.Server_Back_ISS.service.IDriverService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +36,31 @@ public class DriverController {
             response.setVehicle(saved.getVehicle());
 
             return new ResponseEntity<>(response, HttpStatus.CREATED);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+
+    @PostMapping(
+            value = "/vehicle",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<?> registerVehicle(
+            @RequestBody RegisterVehicleDTO dto
+    ) {
+        try {
+            Vehicle vehicle = driverService.registerVehicle(dto);
+
+            RegisteredVehicleDTO response = new RegisteredVehicleDTO();
+            response.setId(vehicle.getId());
+            response.setRegistration(vehicle.getRegistration());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

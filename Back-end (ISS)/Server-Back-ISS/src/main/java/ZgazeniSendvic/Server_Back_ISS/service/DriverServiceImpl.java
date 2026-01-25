@@ -1,9 +1,12 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.CreateDriverDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.RegisterVehicleDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Driver;
+import ZgazeniSendvic.Server_Back_ISS.model.Vehicle;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
+import ZgazeniSendvic.Server_Back_ISS.repository.VehicleRepository;
 import ZgazeniSendvic.Server_Back_ISS.service.IDriverService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +21,11 @@ public class DriverServiceImpl implements IDriverService {
     @Autowired
     AccountRepository accountRepository;
 
-    public DriverServiceImpl(AccountRepository accountRepository) {
-        this.accountRepository = accountRepository;
-    }
+    @Autowired
+    VehicleRepository vehicleRepository;
 
-    /* ---------------- REGEX ---------------- */
+    private static final Pattern REGISTRATION_PATTERN =
+            Pattern.compile("^[A-Z0-9-]{5,15}$");
 
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
@@ -30,12 +33,8 @@ public class DriverServiceImpl implements IDriverService {
     private static final Pattern PHONE_PATTERN =
             Pattern.compile("^\\+?[0-9]{8,15}$");
 
-    /* ---------------- DRIVER REGISTRATION ---------------- */
-
     @Override
     public Driver registerDriver(CreateDriverDTO dto) {
-
-        /* --- BASIC VALIDATION --- */
 
         if (dto.getEmail() == null || dto.getPassword() == null ||
                 dto.getName() == null || dto.getLastName() == null ||
@@ -56,8 +55,6 @@ public class DriverServiceImpl implements IDriverService {
             throw new IllegalStateException("Account with this email already exists");
         }
 
-        /* --- CREATE DRIVER ENTITY --- */
-
         Driver driver = new Driver();
         driver.setEmail(dto.getEmail());
         driver.setPassword(dto.getPassword()); // hash later
@@ -69,6 +66,36 @@ public class DriverServiceImpl implements IDriverService {
         driver.setVehicle(dto.getVehicle());
 
         return (Driver) accountRepository.save(driver);
+    }
+
+    @Override
+    public Vehicle registerVehicle(RegisterVehicleDTO dto) {
+
+        if (dto.getRegistration() == null ||
+                !REGISTRATION_PATTERN.matcher(dto.getRegistration()).matches()) {
+            throw new IllegalArgumentException("Invalid vehicle registration");
+        }
+
+        if (vehicleRepository.existsByRegistration(dto.getRegistration())) {
+            throw new IllegalStateException("Vehicle already registered");
+        }
+
+        if (dto.getNumOfSeats() < 1 || dto.getNumOfSeats() > 9) {
+            throw new IllegalArgumentException("Invalid number of seats");
+        }
+
+        Vehicle vehicle = new Vehicle(
+                dto.getModel(),
+                dto.getRegistration(),
+                dto.getType(),
+                dto.getNumOfSeats(),
+                dto.isBabiesAllowed(),
+                dto.isPetsAllowed()
+        );
+
+        Vehicle savedVehicle = vehicleRepository.save(vehicle);
+
+        return savedVehicle;
     }
 
     /* ---------------- IAccountService ---------------- */
