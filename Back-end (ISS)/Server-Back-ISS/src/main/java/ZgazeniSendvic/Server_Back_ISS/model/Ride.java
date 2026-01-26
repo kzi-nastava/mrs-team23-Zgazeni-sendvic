@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -37,14 +38,17 @@ public class Ride {
     /*@Getter @Setter
     @OneToOne(cascade={CascadeType.ALL})
     private Vehicle vehicle;
+     */
     @Getter @Setter
     @OneToMany(cascade={CascadeType.ALL})
     private List<Account> passengers;
     @Getter @Setter
     @OneToOne(cascade={CascadeType.ALL})
     private Account driver;
-    */@Getter @Setter
+    @Getter @Setter
     private List<String> midpoints;
+    @Getter @Setter
+    private String SHAToken;
 
     //Perhaps there shouldn't be destination/origin/midpoints/locationsPassed
     //rather just locations, and then methods which return/edit only the first/last locations
@@ -52,7 +56,7 @@ public class Ride {
 
     public Ride() {}
 
-    public Ride( String origin, String destination, Date departureTime, Date finalDestTime,
+    public Ride(String origin, String destination, Date departureTime, Date finalDestTime,
                 Double latitude, Double longitude, boolean panic, boolean canceled, Double price,
                 List<String> locationsPassed) {
         //this.id = id;
@@ -102,6 +106,18 @@ public class Ride {
 
     }
 
+    public boolean isPassenger(String email){
+        for(Account account : passengers){
+            if(account.getEmail().equals(email)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isDriver(String email){
+        return email.equals(driver.getEmail());
+    }
 
 
 }

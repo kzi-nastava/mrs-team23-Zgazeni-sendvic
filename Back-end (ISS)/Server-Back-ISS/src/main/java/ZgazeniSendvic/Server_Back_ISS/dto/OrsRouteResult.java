@@ -12,4 +12,5 @@ public class OrsRouteResult {
 
     public double getDistanceKm() { return distanceMeters / 1000.0; }
     public double getDurationMinutes() { return durationSeconds / 60.0; }
+    public double getPrice() {return distanceMeters / 1000.0 * 150; }
 }
