@@ -75,9 +75,11 @@ class AuthController {
     @PostMapping(path = "forgot-password", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> sendResetEmail(@RequestBody PasswordResetRequestDTO request) throws Exception {
-        //would check whether exists etc...
+        //So I need to receive the mail, and based on it check wether in database if so send email
+        //if not, do nothing, do not reveal anything, sounds relatively simple tbh
+        accountService.forgotPassword(request.getEmail());
 
-        return new ResponseEntity<String>("Link has been sent if the email is correct", HttpStatus.CREATED);
+        return new ResponseEntity<String>("Link has been sent if an account exists", HttpStatus.CREATED);
     }
 
     @PostMapping(path = "reset-password", consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -85,6 +87,8 @@ class AuthController {
     public ResponseEntity<String> confirmPasswordReset(@RequestBody PasswordResetConfirmedRequestDTO request)
             throws Exception {
         //would change the password etc.;
+
+        accountService.resetPassword(request);
 
         return new ResponseEntity<String>("Password Reset successful", HttpStatus.CREATED);
         //redirection to login would ensue? or auto login?

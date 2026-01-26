@@ -1,10 +1,8 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
-import ZgazeniSendvic.Server_Back_ISS.dto.AccountLoginDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.LoginRequestDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.LoginRequestedDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.RegisterRequestDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
+import ZgazeniSendvic.Server_Back_ISS.model.EmailDetails;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 
 import jakarta.validation.ConstraintViolation;
@@ -29,6 +27,13 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
 
     @Autowired
     PasswordEncoder passwordEncoder;
+
+    @Autowired
+    EmailService emailService;
+
+    @Autowired
+    PasswordResetTokenRepositoryService resetTokenService;
+
 
     @Override
     public Collection<Account> getAll() {
@@ -128,4 +133,46 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         }
 
     }
+
+    public void forgotPassword(String email){
+        Optional<Account> account =  allAccounts.findByEmail(email);
+        if(account.isEmpty()){
+            return; // email doesn't match, do not send an email
+        }
+
+        //generate token
+        String rawToken = resetTokenService.createResetToken(account.get());
+        // Matches; send the email
+        EmailDetails emailDetails = new EmailDetails();
+        emailDetails.setRecipient(email); // sender is automatically set
+        emailDetails.setSubject("Reset your DriveBy password");
+        emailDetails.setMsgBody("http://localhost:8080/api/auth/reset-password?token=" + rawToken);
+        emailService.sendSimpleMail(emailDetails);
+
+    }
+
+    public void resetPassword(PasswordResetConfirmedRequestDTO resetRequestDTO){
+
+        String rawToken = resetRequestDTO.getToken();
+        String newPass = resetRequestDTO.getNewPassword();
+
+        Optional<Account> foundAccount = resetTokenService.validateResetToken(rawToken);
+        if(foundAccount.isEmpty()){
+            throw new BadCredentialsException("Invalid reset token");
+            //This doesnt work because I have a global handler that "misuses" it
+        }
+        //token is proper
+        Account account = foundAccount.get();
+        account.setPassword(passwordEncoder.encode(newPass));
+        allAccounts.save(account);
+        allAccounts.flush();
+
+        resetTokenService.markAsUsed(rawToken);
+
+
+
+
+
+    }
+
 }
