@@ -16,7 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    //Skeleton, should use @Preautorize anyway, so most of this will be removed
+    //Skeleton, should use @Preauthorize anyway, so most of this will be removed
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> {}) // Access from other sites (localhost:4200)
