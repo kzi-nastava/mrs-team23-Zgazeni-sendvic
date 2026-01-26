@@ -4,6 +4,7 @@ import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
 import ZgazeniSendvic.Server_Back_ISS.util.TokenUtils;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,12 +34,14 @@ class AuthController {
 
     @PostMapping(path = "register", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<LoginRequestedDTO> register(@RequestBody RegisterRequestDTO body) throws Exception{
+    public ResponseEntity<String> register(@RequestBody RegisterRequestDTO body) throws Exception{
 
 
-        LoginRequestedDTO loginDTO = accountService.registerAccount(body);
+            LoginRequestedDTO loginDTO = accountService.registerAccount(body);
 
-        return new ResponseEntity<LoginRequestedDTO>(loginDTO, HttpStatus.CREATED);
+
+        return new ResponseEntity<String>("Account created", HttpStatus.CREATED);
+
 
     }
 
@@ -91,6 +94,18 @@ class AuthController {
         accountService.resetPassword(request);
 
         return new ResponseEntity<String>("Password Reset successful", HttpStatus.CREATED);
+        //redirection to login would ensue? or auto login?
+    }
+
+    @PostMapping(path = "confirm-account", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> confirmAccount(@RequestBody AccountConfirmationDTO request)
+            throws Exception {
+        //would change the password etc.;
+
+        accountService.confirmAccount(request);
+
+        return new ResponseEntity<String>("Account confirmation successful", HttpStatus.CREATED);
         //redirection to login would ensue? or auto login?
     }
 

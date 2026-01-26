@@ -2,6 +2,8 @@ package ZgazeniSendvic.Server_Back_ISS.model;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.RegisterRequestDTO;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,6 +34,8 @@ public class Account {
     private ArrayList<Route> faveRoutes;
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> roles;
+    @Getter @Setter
+    private boolean isConfirmed = false;
 
     public Account() { super(); }
 
@@ -46,6 +50,7 @@ public class Account {
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.imgString = imgString;
+        isConfirmed = false;
     }
 
     public Account(RegisterRequestDTO request){
@@ -60,6 +65,7 @@ public class Account {
         this.imgString = request.getPictUrl();
         roles = new HashSet<>();
         roles.add(Role.ACCOUNT);
+        isConfirmed = false;
     }
 
     public Long getId() {
@@ -149,4 +155,5 @@ public class Account {
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
+
 }

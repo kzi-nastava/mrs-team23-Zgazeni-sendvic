@@ -2,6 +2,7 @@ package ZgazeniSendvic.Server_Back_ISS.service;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
+import ZgazeniSendvic.Server_Back_ISS.model.AccountConfirmationToken;
 import ZgazeniSendvic.Server_Back_ISS.model.EmailDetails;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 
@@ -78,8 +79,20 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
 
         Account account = new Account(requestDTO);
         insert(account);
+        sendConfirmationLink(account.getEmail(),account);
 
         return new LoginRequestedDTO("1", 1, new AccountLoginDTO(account));
+
+    }
+
+    public void sendConfirmationLink(String email, Account account){
+        String rawToken = resetTokenService.createConfirmationToken(account);
+
+        EmailDetails emailDetails = new EmailDetails();
+        emailDetails.setRecipient(email); // sender is automatically set
+        emailDetails.setSubject("Confirm ypir DriveBy account");
+        emailDetails.setMsgBody("http://localhost:8080/api/auth/confirm-account?token=" + rawToken);
+        emailService.sendSimpleMail(emailDetails);
 
     }
 
@@ -122,6 +135,9 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Optional<Account> account = allAccounts.findByEmail(email);
         if(account.isPresent()){
+            if(!account.get().isConfirmed()){
+                throw new UsernameNotFoundException("Account not confirmed:");
+            }
             return org.springframework.security.core.userdetails.User
                     .withUsername(email)
                     .password(account.get().getPassword())
@@ -156,6 +172,10 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         String rawToken = resetRequestDTO.getToken();
         String newPass = resetRequestDTO.getNewPassword();
 
+        if(!resetTokenService.isReset(rawToken)){
+            throw new BadCredentialsException("Is not a reset token");
+        }
+
         Optional<Account> foundAccount = resetTokenService.validateResetToken(rawToken);
         if(foundAccount.isEmpty()){
             throw new BadCredentialsException("Invalid reset token");
@@ -170,8 +190,27 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         resetTokenService.markAsUsed(rawToken);
 
 
+    }
 
+    public void confirmAccount(AccountConfirmationDTO confirmationDTO){
 
+        String rawToken = confirmationDTO.getRawToken();
+        if(resetTokenService.isReset(rawToken)){
+            throw new BadCredentialsException("Is not a confirmation token");
+        }
+
+        Optional<Account> foundAccount = resetTokenService.validateResetToken(rawToken);
+        if(foundAccount.isEmpty()){
+            throw new BadCredentialsException("Invalid confirmation token");
+
+        }
+        //token is proper
+        Account account = foundAccount.get();
+        account.setConfirmed(true);
+        allAccounts.save(account);
+        allAccounts.flush();
+
+        resetTokenService.markAsUsed(rawToken);
 
     }
 
