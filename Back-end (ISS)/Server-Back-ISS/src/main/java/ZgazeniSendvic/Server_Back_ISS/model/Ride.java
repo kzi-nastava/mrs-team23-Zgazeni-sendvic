@@ -107,6 +107,9 @@ public class Ride {
     }
 
     public boolean isPassenger(String email){
+        if(passengers == null){
+            return false;
+        }
         for(Account account : passengers){
             if(account.getEmail().equals(email)){
                 return true;
@@ -116,6 +119,9 @@ public class Ride {
     }
 
     public boolean isDriver(String email){
+        if(driver == null){
+            return false;
+        }
         return email.equals(driver.getEmail());
     }
 
