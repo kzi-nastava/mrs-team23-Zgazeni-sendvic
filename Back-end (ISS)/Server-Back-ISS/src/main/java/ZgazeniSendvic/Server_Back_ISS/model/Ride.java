@@ -32,6 +32,8 @@ public class Ride {
     @Getter @Setter
     private boolean canceled;
     @Getter @Setter
+    private boolean started;
+    @Getter @Setter
     private Double price;
     //Commented so that implemting their repo's wont be needed for testing purposes
     /*@Getter @Setter
@@ -53,7 +55,7 @@ public class Ride {
     public Ride() {}
 
     public Ride( String origin, String destination, Date departureTime, Date finalDestTime,
-                Double latitude, Double longitude, boolean panic, boolean canceled, Double price,
+                Double latitude, Double longitude, boolean panic, boolean canceled, boolean started, Double price,
                 List<String> locationsPassed) {
         //this.id = id;
         this.origin = origin;
@@ -64,6 +66,7 @@ public class Ride {
         this.longitude = longitude;
         this.panic = panic;
         this.canceled = canceled;
+        this.started = started;
         this.price = price;
         midpoints = locationsPassed;
     }
@@ -101,7 +104,4 @@ public class Ride {
         return allDestinations;
 
     }
-
-
-
 }
