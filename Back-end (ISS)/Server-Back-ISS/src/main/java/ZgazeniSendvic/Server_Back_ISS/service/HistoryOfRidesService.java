@@ -2,34 +2,36 @@ package ZgazeniSendvic.Server_Back_ISS.service;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.HistoryOfRidesDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.PastRideDTO;
+import ZgazeniSendvic.Server_Back_ISS.model.Ride;
+import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
 public class HistoryOfRidesService {
 
+    @Autowired
+    private RideRepository rideRepository;
+
+    private final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
     public HistoryOfRidesDTO getHistoryOfRides(Long userId) {
-        System.out.println("Getting history of rides for user: " + userId);
-
-        PastRideDTO pastRideDTO1 = new PastRideDTO();
-        pastRideDTO1.setId(1L);
-        pastRideDTO1.setOrigin("Origin A");
-        pastRideDTO1.setDestination("Destination B");
-        pastRideDTO1.setDepartureTime("10:00:00");
-        pastRideDTO1.setArrivalTime("11:00:00");
-        pastRideDTO1.setPanic(false);
-        pastRideDTO1.setCanceled("user124");
-        pastRideDTO1.setPrice("15.00");
-
-        PastRideDTO pastRideDTO2 = new PastRideDTO();
-        pastRideDTO2.setId(2L);
-        pastRideDTO2.setOrigin("Origin C");
-        pastRideDTO2.setDestination("Destination D");
-        pastRideDTO2.setDepartureTime("12:00:00");
-        pastRideDTO2.setArrivalTime("13:00:00");
-        pastRideDTO2.setPanic(true);
-        pastRideDTO2.setCanceled("none");
-        pastRideDTO2.setPrice("00.00");
-
-        HistoryOfRidesDTO historyOfRidesDTO = new HistoryOfRidesDTO();
-        historyOfRidesDTO.setRides(java.util.Arrays.asList(pastRideDTO1, pastRideDTO2));
-        return historyOfRidesDTO;
+        List<Ride> all = rideRepository.findAll();
+        List<PastRideDTO> past = new ArrayList<>();
+        for (Ride r : all) {
+            if (r.isEnded() && r.getDriverId() != null && r.getDriverId().equals(userId)) {
+                String dep = r.getDepartureTime() == null ? null : fmt.format(r.getDepartureTime());
+                String arr = r.getFinalDestTime() == null ? null : fmt.format(r.getFinalDestTime());
+                String price =  r.getPrice() == null ? null : String.valueOf(r.getPrice());
+                PastRideDTO p = new PastRideDTO(r.getId(), r.getOrigin(), r.getDestination(), dep, arr,
+                        r.isPanic(), String.valueOf(r.isCanceled()), price);
+                past.add(p);
+            }
+        }
+        return new HistoryOfRidesDTO(past);
     }
 }

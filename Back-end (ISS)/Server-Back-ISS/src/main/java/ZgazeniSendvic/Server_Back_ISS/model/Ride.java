@@ -33,6 +33,12 @@ public class Ride {
     private boolean canceled;
     @Getter @Setter
     private Double price;
+    @Getter @Setter
+    private boolean paid;
+    @Getter @Setter
+    private boolean ended;
+    @Getter @Setter
+    private Long driverId;
     //Commented so that implemting their repo's wont be needed for testing purposes
     /*@Getter @Setter
     @OneToOne(cascade={CascadeType.ALL})
@@ -66,6 +72,9 @@ public class Ride {
         this.canceled = canceled;
         this.price = price;
         midpoints = locationsPassed;
+        this.paid = false;
+        this.ended = false;
+        this.driverId = null;
     }
 
     public void changeLocations(ArrayList<String> newLocations){

@@ -2,6 +2,7 @@ package ZgazeniSendvic.Server_Back_ISS.service;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
+import ZgazeniSendvic.Server_Back_ISS.model.Driver;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -69,9 +70,6 @@ public class RideServiceImpl implements IRideService {
 
         return cancelled;
 
-
-
-
     }
 
     public void DummyRideInit(){
@@ -129,10 +127,25 @@ public class RideServiceImpl implements IRideService {
         RideStoppedDTO stopped = new RideStoppedDTO(rideID, ride.getPrice(),  ride.getAllDestinations());
         return stopped;
 
+    }
 
+    public void endRide(RideEndDTO rideEndDTO) {
+        if (rideEndDTO == null || rideEndDTO.getRideId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "rideId must be provided");
+        }
+        Optional<Ride> found = allRides.findById(rideEndDTO.getRideId());
+        if (found.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
+        }
+        Ride ride = found.get();
+        if (rideEndDTO.getPrice() != null) {
+            ride.setPrice(rideEndDTO.getPrice());
+        }
+        ride.setPaid(rideEndDTO.isPaid());
+        ride.setEnded(rideEndDTO.isEnded());
 
-
-
+        allRides.save(ride);
+        allRides.flush();
     }
 
     @Override
