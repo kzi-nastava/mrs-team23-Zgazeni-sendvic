@@ -58,6 +58,7 @@ class RideController {
                                                          @PathVariable Long rideID) throws Exception{
 
         //Email would be pulled out of auth
+        //rideService.DummyRideInit();
         rideService.PanicRide(rideID, request.getEmail());
 
 
