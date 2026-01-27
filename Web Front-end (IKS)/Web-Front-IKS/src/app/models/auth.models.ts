@@ -1,32 +1,35 @@
 // DTOs for authentication
 
+//What is left: potentially rework login response, though it should match
+//Aside from that, change fields of forms to match these interfaces' field names
+
 export interface LoginRequest {
   email: string;
   password: string;
-  remember?: boolean;
+  
 }
 
 export interface LoginResponse {
   token: string;
+  expiresIn: number;
   user: User;
-  // Add other fields as needed
 }
+
 
 export interface RegisterRequest {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
-  adress: string;
-  username: string;
+  phoneNum: string;
+  address: string;
   password: string;
+  pictUrl: string; //for now later will add file upload
   // photo?: File; // If sending as multipart
 }
 
 export interface RegisterResponse {
-  message: string;
-  user: User;
-  // Add other fields
+  message: string; //redirects to login, so only message for now
+ 
 }
 
 export interface ForgotPasswordRequest {
@@ -35,12 +38,13 @@ export interface ForgotPasswordRequest {
 
 export interface ForgotPasswordResponse {
   message: string;
-  // Maybe a reset token or instructions
+  // Response essentially, no data needed as reset link is sent via email
 }
 
 export interface ResetPasswordRequest {
-  token: string; // Assuming token from URL or email
-  password: string;
+    //User clicked on link with token, so token is sent and the newly typed in password
+  token: string; //  token from URL or email
+  newPassword: string;
 }
 
 export interface ResetPasswordResponse {
@@ -48,10 +52,10 @@ export interface ResetPasswordResponse {
 }
 
 export interface User {
-  id: number;
+  userID: number;
+  email: string;
   firstName: string;
   lastName: string;
-  email: string;
-  username: string;
-  // Add other user fields
+  pictUrl: string;
+  roles: string[];
 }
