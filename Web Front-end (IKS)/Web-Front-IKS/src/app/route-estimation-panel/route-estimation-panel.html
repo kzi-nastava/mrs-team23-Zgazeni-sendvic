@@ -3,7 +3,7 @@
   <h2 class = "panel-title">Route Estimation</h2>
 
   <div class="time-display mat-body-1">
-    Estimated Time: {{ displayTime }} min
+    Estimated Time: {{ estimatedTime() ? estimatedTime() + ' min' : '--:-- min' }}
   </div>
 
   <mat-form-field appearance="fill" class ="location-input">
@@ -17,7 +17,7 @@
   </mat-form-field>
 
   <button mat-raised-button color="primary" class="estimate-button" (click)="estimateRoute()">
-    {{ isRunning() ? 'Stop' : 'Estimate Route' }}
+    Estimate Route
   </button>
 </mat-card>
     

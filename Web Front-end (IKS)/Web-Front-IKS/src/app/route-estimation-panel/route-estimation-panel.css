@@ -57,5 +57,6 @@ mat-form-field {
 }
 
 .location-input {
+    border-radius:15px !important
   
 }
