@@ -157,11 +157,10 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         return new CustomUserDetails(acc);
     }
 
-    /*
-    @Query("""
-        SELECT d FROM Driver d
-        WHERE d.active = true
-    """)
-    List<Driver> findActiveDrivers();
-    */
+    public void findAccountById(Long userId) {
+        Optional<Account> account = allAccounts.findById(userId);
+        if(account.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with given ID was not found");
+        }
+    }
 }

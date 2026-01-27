@@ -153,9 +153,6 @@ public class RideServiceImpl implements IRideService {
 
         return cancelled;
 
-
-
-
     }
 
     public void DummyRideInit(){
@@ -227,6 +224,25 @@ public class RideServiceImpl implements IRideService {
         RideStoppedDTO stopped = new RideStoppedDTO(rideID, ride.getPrice(),  ride.getLocations());
         return stopped;
 
+    }
+
+    public void endRide(RideEndDTO rideEndDTO) {
+        if (rideEndDTO == null || rideEndDTO.getRideId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "rideId must be provided");
+        }
+        Optional<Ride> found = allRides.findById(rideEndDTO.getRideId());
+        if (found.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
+        }
+        Ride ride = found.get();
+        if (rideEndDTO.getPrice() != null) {
+            ride.setPrice(rideEndDTO.getPrice());
+        }
+        ride.setPaid(rideEndDTO.isPaid());
+        ride.setEnded(rideEndDTO.isEnded());
+
+        allRides.save(ride);
+        allRides.flush();
     }
 
     @Override

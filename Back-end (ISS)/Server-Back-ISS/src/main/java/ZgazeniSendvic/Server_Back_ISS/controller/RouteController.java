@@ -1,14 +1,16 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.GetRouteDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.SaveRouteDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Location;
+import ZgazeniSendvic.Server_Back_ISS.model.Route;
+import ZgazeniSendvic.Server_Back_ISS.service.IAccountService;
+import ZgazeniSendvic.Server_Back_ISS.service.IRouteService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,23 +21,49 @@ import java.util.List;
 @RequestMapping("/api/route")
 public class RouteController {
 
-    @GetMapping(path = "/favorites/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetRouteDTO>> getFavoriteRoutes(@PathVariable("id") Long id) {
-        Collection<GetRouteDTO> routes = new ArrayList<>();
-        GetRouteDTO route1 = new GetRouteDTO();
-        GetRouteDTO route2 = new GetRouteDTO();
+    @Autowired
+    IRouteService routeService;
+    @Autowired
+    IAccountService accountService;
 
-        route1.setId(1L);
-        route1.setStart(new Location(50.0, 50.0));
-        route1.setDestination(new Location(50.0, 50.0));
+    @PostMapping(
+            value = "/favorite/save/{id}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<GetRouteDTO> saveFavoriteRoute(@PathVariable("id") Long id,
+                                                         @RequestBody SaveRouteDTO dto) {
 
-        route2.setId(1L);
-        route2.setStart(new Location(50.0, 50.0));
-        route2.setDestination(new Location(50.0, 50.0));
+        Route saved = routeService.saveRoute(dto);
+        saved.setOwner(accountService.findAccount(id));
 
-        routes.add(route1);
-        routes.add(route2);
+        GetRouteDTO response = mapToDTO(saved);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
 
-        return new ResponseEntity<Collection<GetRouteDTO>>(routes, HttpStatus.OK);
+    @GetMapping(
+            value = "/favorites/{id}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Collection<GetRouteDTO>> getFavoriteRoutes(
+            @PathVariable("id") Long id) {
+
+        List<Route> routes = routeService.getFavoriteRoutes(id);
+
+        List<GetRouteDTO> result = routes.stream()
+                .map(this::mapToDTO)
+                .toList();
+
+        return ResponseEntity.ok(result);
+    }
+
+    private GetRouteDTO mapToDTO(Route route) {
+        GetRouteDTO dto = new GetRouteDTO();
+        dto.setId(route.getId());
+        dto.setStart(route.getStart());
+        dto.setDestination(route.getDestination());
+        dto.setMidPoints(route.getMidPoints());
+        dto.setAccount(route.getOwner());
+        return dto;
     }
 }
