@@ -1,37 +1,28 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.CreateRideRequestDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.CreatedRideRequestDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.UpdateRideRequestDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.UpdatedRideRequestDTO;
+import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
+import ZgazeniSendvic.Server_Back_ISS.service.IRideRequestService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/riderequest")
 public class RideRequestController {
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedRideRequestDTO> orderRide(CreateRideRequestDTO rrequest) {
-        CreatedRideRequestDTO createdRRequest = new CreatedRideRequestDTO();
+    @Autowired
+    IRideRequestService rideRequestService;
 
-        createdRRequest.setId(1L);
+    @PostMapping("/create")
+    public ResponseEntity<Void> requestRide(
+            @RequestBody CreateRideRequestDTO dto,
+            @AuthenticationPrincipal CustomUserDetails user) {
 
-        return new ResponseEntity<CreatedRideRequestDTO>(createdRRequest, HttpStatus.CREATED);
-    }
-  
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedRideRequestDTO> activateRide(@RequestBody UpdateRideRequestDTO ride,
-                                                              @PathVariable Long id) throws Exception {
-        UpdatedRideRequestDTO activatedRide = new UpdatedRideRequestDTO();
-
-        activatedRide.setId(1L);
-        activatedRide.setStart(ride.getStart());
-        activatedRide.setDestination(ride.getDestination());
-
-        return new ResponseEntity<UpdatedRideRequestDTO>(activatedRide, HttpStatus.OK);
+        rideRequestService.create(dto, user.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

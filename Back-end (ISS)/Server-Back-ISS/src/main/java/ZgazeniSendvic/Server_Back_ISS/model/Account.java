@@ -3,9 +3,6 @@ package ZgazeniSendvic.Server_Back_ISS.model;
 import ZgazeniSendvic.Server_Back_ISS.dto.RegisterRequestDTO;
 import jakarta.persistence.*;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Entity
 @Table(
         name = "account",
@@ -33,19 +30,8 @@ public class Account {
     private String phoneNumber;
     private String imgString;
 
-    /* ---------- ROLES ---------- */
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Enumerated(EnumType.STRING)
-    @CollectionTable(
-            name = "account_roles",
-            joinColumns = @JoinColumn(name = "account_id")
-    )
-    @Column(name = "role")
-    private Set<Role> roles = new HashSet<>();
-
     public Account() {
         super();
-        this.roles.add(Role.User);
     }
 
     public Account(RegisterRequestDTO request){
@@ -58,7 +44,6 @@ public class Account {
         this.address = request.getAddress();
         this.phoneNumber = request.getPhoneNum();
         this.imgString = request.getPictUrl();
-        this.roles.add(Role.User);
     }
     /* ---------- GETTERS / SETTERS ---------- */
 
@@ -85,7 +70,8 @@ public class Account {
     public String getImgString() { return imgString; }
     public void setImgString(String imgString) { this.imgString = imgString; }
 
-    public Set<Role> getRoles() { return roles; }
-    public void setRoles(Set<Role> roles) { this.roles = roles; }
+    public String getRole() {
+        return this.getClass().getSimpleName().toUpperCase();
+    }
 }
 
