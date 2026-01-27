@@ -5,6 +5,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
+import { ForgotPasswordRequest } from '../../models/auth.models';
 
 @Component({
   selector: 'app-forgot-password-form',
@@ -22,7 +24,7 @@ import { CommonModule } from '@angular/common';
 export class ForgotPasswordForm {
   form!: FormGroup;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private authService: AuthService) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
     });
@@ -33,7 +35,17 @@ export class ForgotPasswordForm {
       this.form.markAllAsTouched();
       return;
     }
-    console.log('Forgot password submitted:', this.form.value);
+    const request: ForgotPasswordRequest = this.form.value;
+    this.authService.forgotPassword(request).subscribe({
+      next: (response) => {
+        console.log('Forgot password request successful', response);
+        // Handle success
+      },
+      error: (error) => {
+        console.error('Forgot password failed', error);
+        // Handle error
+      }
+    });
   }
 
   getErrorMessage(label: string, controlName: string): string {

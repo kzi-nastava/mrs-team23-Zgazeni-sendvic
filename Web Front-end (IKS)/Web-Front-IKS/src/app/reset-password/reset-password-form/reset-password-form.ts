@@ -6,6 +6,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
+import { ResetPasswordRequest } from '../../models/auth.models';
 
 @Component({
   selector: 'app-reset-password-form',
@@ -26,8 +28,9 @@ export class ResetPasswordForm {
   hidePassword = true;
   hideConfirmPassword = true;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private authService: AuthService) {
     this.form = this.fb.group({
+      token: ['', Validators.required], // Assuming token is provided, e.g., from URL
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', Validators.required],
     }, { validators: this.passwordMatchValidator });
@@ -62,7 +65,18 @@ export class ResetPasswordForm {
       this.form.markAllAsTouched();
       return;
     }
-    console.log('Reset password submitted:', { password: this.form.value.password });
+    const { confirmPassword, ...requestData } = this.form.value;
+    const request: ResetPasswordRequest = requestData;
+    this.authService.resetPassword(request).subscribe({
+      next: (response) => {
+        console.log('Reset password successful', response);
+        // Handle success
+      },
+      error: (error) => {
+        console.error('Reset password failed', error);
+        // Handle error
+      }
+    });
   }
 
   getErrorMessage(label: string, controlName: string): string {

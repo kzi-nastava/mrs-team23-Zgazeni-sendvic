@@ -6,6 +6,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../services/auth.service';
+import { LoginRequest } from '../../models/auth.models';
 
 @Component({
   selector: 'app-login-form',
@@ -16,7 +19,8 @@ import { RouterModule } from '@angular/router';
     MatButtonModule,
     MatIconModule,
     CommonModule,
-    RouterModule
+    RouterModule,
+    
   ],
   templateUrl: './login-form.html',
   styleUrl: './login-form.css',
@@ -25,7 +29,7 @@ export class LoginForm {
   form!: FormGroup;
   hidePassword = true;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private authService: AuthService) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
@@ -42,8 +46,17 @@ export class LoginForm {
       this.form.markAllAsTouched();
       return;
     }
-    // Replace with real auth call
-    console.log('Login submitted', this.form.value);
+    const request: LoginRequest = this.form.value;
+    this.authService.login(request).subscribe({
+      next: (response) => {
+        console.log('Login successful', response);
+        // Handle success: store token, navigate, etc.
+      },
+      error: (error) => {
+        console.error('Login failed', error);
+        // Handle error: show message, etc.
+      }
+    });
   }
 
   getErrorMessage(label: string, controlName: string): string {
