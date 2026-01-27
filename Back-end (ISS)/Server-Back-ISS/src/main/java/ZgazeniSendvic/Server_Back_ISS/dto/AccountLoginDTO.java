@@ -1,7 +1,6 @@
 package ZgazeniSendvic.Server_Back_ISS.dto;
 
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
-import ZgazeniSendvic.Server_Back_ISS.model.Role;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,18 +12,9 @@ public class AccountLoginDTO {
     private String firstName;
     private String lastName;
     private String pictUrl;
-    private List<Role> roles;
 
     // For writing ratings and such, the backend could always, based on ID, find the information required.
     // Since that's the case, the client needn't at all times know stuff such ass address/phoneNum
-
-    public List<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<Role> roles) {
-        this.roles = roles;
-    }
 
     public AccountLoginDTO() {
     }
@@ -44,9 +34,6 @@ public class AccountLoginDTO {
         this.firstName = account.getName();
         this.lastName = account.getLastName();
         this.pictUrl = account.getImgString();
-        roles = new ArrayList<>();
-        roles.addAll(account.getRoles()); //might not work, but roles will be done differently through JWT
-        System.out.println(account.getRoles());
     }
 
     public String getEmail() {

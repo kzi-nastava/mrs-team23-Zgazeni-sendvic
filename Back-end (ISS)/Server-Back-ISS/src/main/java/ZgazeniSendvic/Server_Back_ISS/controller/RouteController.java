@@ -26,12 +26,12 @@ public class RouteController {
         GetRouteDTO route2 = new GetRouteDTO();
 
         route1.setId(1L);
-        route1.setStart(new Location(1L, 50.0, 50.0));
-        route1.setDestination(new Location(1L, 50.0, 50.0));
+        route1.setStart(new Location(50.0, 50.0));
+        route1.setDestination(new Location(50.0, 50.0));
 
         route2.setId(1L);
-        route2.setStart(new Location(1L, 50.0, 50.0));
-        route2.setDestination(new Location(1L, 50.0, 50.0));
+        route2.setStart(new Location(50.0, 50.0));
+        route2.setDestination(new Location(50.0, 50.0));
 
         routes.add(route1);
         routes.add(route2);
