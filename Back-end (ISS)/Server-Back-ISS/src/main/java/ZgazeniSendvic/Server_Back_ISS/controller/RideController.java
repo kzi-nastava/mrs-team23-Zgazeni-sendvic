@@ -171,6 +171,17 @@ class RideController {
             return ResponseEntity.status(ex.getStatusCode()).build();
         }
     }
+  
+  @PutMapping(
+            value = "ride-start",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Void> rideStart(@RequestBody RideStartDTO rsDTO) {
+
+        rideService.startRide(rsDTO.getRideId());
+        return ResponseEntity.ok().build();
+    }
 
     @PutMapping(value="ride-end", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> rideEnd(@RequestBody RideEndDTO rideEndDTO) {

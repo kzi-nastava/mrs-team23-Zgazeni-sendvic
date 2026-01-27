@@ -84,6 +84,7 @@ public class RideServiceImpl implements IRideService {
                 -74.0060,                   // longitude
                 false,                      // panic
                 false,                      // canceled
+                false,                      // started
                 99.99,                      // price
                 Arrays.asList("Chicago", "Denver") // locationsPassed
         );
@@ -107,6 +108,22 @@ public class RideServiceImpl implements IRideService {
 
     }
 
+    public void startRide(Long rideId) {
+        Ride ride = allRides.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
+
+        if (ride.isCanceled()) {
+            throw new RuntimeException("Cannot start a canceled ride");
+        }
+
+        if (ride.isStarted()) {
+            throw new RuntimeException("Ride already started");
+        }
+
+        ride.setStarted(true);
+        ride.setDepartureTime(new Date()); // optional but realistic
+        allRides.save(ride);
+    }
 
     public RideStoppedDTO stopRide(Long rideID, RideStopDTO stopReq){
 
