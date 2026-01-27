@@ -9,6 +9,8 @@ import { Registration } from './registration/registration';
 import { Login } from './login/login';
 import { ForgotPassword } from './forgot-password/forgot-password';
 import { ResetPassword } from './reset-password/reset-password';
+import { RouteEstimationPanel } from './route-estimation-panel/route-estimation-panel';
+
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -20,5 +22,6 @@ export const routes: Routes = [
   { path: 'login', component: Login },
   { path: 'forgot-password', component: ForgotPassword },
   { path: 'reset-password', component: ResetPassword },
+  { path: 'route-estimation', component: RouteEstimationPanel },
   { path: '**', redirectTo: '' },
 ];

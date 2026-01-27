@@ -1,0 +1,61 @@
+.route-estimation-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 500px;
+    height: 100%;
+    background-color: #96CE9B;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 1000;
+    opacity: 1;
+
+    /* to not overlap the nav bar */
+    margin-top: 82px;
+    align-items: center;
+    
+}
+
+
+
+.panel-title {
+  margin: 0;
+  font-size: 30px;
+  
+  margin-bottom: 20px;
+}
+
+/* Time display */
+.time-display {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2e2e2e;
+  padding: 8px 0;
+}
+
+/* Make inputs full width */
+mat-form-field {
+  width: 100%;
+}
+
+/* Button styling */
+.estimate-button {
+   /* pushes button to bottom */
+  height: 44px;
+  font-size: 18px;
+  width: 80%;
+  
+  
+    
+  border-radius: 30px !important;
+  background-color: #43FFCA !important;
+  opacity: 1 !important;
+  color: black !important;
+
+
+}
+
+.location-input {
+  
+}

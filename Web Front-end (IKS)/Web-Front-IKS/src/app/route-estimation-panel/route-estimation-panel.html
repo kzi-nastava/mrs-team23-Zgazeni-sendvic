@@ -1,0 +1,24 @@
+
+    <mat-card class="route-estimation-panel">
+  <h2 class = "panel-title">Route Estimation</h2>
+
+  <div class="time-display mat-body-1">
+    Estimated Time: {{ displayTime }} min
+  </div>
+
+  <mat-form-field appearance="fill" class ="location-input">
+    <mat-label>Starting Location</mat-label>
+    <input matInput />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill" color = "primary" class ="location-input">
+    <mat-label>Ending Location</mat-label>
+    <input matInput />
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" class="estimate-button" (click)="estimateRoute()">
+    {{ isRunning() ? 'Stop' : 'Estimate Route' }}
+  </button>
+</mat-card>
+    
+
