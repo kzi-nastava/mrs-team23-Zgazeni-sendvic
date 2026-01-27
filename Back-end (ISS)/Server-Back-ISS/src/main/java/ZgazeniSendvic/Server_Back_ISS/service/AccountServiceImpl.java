@@ -159,4 +159,11 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         }
 
     }
+
+    public void findAccountById(Long userId) {
+        Optional<Account> account = allAccounts.findById(userId);
+        if(account.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with given ID was not found");
+        }
+    }
 }
