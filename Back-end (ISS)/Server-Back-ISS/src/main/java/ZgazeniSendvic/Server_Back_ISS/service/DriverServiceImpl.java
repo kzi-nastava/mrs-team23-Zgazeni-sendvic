@@ -4,15 +4,16 @@ import ZgazeniSendvic.Server_Back_ISS.dto.CreateDriverDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.RegisterVehicleDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Driver;
+import ZgazeniSendvic.Server_Back_ISS.model.Role;
 import ZgazeniSendvic.Server_Back_ISS.model.Vehicle;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.VehicleRepository;
-import ZgazeniSendvic.Server_Back_ISS.service.IDriverService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
@@ -97,6 +98,61 @@ public class DriverServiceImpl implements IDriverService {
 
         return savedVehicle;
     }
+
+    /* ---------------- Status state ---------------- */
+    public void ActivateIfDriver(String email){
+
+        try{
+
+        Optional<Account> found = accountRepository.findByEmail(email);
+        if (found.isPresent()) {
+            if(found.get().hasRole(Role.Driver)){
+                Driver driver = (Driver) found.get();
+                driver.setAvailable(true);
+        }
+            }
+                } catch(Exception e){
+                    System.out.println(e.getMessage());
+                    System.out.println("Faliure shouldn't ever occur here, failure source : ActivateIfDriver");
+        }
+    }
+
+
+    public void changeAvailableStatus(String email, boolean value){
+
+
+            Optional<Account> found = accountRepository.findByEmail(email);
+            if (found.isPresent()) {
+                if(found.get().hasRole(Role.Driver)){
+                    Driver driver = (Driver) found.get();
+                    //if changing to Active, always allow
+                    if(value){
+                        driver.setAvailable(true);
+                        return;
+                    } else{
+                        //to Unavailable and driving
+                        if(driver.getDriving()){
+                            driver.setAwaitingDeactivation(true);
+                            throw new IllegalStateException("Driver is currently driving. Marked as awaiting deactivation");
+                        }
+                        //to Unavailable and not driving
+                        driver.setAvailable(false);
+                        return;
+                    }
+                }
+                throw new IllegalStateException("Account with email " + email + " is not a driver");
+            } // not found
+
+        throw new IllegalArgumentException("Account with email " + email + " not found");
+
+    }
+
+    public boolean isAvailableDriver(String email){
+        Optional<Account> found = accountRepository.findByEmail(email);
+        //only returns true if isPresent and is Driver and is Available
+        return (found.isPresent() && found.get().hasRole(Role.Driver) && (((Driver) found.get()).isAvailable()));
+    }
+
 
     /* ---------------- IAccountService ---------------- */
 

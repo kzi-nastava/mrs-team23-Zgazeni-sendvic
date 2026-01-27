@@ -1,6 +1,8 @@
 package ZgazeniSendvic.Server_Back_ISS.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @DiscriminatorValue("DRIVER")
@@ -9,6 +11,11 @@ public class Driver extends Account {
     @OneToOne
     @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;
+    @Getter
+    boolean available;
+    boolean driving;
+    @Getter @Setter
+    boolean awaitingDeactivation; // would be better to keep this in a seperate table perhaps
 
     public Driver() {
         super();
@@ -25,6 +32,26 @@ public class Driver extends Account {
 
     public void setVehicle(Vehicle vehicle) {
         this.vehicle = vehicle;
+    }
+
+
+    //------------Status changes
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    void setDriving(boolean driving) {
+        if(!driving){
+            if(awaitingDeactivation){
+                available = false;
+                awaitingDeactivation = false;
+            }
+        }
+    }
+
+    public boolean getDriving() {
+        return driving;
     }
 }
 

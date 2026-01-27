@@ -84,6 +84,10 @@ public class Account {
         isConfirmed = false;
     }
 
+    public boolean hasRole(Role role){
+        return roles.contains(role);
+    }
+
     public Long getId() {
         return id;
     }

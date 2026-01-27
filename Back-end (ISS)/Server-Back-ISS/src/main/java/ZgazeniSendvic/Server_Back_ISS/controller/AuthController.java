@@ -3,6 +3,7 @@ package ZgazeniSendvic.Server_Back_ISS.controller;
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
+import ZgazeniSendvic.Server_Back_ISS.service.DriverServiceImpl;
 import ZgazeniSendvic.Server_Back_ISS.util.TokenUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ class AuthController {
     private AuthenticationManager authenticationManager;
     @Autowired
     TokenUtils tokenUtils;
+    @Autowired
+    DriverServiceImpl driverService;
 
 
 
@@ -69,7 +72,8 @@ class AuthController {
         String jwt = tokenUtils.generateToken(account);
         int expiresIn = tokenUtils.getExpiredIn();
 
-
+        //all checks passed
+        driverService.ActivateIfDriver(request.getEmail());
         LoginRequestedDTO loginDTO = new LoginRequestedDTO(jwt, expiresIn, new AccountLoginDTO(account));
 
         return new ResponseEntity<LoginRequestedDTO>(loginDTO, HttpStatus.CREATED);
@@ -82,7 +86,7 @@ class AuthController {
         //if not, do nothing, do not reveal anything, sounds relatively simple tbh
         accountService.forgotPassword(request.getEmail());
 
-        return new ResponseEntity<String>("Link has been sent if an account exists", HttpStatus.CREATED);
+        return new ResponseEntity<String>("Link has been sent if an account exists", HttpStatus.OK);
     }
 
     @PostMapping(path = "reset-password", consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -107,6 +111,21 @@ class AuthController {
 
         return new ResponseEntity<String>("Account confirmation successful", HttpStatus.CREATED);
         //redirection to login would ensue? or auto login?
+    }
+
+
+    @PostMapping(path = "/logout", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> logOut(@RequestBody logOutDTO request)
+            throws Exception {
+
+
+        if(driverService.isAvailableDriver(request.getEmail())) {
+            return new ResponseEntity<String>("Driver must be unavailable", HttpStatus.FORBIDDEN);
+        }
+
+        return new ResponseEntity<String>("Log Out successful", HttpStatus.OK);
+
     }
 
 

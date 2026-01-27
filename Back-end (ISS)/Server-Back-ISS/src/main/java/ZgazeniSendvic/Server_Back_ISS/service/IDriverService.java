@@ -11,4 +11,6 @@ public interface IDriverService extends IAccountService {
 
     Vehicle registerVehicle(RegisterVehicleDTO dto);
 
+    void changeAvailableStatus(String email, boolean value);
+
 }
