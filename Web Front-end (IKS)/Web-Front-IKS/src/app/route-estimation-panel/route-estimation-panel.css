@@ -8,12 +8,13 @@
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
     padding: 20px;
     box-sizing: border-box;
-    z-index: 1000;
+    z-index: 9999;
     opacity: 1;
 
     /* to not overlap the nav bar */
     margin-top: 82px;
     align-items: center;
+    overflow-y: auto
     
 }
 
@@ -34,14 +35,14 @@
   padding: 8px 0;
 }
 
-/* Make inputs full width */
+/* To adjust starting width */
 mat-form-field {
   width: 100%;
 }
 
 /* Button styling */
 .estimate-button {
-   /* pushes button to bottom */
+   
   height: 44px;
   font-size: 18px;
   width: 80%;
