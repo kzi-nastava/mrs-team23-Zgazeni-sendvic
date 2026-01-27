@@ -64,7 +64,7 @@ public class Account {
         this.phoneNumber = request.getPhoneNum();
         this.imgString = request.getPictUrl();
         roles = new HashSet<>();
-        roles.add(Role.ACCOUNT);
+        roles.add(Role.User);
         isConfirmed = false;
     }
 
