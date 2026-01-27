@@ -67,7 +67,7 @@ public class DriverController {
         }
     }
 
-    @PostMapping(path = "/changeStatus", consumes = MediaType.APPLICATION_JSON_VALUE,
+    @PutMapping(path = "/changeStatus", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> changeDriverStatus(@RequestBody DriverChangeStatusDTO request)
             throws Exception {

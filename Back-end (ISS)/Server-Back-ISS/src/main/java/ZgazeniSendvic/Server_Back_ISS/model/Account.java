@@ -2,6 +2,10 @@ package ZgazeniSendvic.Server_Back_ISS.model;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.RegisterRequestDTO;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,16 +30,32 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Email
+    @NotBlank
     @Column(nullable = false, unique = true)
     private String email;
 
+    @NotBlank
+    @Size(min = 8)
     @Column(nullable = false)
     private String password;
 
+    @NotBlank
+    @Size(min = 2)
+    @Column(nullable = false, length = 100)
     private String name;
+    @NotBlank
+    @Size(min = 2)
+    @Column(nullable = false, length = 100)
     private String lastName;
+    @NotBlank
+    @Column(nullable = false)
     private String address;
+    @NotBlank
+    @Pattern(regexp = "^\\d{10,}$")
+    @Column(nullable = false, length = 20)
     private String phoneNumber;
+    @Column(columnDefinition = "TEXT")
     private String imgString;
     @Getter @Setter
     private boolean isConfirmed = false;

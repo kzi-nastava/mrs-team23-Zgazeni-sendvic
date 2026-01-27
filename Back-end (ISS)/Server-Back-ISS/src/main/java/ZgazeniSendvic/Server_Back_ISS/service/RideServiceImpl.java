@@ -3,7 +3,9 @@ package ZgazeniSendvic.Server_Back_ISS.service;
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
+import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -24,6 +26,10 @@ public class RideServiceImpl implements IRideService {
     RideRepository allRides;
     @Autowired
     OrsRoutingService orsRoutingService;
+
+    //for Panic
+    @Autowired
+    AccountRepository accountRepository;
 
     @Override
     public Collection<Ride> getAll() {
@@ -240,6 +246,34 @@ public class RideServiceImpl implements IRideService {
 
     @Override
     public void deleteAll() {
+
+    }
+
+    @Transactional
+    public void PanicRide(Long rideID, String email) {
+
+        Optional<Ride> foundRide = allRides.findById(rideID);
+        Optional<Account> foundAccount = accountRepository.findByEmail(email);
+        if(foundRide.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
+        }
+
+        if(foundAccount.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found");
+        }
+
+        Ride ride = (Ride) foundRide.get();
+        Account account = (Account) foundAccount.get();
+
+        if(ride.getDriver() != account){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This individual is not the rider");
+        }
+
+        ride.setPanic(true);
+        allRides.save(ride);
+        allRides.flush();
+
+
 
     }
 }

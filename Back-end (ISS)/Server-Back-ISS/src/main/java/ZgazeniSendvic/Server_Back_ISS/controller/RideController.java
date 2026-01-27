@@ -52,6 +52,21 @@ class RideController {
     }
 
 
+    @PutMapping(path = "ride-PANIC/{rideID}",
+            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> panicRide(@RequestBody PanicButtonDTO request,
+                                                         @PathVariable Long rideID) throws Exception{
+
+        //Email would be pulled out of auth
+        rideService.PanicRide(rideID, request.getEmail());
+
+
+        return new ResponseEntity<String>("Ride set to panic", HttpStatus.OK);
+
+
+    }
+
+
     @GetMapping(path = "ride-estimation/{arrival}/{destinationsStr}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<OrsRouteResult>
     estimateRide(@PathVariable String arrival, @PathVariable String destinationsStr)throws Exception{

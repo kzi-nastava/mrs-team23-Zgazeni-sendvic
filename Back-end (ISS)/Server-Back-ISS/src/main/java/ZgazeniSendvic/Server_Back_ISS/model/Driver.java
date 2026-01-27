@@ -39,6 +39,8 @@ public class Driver extends Account {
 
     public void setAvailable(boolean available) {
         this.available = available;
+        //should awaiting be turned of regardgless? shouldnt ever occur that it should, but just in case
+        awaitingDeactivation = false;
     }
 
     void setDriving(boolean driving) {
@@ -48,6 +50,7 @@ public class Driver extends Account {
                 awaitingDeactivation = false;
             }
         }
+        this.driving = driving;
     }
 
     public boolean getDriving() {
