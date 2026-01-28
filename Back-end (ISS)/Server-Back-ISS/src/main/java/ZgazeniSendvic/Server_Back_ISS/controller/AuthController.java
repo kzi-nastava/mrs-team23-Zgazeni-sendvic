@@ -18,6 +18,7 @@ import org.springframework.security.core.token.TokenService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin (origins="*")
 @RequestMapping("/api/auth")
 class AuthController {
 

@@ -61,7 +61,7 @@ export class RegistrationForm {
     lastName: this.form.value.lastName,
     email: this.form.value.email,
     phoneNum: this.form.value.phone,
-    address: this.form.value.address,
+    address: this.form.value.adress,
     password: this.form.value.password,
     pictUrl: "DefaultUrl",
   };

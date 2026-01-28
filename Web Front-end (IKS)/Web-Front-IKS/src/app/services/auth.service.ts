@@ -59,11 +59,33 @@ export class AuthService {
       );
   }
 
-  resetPassword(request: ResetPasswordRequest): Observable<ResetPasswordResponse> {
-    return this.http.post<ResetPasswordResponse>(`${this.apiUrl}/reset-password`, request)
+  resetPassword(request: ResetPasswordRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reset-password`, request, { responseType: 'text' })
       .pipe(
         tap(response => console.log('Reset password response:', response)),
-        catchError(this.handleError)
+        catchError(error => {
+          // If it's a successful status code (2xx) with parsing error, treat as success
+          if (error.status === 201 || error.status === 200) {
+            console.log('Reset password successful (empty response)');
+            return throwError(() => new Error('success'));
+          }
+          return this.handleError(error);
+        })
+      );
+  }
+
+  confirmAccount(token: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/confirm-account`, { rawToken: token }, { responseType: 'text' })
+      .pipe(
+        tap(response => console.log('Confirm account response:', response)),
+        catchError(error => {
+          // If it's a successful status code (2xx) with parsing error, treat as success
+          if (error.status === 201 || error.status === 200) {
+            console.log('Account confirmed successfully (empty response)');
+            return throwError(() => new Error('success'));
+          }
+          return this.handleError(error);
+        })
       );
   }
 
