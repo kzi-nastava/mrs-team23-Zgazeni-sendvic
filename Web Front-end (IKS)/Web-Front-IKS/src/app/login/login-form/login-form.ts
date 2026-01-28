@@ -1,11 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../services/auth.service';
+import { LoginRequest } from '../../models/auth.models';
 
 @Component({
   selector: 'app-login-form',
@@ -16,7 +19,8 @@ import { RouterModule } from '@angular/router';
     MatButtonModule,
     MatIconModule,
     CommonModule,
-    RouterModule
+    RouterModule,
+    
   ],
   templateUrl: './login-form.html',
   styleUrl: './login-form.css',
@@ -24,8 +28,9 @@ import { RouterModule } from '@angular/router';
 export class LoginForm {
   form!: FormGroup;
   hidePassword = true;
+  loginError = signal<string | null>(null);
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
@@ -42,8 +47,20 @@ export class LoginForm {
       this.form.markAllAsTouched();
       return;
     }
-    // Replace with real auth call
-    console.log('Login submitted', this.form.value);
+    
+    this.loginError.set(null);  // Clear any previous errors
+    const request: LoginRequest = this.form.value;
+    this.authService.login(request).subscribe({
+      next: (response) => {
+        console.log('Login successful', response);
+        // Token is already stored by auth service
+        this.router.navigate(['/']);
+      },
+      error: (error) => {
+        console.error('Login failed', error);
+        this.loginError.set('Incorrect email or password');
+      }
+    });
   }
 
   getErrorMessage(label: string, controlName: string): string {

@@ -1,11 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
+import { ResetPasswordRequest } from '../../models/auth.models';
 
 @Component({
   selector: 'app-reset-password-form',
@@ -21,16 +23,30 @@ import { CommonModule } from '@angular/common';
   templateUrl: './reset-password-form.html',
   styleUrl: './reset-password-form.css',
 })
-export class ResetPasswordForm {
+export class ResetPasswordForm implements OnInit {
   form!: FormGroup;
   hidePassword = true;
   hideConfirmPassword = true;
+  tokenFromUrl: string = '';
+  resetMessage = signal<string>('');
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private authService: AuthService, private route: ActivatedRoute, private router: Router) {
     this.form = this.fb.group({
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', Validators.required],
     }, { validators: this.passwordMatchValidator });
+  }
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      const token = params['token'];
+      if (token) {
+        this.tokenFromUrl = token;
+        console.log('Token picked up from URL:', this.tokenFromUrl);
+      } else {
+        console.warn('No token found in URL');
+      }
+    });
   }
 
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -38,11 +54,11 @@ export class ResetPasswordForm {
     const confirmPassword = control.get('confirmPassword');
 
     if (!password || !confirmPassword) return null;
-    if (confirmPassword.errors && !confirmPassword.errors['passwordMismatch']) return null;
+    if (!password.value || !confirmPassword.value) return null;
 
     if (password.value !== confirmPassword.value) {
       confirmPassword.setErrors({ passwordMismatch: true });
-      return { passwordMismatch: true };
+      return null;
     } else {
       confirmPassword.setErrors(null);
       return null;
@@ -62,7 +78,39 @@ export class ResetPasswordForm {
       this.form.markAllAsTouched();
       return;
     }
-    console.log('Reset password submitted:', { password: this.form.value.password });
+
+    if (!this.tokenFromUrl) {
+      console.error('No token available');
+      this.resetMessage.set('No reset token provided');
+      return;
+    }
+
+    const request: ResetPasswordRequest = {
+      token: this.tokenFromUrl,
+      newPassword: this.form.value.password,
+    };
+
+    console.log('Submitting reset password with token:', this.tokenFromUrl);
+    this.authService.resetPassword(request).subscribe({
+      next: (response) => {
+        console.log('Reset password successful', response);
+        this.resetMessage.set('Password reset successfully! ');
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
+      },
+      error: (error) => {
+        console.error('Reset password failed', error);
+        if (error.message === 'success') {
+          this.resetMessage.set('Password reset successfully!');
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 2000);
+        } else {
+          this.resetMessage.set('Invalid Token');
+        }
+      }
+    });
   }
 
   getErrorMessage(label: string, controlName: string): string {

@@ -1,0 +1,38 @@
+@if (panelVisible()) {
+  <mat-card class="route-estimation-panel">
+    <h2 class="panel-title">Route Estimation</h2>
+
+    <div class="time-display mat-body-1">
+      Estimated Time: {{ estimatedTime() ? estimatedTime() + ' min' : '--:-- min' }}
+    </div>
+
+    <mat-form-field appearance="fill" class="location-input">
+      <mat-label>Starting Location</mat-label>
+      <input matInput />
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" color="primary" class="location-input">
+      <mat-label>Ending Location</mat-label>
+      <input matInput />
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" class="estimate-button" (click)="estimateRoute()">
+      Estimate Route
+    </button>
+  </mat-card>
+}
+
+<div class="action-buttons">
+  <button mat-raised-button class="action-btn estimate-btn" (click)="togglePanelVisibility()">
+    Estimate
+  </button>
+  <button mat-raised-button class="action-btn cancel-btn" (click)="onCancel()">
+    Cancel
+  </button>
+  <button mat-raised-button class="action-btn stop-btn" (click)="onStop()">
+    Stop
+  </button>
+  <button mat-raised-button class="action-btn panic-btn" (click)="onPanic()">
+    PANIC
+  </button>
+</div>

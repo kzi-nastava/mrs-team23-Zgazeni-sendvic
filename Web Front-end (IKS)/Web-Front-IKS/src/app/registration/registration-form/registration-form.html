@@ -93,5 +93,11 @@
 <div class="bottom-section">
   <button mat-raised-button color="primary" (click)="submit()">Register</button>
   <a class="text-link" routerLink="/login">Have an account? Log in</a>
+  
+  <div class="error-display">
+    @if (registerError()) {
+      <p class="error-message">{{ registerError() }}</p>
+    }
+  </div>
 </div>
 </form>
