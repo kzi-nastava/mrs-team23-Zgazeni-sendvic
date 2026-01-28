@@ -360,6 +360,22 @@ public class RideServiceImpl implements IRideService {
 
         allRides.save(ride);
         allRides.flush();
+
+        List<Account> passengers = ride.getPassengers();
+        if (passengers != null && !passengers.isEmpty()) {
+            for (Account passenger : passengers) {
+                if (passenger == null || passenger.getEmail() == null) continue;
+                try {
+                    EmailDetails details = new EmailDetails();
+                    details.setRecipient(passenger.getEmail());
+                    details.setSubject("Ride ended");
+                    details.setMsgBody("Your ride (ID: " + ride.getId() + ") has ended. Final price: " + ride.getPrice());
+                    emailService.sendSimpleMail(details);
+                } catch (Exception ex) {
+                    System.err.println("Failed to send ride-ended email to " + passenger.getEmail() + ": " + ex.getMessage());
+                }
+            }
+        }
     }
 
     @Override
