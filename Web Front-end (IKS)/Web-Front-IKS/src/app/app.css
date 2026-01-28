@@ -28,6 +28,25 @@ body {
     margin: 10px;
 } */
 
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+app-nav-bar {
+  flex-shrink: 0;
+}
+
+router-outlet {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
 .home {
   min-height: 100vh;
   display: flex;
@@ -57,3 +76,4 @@ h1 {
 .links a:hover {
   background: rgba(0, 0, 0, 0.35);
 }
+

@@ -143,6 +143,7 @@ class RideController {
     }
 
     @GetMapping(value = "history-of-rides/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<HistoryOfRidesDTO> HistoryOfRidesController( @PathVariable Long userId) {
         HistoryOfRidesDTO historyOfRidesDTO = historyOfRidesService.getHistoryOfRides(userId);
         return ResponseEntity.ok(historyOfRidesDTO);

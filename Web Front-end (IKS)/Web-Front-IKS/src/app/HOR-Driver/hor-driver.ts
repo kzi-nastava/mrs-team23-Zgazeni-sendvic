@@ -1,18 +1,50 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'hor-driver',
-  imports: [ RouterModule],
+  imports: [RouterModule, CommonModule],
   templateUrl: './hor-driver.html',
   styleUrl: './hor-driver.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HorDriver {
+export class HorDriver implements OnInit {
 
-  rides = [
-    { id: 1, origin: 'Location A', destination: 'Location B', date: '2024-07-01', timeStart: '10:00 AM', timeEnd: '11:00 AM', price: 15.00, canceled: 'Peter123', panic: false },
-    { id: 2, origin: 'Location C', destination: 'Location D', date: '2024-07-02', timeStart: '02:00 PM', timeEnd: '03:00 PM', price: 20.00, canceled: '', panic: false },
-    { id: 3, origin: 'Location E', destination: 'Location F', date: '2024-07-03', timeStart: '09:00 AM', timeEnd: '10:00 AM', price: 12.50, canceled: '', panic: true }
-  ];
-  
+  rides: any[] = [];
+  driverId = 100;
+
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
+
+  ngOnInit(): void {
+    this.fetchRides();
+  }
+
+  fetchRides(): void {
+    this.http.get<{ rides: any[] }>(`http://localhost:8080/api/history-of-rides/${this.driverId}`)
+      .subscribe({
+        next: (response) => {
+          console.log('Response received:', response);
+          this.rides = response.rides.map(ride => ({
+            ...ride,
+            date: new Date(ride.departureTime).toLocaleDateString(),
+            timeStart: new Date(ride.departureTime).toLocaleTimeString(),
+            timeEnd: new Date(ride.arrivalTime).toLocaleTimeString(),
+            origin: ride.origin,
+            destination: ride.destination,
+            price: ride.price,
+            canceled: ride.canceled,
+            panic: ride.panic
+          }));
+          console.log('Rides populated:', this.rides);
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Error fetching rides:', err);
+          console.error('Error status:', err.status);
+          console.error('Error message:', err.message);
+        }
+      });
+  }
 }
