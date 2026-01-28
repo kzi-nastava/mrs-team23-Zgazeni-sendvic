@@ -1,5 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.config;
 
+import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
+import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetailsService;
 import ZgazeniSendvic.Server_Back_ISS.security.jwt.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import ZgazeniSendvic.Server_Back_ISS.security.auth.RestAuthenticationEntryPoint;
@@ -42,6 +44,35 @@ public class SecurityConfig {
     @Autowired
     JwtAuthenticationFilter jwtFilter;
 
+    @Autowired
+    AccountRepository accountRepository;
+
+
+    // Service used for getting information about Accounts, ASIpml implements UserDetailsService
+    @Bean
+    public UserDetailsService userDetailsService() {
+        //it implements USD, so this should be fine? it existing like this???
+        //if the method were to return, not the interface, but the ASI, the @Autowire at AuthCOntroller wouldnt know
+        //which to take
+        return new CustomUserDetailsService(accountRepository);
+    }
+
+
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        // 1. Which service is to be used to pull information about the user that wants to be authenticated
+        // During authentication, AuthenticationManager will call loadUserByUsername() method of this service
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService());
+
+        //authProvider.setUserDetailsService(userDetailsService());
+        // 2. What encoder is used for the obtained password
+        // The obtained hash is compared with the one stored in the database
+        authProvider.setPasswordEncoder(passwordEncoder());
+
+        return authProvider;
+    }
+
     @Bean
     //Skeleton, should use @Preauthorize anyway, so most of this will be removed
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -55,7 +86,9 @@ public class SecurityConfig {
                 ).sessionManagement(session -> { // do not use cookies
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .authenticationProvider(authenticationProvider());
+
                 // JWT before everything else, though not used as for now
                 //.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
