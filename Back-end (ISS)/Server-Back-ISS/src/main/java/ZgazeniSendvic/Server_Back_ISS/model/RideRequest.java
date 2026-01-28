@@ -1,61 +1,57 @@
 package ZgazeniSendvic.Server_Back_ISS.model;
 
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
+@Entity
+@Table
 public class RideRequest {
+
+    @Getter @Setter
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String start;
-    private String destination;
-    private ArrayList<String> midPoints;
-    private String vehicleSelection;
 
-    public RideRequest() { super(); }
+    @Getter @Setter
+    @ManyToOne
+    private Account creator;
 
-    public RideRequest(Long id, String start, String destination, ArrayList<String> midPoints, String vehicleSelection) {
-        this.id = id;
-        this.start = start;
-        this.destination = destination;
-        this.midPoints = midPoints;
-        this.vehicleSelection = vehicleSelection;
-    }
+    @Getter @Setter
+    @ElementCollection
+    @CollectionTable(
+            name = "ride_request_locations",
+            joinColumns = @JoinColumn(name = "ride_request_id")
+    )
+    @OrderColumn(name = "idx")
+    private List<Location> locations;
 
-    public Long getId() {
-        return id;
-    }
+    @Getter @Setter
+    @Enumerated(EnumType.STRING)
+    private VehicleType vehicleType;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @Getter @Setter
+    private boolean babiesAllowed;
+    @Getter @Setter
+    private boolean petsAllowed;
 
-    public String getStart() {
-        return start;
-    }
+    @Getter @Setter
+    private LocalDateTime scheduledTime; // null = immediate
 
-    public void setStart(String start) {
-        this.start = start;
-    }
+    @Getter @Setter
+    @ManyToMany
+    private List<Account> invitedPassengers;
 
-    public String getDestination() {
-        return destination;
-    }
+    @Getter @Setter
+    private double estimatedDistanceKm;
+    @Getter @Setter
+    private double estimatedPrice;
 
-    public void setDestination(String destination) {
-        this.destination = destination;
-    }
-
-    public ArrayList<String> getMidPoints() {
-        return midPoints;
-    }
-
-    public void setMidPoints(ArrayList<String> midPoints) {
-        this.midPoints = midPoints;
-    }
-
-    public String getVehicleSelection() {
-        return vehicleSelection;
-    }
-
-    public void setVehicleSelection(String vehicleSelection) {
-        this.vehicleSelection = vehicleSelection;
-    }
+    @Getter @Setter
+    @Enumerated(EnumType.STRING)
+    private RideRequestStatus status;
 }

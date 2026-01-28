@@ -7,7 +7,6 @@ import ZgazeniSendvic.Server_Back_ISS.model.Driver;
 import ZgazeniSendvic.Server_Back_ISS.model.Vehicle;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.VehicleRepository;
-import ZgazeniSendvic.Server_Back_ISS.service.IDriverService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

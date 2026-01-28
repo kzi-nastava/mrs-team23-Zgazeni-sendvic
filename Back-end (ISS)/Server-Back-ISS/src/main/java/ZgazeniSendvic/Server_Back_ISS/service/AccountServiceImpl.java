@@ -2,11 +2,14 @@ package ZgazeniSendvic.Server_Back_ISS.service;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
+import ZgazeniSendvic.Server_Back_ISS.model.Driver;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 
+import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -67,7 +70,7 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         }
     }
 
-    public LoginRequestedDTO  registerAccount(RegisterRequestDTO requestDTO){
+    public LoginRequestedDTO registerAccount(RegisterRequestDTO requestDTO){
 
         if(allAccounts.existsByEmail(requestDTO.getEmail())){
             throw new IllegalStateException("Email already in use");
@@ -147,19 +150,13 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Optional<Account> account = allAccounts.findByEmail(email);
-        if(account.isPresent()){
-            return org.springframework.security.core.userdetails.User
-                    .withUsername(email)
-                    .password(account.get().getPassword())
-                    .roles(account.get().getRoles().toString())
-                    .build();
+    public UserDetails loadUserByUsername(String email)
+            throws UsernameNotFoundException {
 
-        }else{
-            throw new UsernameNotFoundException("No account with such email exists: " + email);
-        }
+        Account acc = allAccounts.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        return new CustomUserDetails(acc);
     }
 
     public void findAccountById(Long userId) {

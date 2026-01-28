@@ -1,15 +1,17 @@
 package ZgazeniSendvic.Server_Back_ISS.dto;
 
+import ZgazeniSendvic.Server_Back_ISS.model.Location;
+
 import java.util.List;
 
 public class RideStoppedDTO {
 
     private Long rideID;
     private double newPrice;
-    private List<String> updatedDestinations;
+    private List<Location> updatedDestinations;
 
     public RideStoppedDTO(){}
-    public RideStoppedDTO(Long rideID, double newPrice, List<String> updatedDestinations) {
+    public RideStoppedDTO(Long rideID, double newPrice, List<Location> updatedDestinations) {
         this.rideID = rideID;
         this.newPrice = newPrice;
         this.updatedDestinations = updatedDestinations;
@@ -25,7 +27,7 @@ public class RideStoppedDTO {
         return newPrice;
     }
 
-    public List<String> getUpdatedDestinations() {
+    public List<Location> getUpdatedDestinations() {
         return updatedDestinations;
     }
 
@@ -38,7 +40,7 @@ public class RideStoppedDTO {
         this.newPrice = newPrice;
     }
 
-    public void setUpdatedDestinations(List<String> updatedDestinations) {
+    public void setUpdatedDestinations(List<Location> updatedDestinations) {
         this.updatedDestinations = updatedDestinations;
     }
 }

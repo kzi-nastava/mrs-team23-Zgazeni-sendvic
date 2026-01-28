@@ -1,5 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.config;
 
+import ZgazeniSendvic.Server_Back_ISS.security.jwt.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,10 +17,14 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Autowired
+    JwtAuthenticationFilter jwtFilter;
 
     @Bean
     //Skeleton, should use @Preauthorize anyway, so most of this will be removed
@@ -31,7 +37,8 @@ public class SecurityConfig {
                         .anyRequest().permitAll() //for testing purposes
                 ).sessionManagement(session -> { // do not use cookies
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-                });
+                })
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
                 // JWT before everything else, though not used as for now
                 //.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
