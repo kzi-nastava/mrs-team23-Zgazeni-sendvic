@@ -8,6 +8,7 @@ import lombok.Setter;
 @DiscriminatorValue("DRIVER")
 public class Driver extends Account {
 
+    @Getter @Setter
     @OneToOne
     @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;
@@ -16,6 +17,18 @@ public class Driver extends Account {
     boolean driving;
     @Getter @Setter
     boolean awaitingDeactivation; // would be better to keep this in a seperate table perhaps
+
+    @Getter @Setter
+    private Location location;
+
+    @Getter @Setter
+    private boolean active;
+
+    @Getter @Setter
+    private boolean busy;
+
+    @Getter @Setter
+    private int workedMinutesLast24h;
 
     public Driver() {
         super();
@@ -56,5 +69,6 @@ public class Driver extends Account {
     public boolean getDriving() {
         return driving;
     }
+
 }
 

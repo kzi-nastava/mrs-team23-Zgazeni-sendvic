@@ -1,44 +1,99 @@
 package ZgazeniSendvic.Server_Back_ISS.dto;
 
-import java.util.ArrayList;
+import ZgazeniSendvic.Server_Back_ISS.model.Location;
+import ZgazeniSendvic.Server_Back_ISS.model.VehicleType;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 public class CreateRideRequestDTO {
-    private String start;
-    private String destination;
-    private ArrayList<String> midPoints;
-    private String vehicleSelection;
 
-    public CreateRideRequestDTO() { super(); }
+    /**
+     * Ordered list of locations:
+     * index 0 = start
+     * last index = destination
+     * everything in between = mid-points (order matters)
+     */
+    private List<Location> locations;
 
-    public String getStart() {
-        return start;
+    /**
+     * Vehicle constraints
+     */
+    private VehicleType vehicleType;
+    private boolean babiesAllowed;
+    private boolean petsAllowed;
+
+    /**
+     * Optional scheduled ride
+     * null = immediate ride
+     */
+    private LocalDateTime scheduledTime;
+
+    /**
+     * Passengers invited by email
+     */
+    private List<String> invitedPassengerEmails;
+
+    /**
+     * Estimated values calculated on frontend (or via map service)
+     */
+    private double estimatedDistanceKm;
+
+    /* ---------- GETTERS / SETTERS ---------- */
+
+    public List<Location> getLocations() {
+        return locations;
     }
 
-    public void setStart(String start) {
-        this.start = start;
+    public void setLocations(List<Location> locations) {
+        this.locations = locations;
     }
 
-    public String getDestination() {
-        return destination;
+    public VehicleType getVehicleType() {
+        return vehicleType;
     }
 
-    public void setDestination(String destination) {
-        this.destination = destination;
+    public void setVehicleType(VehicleType vehicleType) {
+        this.vehicleType = vehicleType;
     }
 
-    public ArrayList<String> getMidPoints() {
-        return midPoints;
+    public boolean isBabiesAllowed() {
+        return babiesAllowed;
     }
 
-    public void setMidPoints(ArrayList<String> midPoints) {
-        this.midPoints = midPoints;
+    public void setBabiesAllowed(boolean babiesAllowed) {
+        this.babiesAllowed = babiesAllowed;
     }
 
-    public String getVehicleSelection() {
-        return vehicleSelection;
+    public boolean isPetsAllowed() {
+        return petsAllowed;
     }
 
-    public void setVehicleSelection(String vehicleSelection) {
-        this.vehicleSelection = vehicleSelection;
+    public void setPetsAllowed(boolean petsAllowed) {
+        this.petsAllowed = petsAllowed;
+    }
+
+    public LocalDateTime getScheduledTime() {
+        return scheduledTime;
+    }
+
+    public void setScheduledTime(LocalDateTime scheduledTime) {
+        this.scheduledTime = scheduledTime;
+    }
+
+    public List<String> getInvitedPassengerEmails() {
+        return invitedPassengerEmails;
+    }
+
+    public void setInvitedPassengerEmails(List<String> invitedPassengerEmails) {
+        this.invitedPassengerEmails = invitedPassengerEmails;
+    }
+
+    public double getEstimatedDistanceKm() {
+        return estimatedDistanceKm;
+    }
+
+    public void setEstimatedDistanceKm(double estimatedDistanceKm) {
+        this.estimatedDistanceKm = estimatedDistanceKm;
     }
 }

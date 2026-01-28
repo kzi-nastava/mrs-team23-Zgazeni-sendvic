@@ -4,7 +4,7 @@ import ZgazeniSendvic.Server_Back_ISS.dto.CreateDriverDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.RegisterVehicleDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Driver;
-import ZgazeniSendvic.Server_Back_ISS.model.Role;
+//import ZgazeniSendvic.Server_Back_ISS.model.Role;
 import ZgazeniSendvic.Server_Back_ISS.model.Vehicle;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.VehicleRepository;
@@ -106,7 +106,7 @@ public class DriverServiceImpl implements IDriverService {
 
         Optional<Account> found = accountRepository.findByEmail(email);
         if (found.isPresent()) {
-            if(found.get().hasRole(Role.Driver)){
+            if(found.get().getRole().equals("DRIVER")){ // first fix
                 Driver driver = (Driver) found.get();
                 driver.setAvailable(true);
         }
@@ -123,7 +123,7 @@ public class DriverServiceImpl implements IDriverService {
 
             Optional<Account> found = accountRepository.findByEmail(email);
             if (found.isPresent()) {
-                if(found.get().hasRole(Role.Driver)){
+                if(found.get().getRole().equals("DRIVER")){ //second fix
                     Driver driver = (Driver) found.get();
                     //if changing to Active, always allow
                     if(value){
@@ -150,7 +150,7 @@ public class DriverServiceImpl implements IDriverService {
     public boolean isAvailableDriver(String email){
         Optional<Account> found = accountRepository.findByEmail(email);
         //only returns true if isPresent and is Driver and is Available
-        return (found.isPresent() && found.get().hasRole(Role.Driver) && (((Driver) found.get()).isAvailable()));
+        return (found.isPresent() && found.get().getRole().equals("DRIVER") && (((Driver) found.get()).isAvailable()));
     }
 
 

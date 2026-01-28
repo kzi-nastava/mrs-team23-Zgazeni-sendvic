@@ -1,4 +1,4 @@
-package ZgazeniSendvic.Server_Back_ISS.util;
+package ZgazeniSendvic.Server_Back_ISS.security.jwt;
 
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import io.jsonwebtoken.Claims;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 
 @Component
-public class TokenUtils {
+public class JwtUtils {
 
     // Token issuer
     @Value("DriveBy")
@@ -46,7 +46,7 @@ public class TokenUtils {
                 .setSubject(account.getEmail())
                 .setAudience(generateAudience())
                 .setIssuedAt(new Date())
-                .claim("roles", account.getRoles().toString())
+                .claim("role", account.getRole())
                 .setExpiration(generateExpirationDate())
                 .signWith(SIGNATURE_ALGORITHM, SECRET).compact();
 

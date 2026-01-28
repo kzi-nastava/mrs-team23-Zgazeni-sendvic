@@ -4,8 +4,11 @@ import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
+import ZgazeniSendvic.Server_Back_ISS.model.*;
+import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import jakarta.transaction.Transactional;
+import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -16,7 +19,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -25,11 +30,15 @@ public class RideServiceImpl implements IRideService {
     @Autowired
     RideRepository allRides;
     @Autowired
-    OrsRoutingService orsRoutingService;
-
-    //for Panic
+    AccountRepository allAccounts;
     @Autowired
-    AccountRepository accountRepository;
+    RideRepository rideRepo;
+    @Autowired
+    DriverMatchingService matcher;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    OrsRoutingService orsRoutingService;
 
     @Override
     public Collection<Ride> getAll() {
@@ -44,6 +53,79 @@ public class RideServiceImpl implements IRideService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, value);
         }
         return found.get();
+    }
+
+    public Ride createRide(RideRequest req) {
+
+        List<Driver> activeDrivers = allAccounts.findAvailableDrivers();
+
+        if (activeDrivers.isEmpty()) {
+            sendNoDriversEmail(req.getCreator());
+            throw new RuntimeException("No drivers available");
+        }
+
+        Driver selected = matcher.findBestDriver(
+                activeDrivers,
+                req.getLocations().get(0)
+        );
+
+        if (selected == null) {
+            sendNoDriversEmail(req.getCreator());
+            throw new RuntimeException("No suitable drivers");
+        }
+
+        Ride ride = new Ride();
+        ride.setDriver(selected);
+        ride.setCreator(req.getCreator());
+        ride.setPassengers(req.getInvitedPassengers());
+        ride.setLocations(req.getLocations());
+        ride.setPrice(req.getEstimatedPrice());
+        ride.setStatus(RideStatus.SCHEDULED);
+
+        rideRepo.save(ride);
+
+        sendRideAcceptedEmail(req.getCreator(), ride);
+        sendNewRideForDriverEmail(selected, ride);
+
+        return ride;
+    }
+
+    private void sendNoDriversEmail(Account user) {
+        EmailDetails details = new EmailDetails();
+        details.setRecipient(user.getEmail());
+        details.setSubject("Ride request failed");
+        details.setMsgBody(
+                "Unfortunately, there are currently no available drivers. " +
+                        "Please try again later."
+        );
+
+        emailService.sendSimpleMail(details);
+    }
+
+    private void sendRideAcceptedEmail(Account user, Ride ride) {
+        EmailDetails details = new EmailDetails();
+        details.setRecipient(user.getEmail());
+        details.setSubject("Your ride has been accepted");
+        details.setMsgBody(
+                "Your ride has been successfully scheduled.\n\n" +
+                        "Driver: " + ride.getDriver().getName() + "\n" +
+                        "Estimated price: " + ride.getPrice()
+        );
+
+        emailService.sendSimpleMail(details);
+    }
+
+    private void sendNewRideForDriverEmail(Driver driver, Ride ride) {
+        EmailDetails details = new EmailDetails();
+        details.setRecipient(driver.getEmail());
+        details.setSubject("New ride assigned");
+        details.setMsgBody(
+                "You have been assigned a new ride.\n\n" +
+                        "Pickup location: " + ride.getLocations().get(0) + "\n" +
+                        "Scheduled time: " + ride.getStartTime()
+        );
+
+        emailService.sendSimpleMail(details);
     }
 
     @Override
@@ -69,15 +151,16 @@ public class RideServiceImpl implements IRideService {
         //here would be check for reason,
 
         //this is if it canceled
-        Ride ride = found.get();
-
-        if(!canCancelRide(ride, rideDTO)){
+        //NEEDS CHECK
+        /* if(!canCancelRide(ride, rideDTO)){
             DriveCancelledDTO cancelled = new DriveCancelledDTO();
             cancelled.setCancelled(false);
             return cancelled;
         }
 
-        ride.setCanceled(true);
+         */
+        Ride ride = found.get();
+        ride.setStatus(RideStatus.CANCELED);
         allRides.save(ride);
         allRides.flush();
 
@@ -90,9 +173,6 @@ public class RideServiceImpl implements IRideService {
         cancelled.setTime((new Date()).toString());
 
         return cancelled;
-
-
-
 
     }
 
@@ -120,8 +200,8 @@ public class RideServiceImpl implements IRideService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Interestingly, when security is on, but the request is unauthenticated, getPrincipal returns anonymousUser
         if(auth instanceof AnonymousAuthenticationToken){
-            if(Objects.equals(ride.getSHAToken(), rideDTO.getRideToken())){
-                return compareDates(ride.getDepartureTime(), rideDTO.getTime(), 10);
+            if(false){ //In the future, un. user gets a token perhaps Objects.equals(ride.getSHAToken(), rideDTO.getRideToken())
+                //return compareDates(ride.getStartTime(), rideDTO.getTime(), 10);
 
             }
             throw new AccessDeniedException("Unauthenticated user didn't have right token");
@@ -130,15 +210,15 @@ public class RideServiceImpl implements IRideService {
         //else
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
         String email  = userDetails.getUsername();
-        if(ride.isDriver(email)){
+        if(ride.getDriver().getEmail().equals(email)){
             //assuming proper reason
             //could also use token, though unneccessary
             return true;
         }
 
-        if(ride.isPassenger(email)){
+        if(ride.isThisPassenger(email)){
             //maybe also token comparison
-            return compareDates(ride.getDepartureTime(), rideDTO.getTime(), 10);
+            return isSameOrBefore(ride.getStartTime(), rideDTO.getTime(), ZoneId.systemDefault());
 
         }
 
@@ -146,7 +226,7 @@ public class RideServiceImpl implements IRideService {
         return false;
 
     }
-    private boolean compareDates(Date date1, Date date2, long minuteDifference){
+    private boolean compareDates(Date date1, Date date2, long minuteDifference, boolean allDate){
         //if diff is 10 minute or less, its cant be cancelled
         long diffMillis = date1.getTime() - date2.getTime();
         long tenMinutesMillis = minuteDifference * 60 * 1000;
@@ -158,21 +238,33 @@ public class RideServiceImpl implements IRideService {
 
     }
 
+    public static boolean isSameOrBefore(
+            LocalDateTime localDateTime,
+            Date date,
+            ZoneId zoneId
+    ) {
+        LocalDate refDate = localDateTime.toLocalDate();
+
+        LocalDate dateAsLocal = date.toInstant()
+                .atZone(zoneId)
+                .toLocalDate();
+
+        return !dateAsLocal.isAfter(refDate);
+    }
+
     public void DummyRideInit(){
 
         Ride dummyRide = new Ride(
-                                      // id
-                "New York",                 // origin
-                "Los Angeles",              // destination
-                new Date(),                // departureTime
-                new Date(),       // timeLeft
-                40.7128,                    // latitude
-                -74.0060,                   // longitude
-                false,                      // panic
-                false,                      // canceled
-                false,                      // started
-                99.99,                      // price
-                Arrays.asList("Chicago", "Denver") // locationsPassed
+                1L,
+                new Driver(),
+                new Account(),
+                new ArrayList<Account>(),
+                new ArrayList<Location>(),
+                1000.00,
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                RideStatus.SCHEDULED,
+                false
         );
 
         insert(dummyRide);
@@ -206,8 +298,8 @@ public class RideServiceImpl implements IRideService {
             throw new RuntimeException("Ride already started");
         }
 
-        ride.setStarted(true);
-        ride.setDepartureTime(new Date()); // optional but realistic
+        ride.setStatus(RideStatus.ACTIVE);
+        ride.setStartTime(LocalDateTime.now()); // optional but realistic
         allRides.save(ride);
     }
 
@@ -219,24 +311,53 @@ public class RideServiceImpl implements IRideService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, value);
         }
 
-        ArrayList<String> passedLocations = new ArrayList<String> (List.of(stopReq.getPassedLocations().split(",")));
+        ArrayList<Location> passedLocations = new ArrayList<Location>(stopReq.getPassedLocations());
 
         Ride ride = found.get();
-        ride.changeLocations(passedLocations); //this one sets all up, the first one, last one, and midpoints
-        ride.setFinalDestTime(stopReq.getCurrentTime());
+        ride.changeLocations(passedLocations);
+        ride.setEndTime(stopReq.getCurrentTime());
+        allRides.save(ride);
+        allRides.flush();
 
         //Now, I could recalculate based on allPassed, though if only the final dest was returned I couldnt do that
         //In the specification it says only the final Dest is passed, though then the change of midpoints would be
         //impossible, so I would just calc based on Starting-ending, though the way I did it I get access
         //to all destinations passed. For now I'll just assume my way is good, and use passedLocs.
-        OrsRouteResult result = orsRoutingService.getFastestRouteAddresses(passedLocations);
+        List<List<Double>> coordinates = new ArrayList<>();
+
+        for (Location loc : passedLocations) {
+            coordinates.add(Arrays.asList(
+                    loc.getLongitude(),
+                    loc.getLatitude()
+            ));
+        }
+        OrsRouteResult result = orsRoutingService.getFastestRouteWithPath(coordinates);
         ride.setPrice(result.getPrice());
         allRides.save(ride);
         allRides.flush();
 
-        RideStoppedDTO stopped = new RideStoppedDTO(rideID, ride.getPrice(),  ride.getAllDestinations());
+        RideStoppedDTO stopped = new RideStoppedDTO(rideID, ride.getPrice(),  ride.getLocations());
         return stopped;
 
+
+    }
+
+    public void endRide(RideEndDTO rideEndDTO) {
+        if (rideEndDTO == null || rideEndDTO.getRideId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "rideId must be provided");
+        }
+        Optional<Ride> found = allRides.findById(rideEndDTO.getRideId());
+        if (found.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
+        }
+        Ride ride = found.get();
+        if (rideEndDTO.getPrice() != null) {
+            ride.setPrice(rideEndDTO.getPrice());
+        }
+        ride.setStatus(RideStatus.FINISHED);
+
+        allRides.save(ride);
+        allRides.flush();
     }
 
     @Override
@@ -253,7 +374,7 @@ public class RideServiceImpl implements IRideService {
     public void PanicRide(Long rideID, String email) {
 
         Optional<Ride> foundRide = allRides.findById(rideID);
-        Optional<Account> foundAccount = accountRepository.findByEmail(email);
+        Optional<Account> foundAccount = allAccounts.findByEmail(email);
         if(foundRide.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
         }
