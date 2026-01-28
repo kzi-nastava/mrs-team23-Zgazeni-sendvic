@@ -34,4 +34,9 @@ export class RouteEstimationPanel {
     console.log('Stop clicked');
     // Handle stop action
   }
+
+  onPanic() {
+    console.log('PANIC clicked');
+    // Handle panic action
+  }
 }
