@@ -1,11 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { LoginRequest } from '../../models/auth.models';
@@ -28,8 +28,9 @@ import { LoginRequest } from '../../models/auth.models';
 export class LoginForm {
   form!: FormGroup;
   hidePassword = true;
+  loginError = signal<string | null>(null);
 
-  constructor(private fb: FormBuilder, private authService: AuthService) {
+  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
@@ -46,15 +47,18 @@ export class LoginForm {
       this.form.markAllAsTouched();
       return;
     }
+    
+    this.loginError.set(null);  // Clear any previous errors
     const request: LoginRequest = this.form.value;
     this.authService.login(request).subscribe({
       next: (response) => {
         console.log('Login successful', response);
-        // Handle success: store token, navigate, etc.
+        // Token is already stored by auth service
+        this.router.navigate(['/']);
       },
       error: (error) => {
         console.error('Login failed', error);
-        // Handle error: show message, etc.
+        this.loginError.set('Incorrect email or password');
       }
     });
   }

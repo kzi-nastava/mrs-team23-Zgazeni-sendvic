@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -6,8 +6,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { FormGroup } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
+import { RegisterRequest } from '../../models/auth.models';
 
 
 @Component({
@@ -31,15 +33,15 @@ export class RegistrationForm {
   hidePassword = true;  // Toggle password visibility
   hideConfirmPassword = true;
   selectedPhotoFile: File | null = null;
+  registerError = signal<string | null>(null);
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
     this.form = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required,Validators.pattern(/^\d{10,}$/)]],  // At least 10 digits
       adress: ['', Validators.required],
-      username: ['', [Validators.required, Validators.minLength(3)]],
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', Validators.required],
     }, { validators: this.passwordMatchValidator });
@@ -51,7 +53,36 @@ export class RegistrationForm {
     console.log('Form is invalid');
     return;
   }
-  console.log('Form submitted:', this.form.value);
+  
+  this.registerError.set(null);  // Clear any previous errors
+  
+  const request: RegisterRequest = {
+    firstName: this.form.value.firstName,
+    lastName: this.form.value.lastName,
+    email: this.form.value.email,
+    phoneNum: this.form.value.phone,
+    address: this.form.value.address,
+    password: this.form.value.password,
+    pictUrl: "DefaultUrl",
+  };
+      this.authService.register(request).subscribe({
+        next: (response) => {
+          console.log('Register successful', response);
+          this.router.navigate(['/login']);
+        },
+        error: (error) => {
+          // Handle special case where 201 response had parsing error
+          if (error.message === 'success') {
+            console.log('Register successful (empty response)');
+            this.router.navigate(['/login']);
+          } else {
+            console.error('Register failed', error);
+            this.registerError.set('Registration failed. Please try again.');
+          }
+        }
+      });
+
+
 }
 
   togglePasswordVisibility() {

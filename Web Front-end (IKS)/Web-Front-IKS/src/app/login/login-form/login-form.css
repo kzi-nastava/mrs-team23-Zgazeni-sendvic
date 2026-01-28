@@ -45,3 +45,18 @@ button[mat-raised-button] {
 
 .remember { display:flex; align-items:center; gap:8px; cursor:pointer; }
 .forgot:hover { text-decoration: underline; }
+
+.error-display {
+  display: flex;
+  justify-content: center;
+  min-height: 24px;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0;
+  text-align: center;
+  padding-bottom:0px;
+}

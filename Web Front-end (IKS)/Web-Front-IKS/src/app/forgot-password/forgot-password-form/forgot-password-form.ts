@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -23,6 +23,7 @@ import { ForgotPasswordRequest } from '../../models/auth.models';
 })
 export class ForgotPasswordForm {
   form!: FormGroup;
+  submitted = signal(false);
 
   constructor(private fb: FormBuilder, private authService: AuthService) {
     this.form = this.fb.group({
@@ -39,11 +40,17 @@ export class ForgotPasswordForm {
     this.authService.forgotPassword(request).subscribe({
       next: (response) => {
         console.log('Forgot password request successful', response);
-        // Handle success
+        this.submitted.set(true);
       },
       error: (error) => {
-        console.error('Forgot password failed', error);
-        // Handle error
+        // Handle special case where 201 response had parsing error
+        if (error.message === 'success') {
+          console.log('Forgot password successful (empty response)');
+          this.submitted.set(true);
+        } else {
+          console.error('Forgot password failed', error);
+          this.submitted.set(true);
+        }
       }
     });
   }

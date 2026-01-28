@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import {
   LoginRequest,
   LoginResponse,
@@ -23,27 +23,53 @@ export class AuthService {
 
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, request)
-      .pipe(catchError(this.handleError));
+      .pipe(
+        tap(response => console.log('Login response:', response)),
+        catchError(this.handleError)
+      );
   }
 
-  register(request: RegisterRequest): Observable<RegisterResponse> {
-    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, request)
-      .pipe(catchError(this.handleError));
+  register(request: RegisterRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/register`, request, { responseType: 'text' })
+      .pipe(
+        tap(response => console.log('Register response:', response)),
+        catchError(error => {
+          // If it's a successful status code (2xx) with parsing error, treat as success
+          if (error.status === 201 || error.status === 200) {
+            console.log('Register successful (empty response)');
+            return throwError(() => new Error('success'));
+          }
+          return this.handleError(error);
+        })
+      );
   }
 
-  forgotPassword(request: ForgotPasswordRequest): Observable<ForgotPasswordResponse> {
-    return this.http.post<ForgotPasswordResponse>(`${this.apiUrl}/forgot-password`, request)
-      .pipe(catchError(this.handleError));
+  forgotPassword(request: ForgotPasswordRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/forgot-password`, request, { responseType: 'text' })
+      .pipe(
+        tap(response => console.log('Forgot password response:', response)),
+        catchError(error => {
+          // If it's a successful status code (2xx) with parsing error, treat as success
+          if (error.status === 201 || error.status === 200) {
+            console.log('Forgot password successful (empty response)');
+            return throwError(() => new Error('success'));
+          }
+          return this.handleError(error);
+        })
+      );
   }
 
   resetPassword(request: ResetPasswordRequest): Observable<ResetPasswordResponse> {
     return this.http.post<ResetPasswordResponse>(`${this.apiUrl}/reset-password`, request)
-      .pipe(catchError(this.handleError));
+      .pipe(
+        tap(response => console.log('Reset password response:', response)),
+        catchError(this.handleError)
+      );
   }
 
   private handleError(error: HttpErrorResponse) {
-    // Handle error appropriately
-    console.error('An error occurred:', error);
+    // Only log actual HTTP errors (4xx, 5xx)
+    console.error('HTTP Error:', error.status, error.message);
     return throwError(() => new Error('Something went wrong; please try again later.'));
   }
 }

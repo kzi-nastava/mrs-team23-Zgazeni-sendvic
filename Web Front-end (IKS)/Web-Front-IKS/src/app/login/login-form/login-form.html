@@ -28,4 +28,11 @@
     <a class="text-link" routerLink="/register">Create account</a>
     <a class="forgot" routerLink="/forgot-password">Forgot password?</a>
   </div>
+
+  <div class="error-display">
+    @if (loginError()) {
+      <p class="error-message">{{ loginError() }}</p>
+    }
+  </div>
+
 </form>
