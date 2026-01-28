@@ -11,6 +11,7 @@ import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.VehicleRepository;
 
 import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,6 +33,8 @@ public class DriverServiceImpl implements IDriverService {
     EmailService emailService;
     @Autowired
     PasswordEncoder passwordEncoder;
+    @Autowired
+    PasswordResetTokenRepositoryService passwordResetTokenRepositoryService;
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
@@ -103,34 +106,29 @@ public class DriverServiceImpl implements IDriverService {
     }
 
     @Override
-    public Driver activateDriver(String token, ActivateDriverDTO dto) {
+    @Transactional
+    public void activateDriver(String token, String rawPassword) {
 
-        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
-            throw new IllegalArgumentException("Passwords do not match");
-        }
-
-        Account account = accountRepository
-                .findByActivationToken(token)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Invalid activation token")
-                );
+        Account account = passwordResetTokenRepositoryService
+                .validateResetToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired token"));
 
         if (!(account instanceof Driver driver)) {
-            throw new IllegalStateException("Activation token does not belong to a driver");
+            throw new IllegalStateException("Account is not a driver");
         }
 
         if (driver.isActive()) {
             throw new IllegalStateException("Driver already activated");
         }
 
-        driver.setPassword(passwordEncoder.encode(dto.getPassword()));
-
+        driver.setPassword(passwordEncoder.encode(rawPassword));
         driver.setActive(true);
-        driver.setActivationToken(null);
+
+        passwordResetTokenRepositoryService.markAsUsed(token);
 
         accountRepository.save(driver);
-        return driver;
     }
+
 
 
     @Override

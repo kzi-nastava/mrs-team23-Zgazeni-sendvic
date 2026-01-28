@@ -49,17 +49,15 @@ public class DriverController {
     )
     public ResponseEntity<?> activateDriver(
             @RequestParam("token") String token,
-            @RequestBody ActivateDriverDTO dto
+            @RequestBody String passwordRaw
     ) {
         try {
-            driverService.activateDriver(token, dto);
-            return ResponseEntity.ok().build();
+            driverService.activateDriver(token, passwordRaw);
+            return ResponseEntity.ok("Driver activated successfully");
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
 
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
