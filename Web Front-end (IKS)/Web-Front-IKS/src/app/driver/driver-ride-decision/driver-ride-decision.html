@@ -1,0 +1,20 @@
+<mat-card class="card" *ngIf="!loading && ride">
+  <h2>Ride request</h2>
+
+  <p><strong>From:</strong> {{ ride.start }}</p>
+  <p><strong>To:</strong> {{ ride.destination }}</p>
+  <p><strong>Price:</strong> {{ ride.price }} RSD</p>
+
+  <div class="actions">
+    <button mat-raised-button color="primary" (click)="accept()">
+      Accept
+    </button>
+
+    <button mat-raised-button color="warn" (click)="reject()">
+      Reject
+    </button>
+  </div>
+</mat-card>
+
+<p *ngIf="error" class="error">{{ error }}</p>
+<p *ngIf="loading">Loading...</p>

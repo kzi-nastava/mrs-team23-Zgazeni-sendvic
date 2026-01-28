@@ -1,0 +1,7 @@
+<h2>Activate account</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <input type="password" placeholder="Password" formControlName="password">
+  <input type="password" placeholder="Confirm password" formControlName="confirm">
+  <button type="submit">Activate</button>
+</form>

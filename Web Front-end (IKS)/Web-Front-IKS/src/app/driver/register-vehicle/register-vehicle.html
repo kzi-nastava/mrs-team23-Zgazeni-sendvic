@@ -1,0 +1,43 @@
+<div class="page">
+  <div class="card">
+    <h1 class="title">Register Vehicle</h1>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form-container">
+
+      <div class="left">
+        <input placeholder="Vehicle model" formControlName="model">
+
+        <select formControlName="vehicleType">
+          <option value="STANDARD">Standard</option>
+          <option value="LUXURY">Luxury</option>
+          <option value="VAN">Van</option>
+        </select>
+
+        <input placeholder="License plate" formControlName="licensePlate">
+        <input type="number" placeholder="Number of seats" formControlName="seats">
+      </div>
+
+      <div class="right">
+        <label>
+          <input type="checkbox" formControlName="babyTransport">
+          Baby transport allowed
+        </label>
+
+        <label>
+          <input type="checkbox" formControlName="petTransport">
+          Pet transport allowed
+        </label>
+
+        <button mat-raised-button type="submit">
+          Register vehicle
+        </button>
+      </div>
+    </form>
+
+    <div class="bottom-section">
+      <a class="text-link" routerLink="/register-driver">
+        Back to driver registration
+      </a>
+    </div>
+  </div>
+</div>
