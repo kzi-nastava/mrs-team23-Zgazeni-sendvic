@@ -31,7 +31,8 @@ public class NoteAddingService {
             repository.save(rn);
             return true;
         } catch (Exception e) {
-            System.err.println("Failed to save ride note: " + e.getMessage());
+            System.err.println("Failed to save ride note: ");
+            e.printStackTrace();
             return false;
         }
     }
