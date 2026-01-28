@@ -53,6 +53,21 @@
   text-decoration: underline;
 }
 
+.error-display {
+  display: flex;
+  justify-content: center;
+  min-height: 24px;
+  width: 100%;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  text-align: center;
+}
+
 button[mat-raised-button] {
   border-radius: 20px !important;  
   background-color: #41A79D !important;  
