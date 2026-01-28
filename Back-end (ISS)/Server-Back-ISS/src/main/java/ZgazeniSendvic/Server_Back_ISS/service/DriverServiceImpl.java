@@ -1,5 +1,6 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
+import ZgazeniSendvic.Server_Back_ISS.dto.ActivateDriverDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.CreateDriverDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.RegisterVehicleDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
@@ -9,11 +10,15 @@ import ZgazeniSendvic.Server_Back_ISS.model.Vehicle;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.VehicleRepository;
 
+import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Service
@@ -21,9 +26,15 @@ public class DriverServiceImpl implements IDriverService {
 
     @Autowired
     AccountRepository accountRepository;
-
     @Autowired
     VehicleRepository vehicleRepository;
+    @Autowired
+    EmailService emailService;
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     private static final Pattern REGISTRATION_PATTERN =
             Pattern.compile("^[A-Z0-9-]{5,15}$");
@@ -65,9 +76,62 @@ public class DriverServiceImpl implements IDriverService {
         driver.setPhoneNumber(dto.getPhoneNumber());
         driver.setImgString(dto.getImgString());
         driver.setVehicle(dto.getVehicle());
+        driver.setActive(false);
 
-        return (Driver) accountRepository.save(driver);
+        String token = UUID.randomUUID().toString();
+        driver.setActivationToken(token);
+
+        Driver saved = accountRepository.save(driver);
+
+        String activationLink =
+                frontendUrl + "/activate-driver/" + token;
+
+        EmailDetails email = new EmailDetails();
+        email.setRecipient(saved.getEmail());
+        email.setSubject("Activate your driver account");
+        email.setMsgBody(
+                "Hello,\n\n" +
+                        "An administrator has created a driver account for you.\n\n" +
+                        "Please activate your account using the link below (valid for 24 hours):\n\n" +
+                        activationLink + "\n\n" +
+                        "If you did not expect this email, please ignore it."
+        );
+
+        emailService.sendSimpleMail(email);
+
+        return saved;
     }
+
+    @Override
+    public Driver activateDriver(String token, ActivateDriverDTO dto) {
+
+        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+            throw new IllegalArgumentException("Passwords do not match");
+        }
+
+        Account account = accountRepository
+                .findByActivationToken(token)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Invalid activation token")
+                );
+
+        if (!(account instanceof Driver driver)) {
+            throw new IllegalStateException("Activation token does not belong to a driver");
+        }
+
+        if (driver.isActive()) {
+            throw new IllegalStateException("Driver already activated");
+        }
+
+        driver.setPassword(passwordEncoder.encode(dto.getPassword()));
+
+        driver.setActive(true);
+        driver.setActivationToken(null);
+
+        accountRepository.save(driver);
+        return driver;
+    }
+
 
     @Override
     public Vehicle registerVehicle(RegisterVehicleDTO dto) {

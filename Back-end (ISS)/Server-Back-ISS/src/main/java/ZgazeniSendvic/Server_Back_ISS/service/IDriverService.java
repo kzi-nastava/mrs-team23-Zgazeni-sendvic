@@ -1,5 +1,6 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
+import ZgazeniSendvic.Server_Back_ISS.dto.ActivateDriverDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.CreateDriverDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.RegisterVehicleDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Driver;
@@ -12,5 +13,7 @@ public interface IDriverService extends IAccountService {
     Vehicle registerVehicle(RegisterVehicleDTO dto);
 
     void changeAvailableStatus(String email, boolean value);
+
+    Driver activateDriver(String token, ActivateDriverDTO adDto);
 
 }

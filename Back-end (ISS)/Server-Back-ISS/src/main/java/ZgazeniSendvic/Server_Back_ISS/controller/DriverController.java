@@ -42,6 +42,28 @@ public class DriverController {
         }
     }
 
+    @PutMapping(
+            value = "/activate",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<?> activateDriver(
+            @RequestParam("token") String token,
+            @RequestBody ActivateDriverDTO dto
+    ) {
+        try {
+            driverService.activateDriver(token, dto);
+            return ResponseEntity.ok().build();
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+
+
     @PostMapping(
             value = "/vehicle",
             consumes = MediaType.APPLICATION_JSON_VALUE,

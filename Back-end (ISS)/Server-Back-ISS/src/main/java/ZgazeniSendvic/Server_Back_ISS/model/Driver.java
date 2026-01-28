@@ -30,6 +30,10 @@ public class Driver extends Account {
     @Getter @Setter
     private int workedMinutesLast24h;
 
+    @Getter @Setter
+    @Column(unique = true)
+    private String activationToken;
+
     public Driver() {
         super();
     }
