@@ -3,6 +3,7 @@ package ZgazeniSendvic.Server_Back_ISS.service;
 import ZgazeniSendvic.Server_Back_ISS.dto.HistoryOfRidesDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.PastRideDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
+import ZgazeniSendvic.Server_Back_ISS.model.RideStatus;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,11 +24,12 @@ public class HistoryOfRidesService {
         List<Ride> all = rideRepository.findAll();
         List<PastRideDTO> past = new ArrayList<>();
         for (Ride r : all) {
-            if (r.isEnded() && r.getDriverId() != null && r.getDriverId().equals(userId)) {
-                String dep = r.getDepartureTime() == null ? null : fmt.format(r.getDepartureTime());
-                String arr = r.getFinalDestTime() == null ? null : fmt.format(r.getFinalDestTime());
-                String price =  r.getPrice() == null ? null : String.valueOf(r.getPrice());
-                PastRideDTO p = new PastRideDTO(r.getId(), r.getOrigin(), r.getDestination(), dep, arr,
+            if (r.getStatus().equals(RideStatus.FINISHED) && r.getDriver().getId() != null && r.getDriver().getId().equals(userId)) {
+                String dep = r.getStartTime() == null ? null : fmt.format(r.getStartTime());
+                String arr = r.getEndTime() == null ? null : fmt.format(r.getEndTime());
+                double price =  r.getPrice();
+                PastRideDTO p = new PastRideDTO(r.getId(), r.getLocations().get(0),
+                        r.getLocations().get(r.getLocations().size() - 1), dep, arr,
                         r.isPanic(), String.valueOf(r.isCanceled()), price);
                 past.add(p);
             }

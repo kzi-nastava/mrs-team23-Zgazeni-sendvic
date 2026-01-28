@@ -4,6 +4,7 @@ import ZgazeniSendvic.Server_Back_ISS.dto.GetRouteDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.SaveRouteDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Location;
 import ZgazeniSendvic.Server_Back_ISS.model.Route;
+import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
 import ZgazeniSendvic.Server_Back_ISS.service.IAccountService;
 import ZgazeniSendvic.Server_Back_ISS.service.IRouteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ public class RouteController {
     @Autowired
     IRouteService routeService;
     @Autowired
-    IAccountService accountService;
+    AccountServiceImpl accountService;
 
     @PostMapping(
             value = "/favorite/save/{id}",

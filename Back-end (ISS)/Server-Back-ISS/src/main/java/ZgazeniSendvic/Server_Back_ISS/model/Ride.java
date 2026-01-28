@@ -50,8 +50,11 @@ public class Ride {
     @Enumerated(EnumType.STRING)
     private RideStatus status;
 
+    @Getter @Setter
+    private boolean panic;
+
     public Ride(Long id, Driver driver, Account creator, List<Account> passengers, List<Location> locations,
-                double price, LocalDateTime startTime, LocalDateTime endTime, RideStatus status) {
+                double price, LocalDateTime startTime, LocalDateTime endTime, RideStatus status, boolean panic) {
         this.id = id;
         this.driver = driver;
         this.creator = creator;
@@ -62,6 +65,7 @@ public class Ride {
         this.endTime = endTime;
         this.durationMinutes = calculateDuration();
         this.status = status;
+        this.panic = panic;
     }
 
     public Ride() {
@@ -75,6 +79,8 @@ public class Ride {
     public boolean isStarted() {
         return status == RideStatus.ACTIVE;
     }
+
+    public boolean isPanic() { return panic; }
 
     public void changeLocations(ArrayList<Location> newLocations){
         locations = newLocations;

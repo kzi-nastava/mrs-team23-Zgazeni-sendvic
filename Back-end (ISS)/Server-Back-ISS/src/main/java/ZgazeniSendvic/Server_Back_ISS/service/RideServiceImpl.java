@@ -166,7 +166,8 @@ public class RideServiceImpl implements IRideService {
                 1000.00,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
-                RideStatus.SCHEDULED
+                RideStatus.SCHEDULED,
+                false
         );
 
         insert(dummyRide);
@@ -238,8 +239,7 @@ public class RideServiceImpl implements IRideService {
         if (rideEndDTO.getPrice() != null) {
             ride.setPrice(rideEndDTO.getPrice());
         }
-        ride.setPaid(rideEndDTO.isPaid());
-        ride.setEnded(rideEndDTO.isEnded());
+        ride.setStatus(RideStatus.FINISHED);
 
         allRides.save(ride);
         allRides.flush();
