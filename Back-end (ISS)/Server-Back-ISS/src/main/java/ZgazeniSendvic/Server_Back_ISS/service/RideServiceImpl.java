@@ -318,8 +318,8 @@ public class RideServiceImpl implements IRideService {
         Ride ride = found.get();
         ride.changeLocations(passedLocations);
         ride.setEndTime(stopReq.getCurrentTime());
-        allRides.save(ride);
-        allRides.flush();
+        //allRides.save(ride);
+        //allRides.flush();
 
         //Now, I could recalculate based on allPassed, though if only the final dest was returned I couldnt do that
         //In the specification it says only the final Dest is passed, though then the change of midpoints would be
