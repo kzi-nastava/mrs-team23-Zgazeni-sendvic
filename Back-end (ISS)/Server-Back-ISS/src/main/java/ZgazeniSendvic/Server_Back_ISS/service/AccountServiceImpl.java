@@ -21,10 +21,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.context.annotation.Primary;
 
 import java.util.*;
 import java.util.regex.Pattern;
 
+@Primary
 @Service
 public class AccountServiceImpl implements IAccountService, UserDetailsService {
 

@@ -4,7 +4,8 @@ import { DriverProfile } from './profiles/driver-profile/driver-profile';
 import { AdminProfile } from './profiles/admin-profile/admin-profile';
 import { Home } from './layout/home/home';
 import { HorDriver } from './HOR-Driver/hor-driver';
-
+import { RideTracking } from './ride-tracking/ride-tracking';
+import { FutureRides } from './future-rides/future-rides';
 import { Registration } from './registration/registration';
 import { Login } from './login/login';
 import { ForgotPassword } from './forgot-password/forgot-password';
@@ -16,6 +17,8 @@ export const routes: Routes = [
   { path: 'profile/driver', component: DriverProfile },
   { path: 'profile/admin', component: AdminProfile },
   { path: 'hor-driver', component: HorDriver },
+  { path: 'future-rides', component: FutureRides },
+  { path: 'ride-tracking', component: RideTracking },
   { path: 'register', component: Registration },
   { path: 'login', component: Login },
   { path: 'forgot-password', component: ForgotPassword },
