@@ -3,15 +3,15 @@ package ZgazeniSendvic.Server_Back_ISS.dto;
 public class LoginRequestedDTO {
 
     private String token;
-    private String tokenType;
+    private int expiresIn;
     private AccountLoginDTO user;
 
     public LoginRequestedDTO() {
     }
 
-    public LoginRequestedDTO(String token, String tokenType, AccountLoginDTO user) {
+    public LoginRequestedDTO(String token, int expiresIn, AccountLoginDTO user) {
         this.token = token;
-        this.tokenType = tokenType;
+        this.expiresIn = expiresIn;
         this.user = user;
     }
 
@@ -23,12 +23,12 @@ public class LoginRequestedDTO {
         this.token = token;
     }
 
-    public String getTokenType() {
-        return tokenType;
+    public int getExpiresIn() {
+        return expiresIn;
     }
 
-    public void setTokenType(String tokenType) {
-        this.tokenType = tokenType;
+    public void setExpiresIn(int expiresIn) {
+        this.expiresIn = expiresIn;
     }
 
     public AccountLoginDTO getUser() {

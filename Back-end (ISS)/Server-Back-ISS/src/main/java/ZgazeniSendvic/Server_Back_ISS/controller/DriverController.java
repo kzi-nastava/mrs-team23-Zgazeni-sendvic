@@ -1,9 +1,6 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
-import ZgazeniSendvic.Server_Back_ISS.dto.CreateDriverDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.CreatedDriverDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.RegisterVehicleDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.RegisteredVehicleDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Driver;
 import ZgazeniSendvic.Server_Back_ISS.model.Vehicle;
 import ZgazeniSendvic.Server_Back_ISS.service.IDriverService;
@@ -69,4 +66,24 @@ public class DriverController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
+
+    @PutMapping(path = "/changeStatus", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> changeDriverStatus(@RequestBody DriverChangeStatusDTO request)
+            throws Exception {
+
+
+        try {
+            driverService.changeAvailableStatus(request.getEmail(), request.isToState());
+            return ResponseEntity.ok("Status updated successfully");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+
+    }
+
 }
+
+

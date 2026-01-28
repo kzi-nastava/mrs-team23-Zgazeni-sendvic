@@ -20,7 +20,7 @@ public class JwtUtils {
     private String APP_NAME;
 
     // Secret
-    @Value("Sendic")
+    @Value("SendicSendicSendicSendicSendicSendicSendicSendicSendicSendicSendicSendicSendicSendicSendicSendicSendic")
     public String SECRET;
 
     // Validity time - 30 min
@@ -170,15 +170,20 @@ public class JwtUtils {
      * @param token JWT token.
      * @param userDetails Info about the Owner of the token.
      * @return Information on validity of the Token.
-     * not sure exactly how one part functions, will come back to it
+     * It obtains email directly from the token, whilst also, the function that calls validateToken
+     * based on the email obtained directly from the token, obtains a userDetails based on the email
+     * so if the email was truly present in the database, they wall match, so:
+     * if the token is false, the email gotten from it wont return anything from the database, so when compared to
+     * that which is from the database they wont match
      */
     public Boolean validateToken(String token, UserDetails userDetails) {
-        Account account = (Account) userDetails;
+        //Would work if the userDetails was Accound which it isnt
+        //Account account = (Account) userDetails;
         final String email = getUsernameFromToken(token);
         final Date created = getIssuedAtDateFromToken(token);
 
-        // Token je validan kada:
-        return (email != null // korisnicko ime nije null
+        // Token is valid when:
+        return (email != null // email isn't null
                 && email.equals(userDetails.getUsername())) ;// Token name is equal to userDetails name
                 //would be password-reset date check, for now nothing);
     }

@@ -3,9 +3,12 @@ package ZgazeniSendvic.Server_Back_ISS.service;
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Driver;
+import ZgazeniSendvic.Server_Back_ISS.model.AccountConfirmationToken;
+//import ZgazeniSendvic.Server_Back_ISS.model.EmailDetails; WRONG IMPORT
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 
 import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
+import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,13 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    EmailService emailService;
+
+    @Autowired
+    PasswordResetTokenRepositoryService resetTokenService;
+
+
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
 
@@ -46,6 +56,10 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
     @Override
     public Account findAccount(Long accountId) {
         return allAccounts.findById(accountId).orElse(null);
+    }
+
+    public Account findAccountByEmail(String email) {
+        return allAccounts.findByEmail(email).get();
     }
 
     @Override
@@ -76,8 +90,20 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
 
         Account account = new Account(requestDTO);
         insert(account);
+        sendConfirmationLink(account.getEmail(),account);
 
-        return new LoginRequestedDTO("1", "1", new AccountLoginDTO(account));
+        return new LoginRequestedDTO("1", 1, new AccountLoginDTO(account));
+
+    }
+
+    public void sendConfirmationLink(String email, Account account){
+        String rawToken = resetTokenService.createConfirmationToken(account);
+
+        EmailDetails emailDetails = new EmailDetails();
+        emailDetails.setRecipient(email); // sender is automatically set
+        emailDetails.setSubject("Confirm ypir DriveBy account");
+        emailDetails.setMsgBody("http://localhost:8080/api/auth/confirm-account?token=" + rawToken);
+        emailService.sendSimpleMail(emailDetails);
 
     }
 
@@ -95,7 +121,7 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         //otherwise it has been found
         Account found = account.get();
 
-        return new LoginRequestedDTO("1", "1", new AccountLoginDTO(found));
+        return new LoginRequestedDTO("1", 1, new AccountLoginDTO(found));
 
     }
 
@@ -153,6 +179,9 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
 
         Account acc = allAccounts.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        if(!acc.isConfirmed()){
+            throw new UsernameNotFoundException("Account not confirmed:");
+        }
 
         return new CustomUserDetails(acc);
     }
@@ -163,4 +192,69 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with given ID was not found");
         }
     }
-}
+
+    public void forgotPassword(String email){
+        Optional<Account> account =  allAccounts.findByEmail(email);
+        if(account.isEmpty()){
+            return; // email doesn't match, do not send an email
+        }
+
+        //generate token
+        String rawToken = resetTokenService.createResetToken(account.get());
+        // Matches; send the email
+        EmailDetails emailDetails = new EmailDetails();
+        emailDetails.setRecipient(email); // sender is automatically set
+        emailDetails.setSubject("Reset your DriveBy password");
+        emailDetails.setMsgBody("http://localhost:8080/api/auth/reset-password?token=" + rawToken);
+        emailService.sendSimpleMail(emailDetails);
+
+    }
+
+    public void resetPassword(PasswordResetConfirmedRequestDTO resetRequestDTO){
+
+        String rawToken = resetRequestDTO.getToken();
+        String newPass = resetRequestDTO.getNewPassword();
+
+        if(!resetTokenService.isReset(rawToken)){
+            throw new BadCredentialsException("Is not a reset token");
+        }
+
+        Optional<Account> foundAccount = resetTokenService.validateResetToken(rawToken);
+        if(foundAccount.isEmpty()){
+            throw new BadCredentialsException("Invalid reset token");
+            //This doesnt work because I have a global handler that "misuses" it
+        }
+        //token is proper
+        Account account = foundAccount.get();
+        account.setPassword(passwordEncoder.encode(newPass));
+        allAccounts.save(account);
+        allAccounts.flush();
+
+        resetTokenService.markAsUsed(rawToken);
+
+
+    }
+
+    public void confirmAccount(AccountConfirmationDTO confirmationDTO){
+
+        String rawToken = confirmationDTO.getRawToken();
+        if(resetTokenService.isReset(rawToken)){
+            throw new BadCredentialsException("Is not a confirmation token");
+        }
+
+        Optional<Account> foundAccount = resetTokenService.validateResetToken(rawToken);
+        if(foundAccount.isEmpty()){
+            throw new BadCredentialsException("Invalid confirmation token");
+
+        }
+        //token is proper
+        Account account = foundAccount.get();
+        account.setConfirmed(true);
+        allAccounts.save(account);
+        allAccounts.flush();
+
+        resetTokenService.markAsUsed(rawToken);
+
+    }
+    }
+

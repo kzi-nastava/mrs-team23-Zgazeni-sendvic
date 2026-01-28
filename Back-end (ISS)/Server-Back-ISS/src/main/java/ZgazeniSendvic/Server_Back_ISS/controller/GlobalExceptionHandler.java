@@ -32,7 +32,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleBadCredentials(BadCredentialsException ex) {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body("Invalid email or password");
+                .body(ex.getMessage());
     }
+
+
 
 }

@@ -29,6 +29,9 @@ class RideController {
 
     @Autowired
     RideServiceImpl rideService;
+    @Autowired
+    OrsRoutingService orsRoutingService;
+
 
     @Autowired
     VehiclePositionsService vehiclePositionsService;
@@ -63,16 +66,33 @@ class RideController {
     }
 
 
+    @PutMapping(path = "ride-PANIC/{rideID}",
+            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> panicRide(@RequestBody PanicButtonDTO request,
+                                                         @PathVariable Long rideID) throws Exception{
+
+        //Email would be pulled out of auth
+        //rideService.DummyRideInit();
+        rideService.PanicRide(rideID, request.getEmail());
+
+
+        return new ResponseEntity<String>("Ride set to panic", HttpStatus.OK);
+
+
+    }
+
+
     @GetMapping(path = "ride-estimation/{arrival}/{destinationsStr}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RouteEstimationDTO>
+    public ResponseEntity<OrsRouteResult>
     estimateRide(@PathVariable String arrival, @PathVariable String destinationsStr)throws Exception{
 
 
-        RouteEstimationDTO estimation = rideService.routeEstimate(arrival + "," + destinationsStr);
+        //RouteEstimationDTO estimation = rideService.routeEstimate(arrival + "," + destinationsStr);
+        OrsRouteResult result = orsRoutingService.getFastestRouteAddresses(arrival, destinationsStr);
 
 
-
-        return new ResponseEntity<RouteEstimationDTO>(estimation, HttpStatus.OK);
+        orsRoutingService.addressToCordinates("Novi Sad");
+        return new ResponseEntity<OrsRouteResult>(result, HttpStatus.OK);
 
 
     }
@@ -127,7 +147,7 @@ class RideController {
 
         List<AHORAccountDetailsDTO> passengers = Arrays.asList(new AHORAccountDetailsDTO(), new AHORAccountDetailsDTO());
         AHORAccountDetailsDTO driver = new AHORAccountDetailsDTO();
-        List<String> reports = Arrays.asList("Passenger was late","Driver was friendly");
+        List<String> reports = Arrays.asList("Passenger was late","DRIVER was friendly");
         List<Integer> ratings = Arrays.asList(5, 4, 5);
         ARideDetailsRequestedDTO detailed = new ARideDetailsRequestedDTO(targetID,passengers,driver,reports,ratings);
 
@@ -171,7 +191,7 @@ class RideController {
             return ResponseEntity.status(ex.getStatusCode()).build();
         }
     }
-  
+
   @PutMapping(
             value = "ride-start",
             consumes = MediaType.APPLICATION_JSON_VALUE,

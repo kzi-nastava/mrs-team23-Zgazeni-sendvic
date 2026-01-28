@@ -95,16 +95,28 @@ public class Ride {
         return price;
     }
 
+
     private long calculateDuration() {
         if (startTime == null || endTime == null) {
             return 0;
         }
-
         if (endTime.isBefore(startTime)) {
             throw new IllegalArgumentException("endTime cannot be before startTime");
         }
 
         return Duration.between(startTime, endTime).toMinutes();
     }
+
+
+
+    public boolean isThisPassenger(String email) {
+        for (Account account : passengers) {
+            if (account.getEmail().equals(email)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
 
