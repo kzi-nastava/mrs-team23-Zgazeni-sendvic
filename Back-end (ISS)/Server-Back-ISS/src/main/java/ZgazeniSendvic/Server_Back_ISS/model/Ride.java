@@ -44,7 +44,7 @@ public class Ride {
     private LocalDateTime endTime;
 
     @Getter @Setter
-    private long durationMinutes;
+    private Long durationMinutes;
 
     @Getter @Setter
     @Enumerated(EnumType.STRING)
@@ -119,4 +119,3 @@ public class Ride {
     }
 
 }
-
