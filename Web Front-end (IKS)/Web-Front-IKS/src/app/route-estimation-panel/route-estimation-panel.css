@@ -14,8 +14,19 @@
     /* to not overlap the nav bar */
     margin-top: 82px;
     align-items: center;
-    overflow-y: auto
+    overflow-y: auto;
     
+    /* Slide-in animation */
+    animation: slideInFromLeft 0.5s ease-out forwards;
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 .action-buttons {
