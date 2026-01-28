@@ -13,7 +13,7 @@
       <button mat-raised-button color="primary" [routerLink]="['/reset-password']">Reset password</button>
     </div>
     <div class="button-container">
-      <button type="button" class="logout" aria-label="Log out of your account">Log out</button>
+      <button type="button" class="logout" aria-label="Log out of your account" (click)="logout()">Log out</button>
     </div>
     <a [routerLink]="['/profile/user']" class="profile-link" aria-label="Go to your profile page">
       <img src="assets/profiles/profile-placeholder.jpg" class="profile-pic" />
