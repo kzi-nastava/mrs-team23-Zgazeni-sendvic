@@ -17,14 +17,20 @@ import {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth'; // Adjust your backend URL
+  private apiUrl = 'http://localhost:8080/api/auth';
+  private tokenKey = 'jwt_token';
 
   constructor(private http: HttpClient) {}
 
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, request)
       .pipe(
-        tap(response => console.log('Login response:', response)),
+        tap(response => {
+          console.log('Login response:', response);
+          if (response.token) {
+            localStorage.setItem(this.tokenKey, response.token);
+          }
+        }),
         catchError(this.handleError)
       );
   }
@@ -93,5 +99,17 @@ export class AuthService {
     // Only log actual HTTP errors (4xx, 5xx)
     console.error('HTTP Error:', error.status, error.message);
     return throwError(() => new Error('Something went wrong; please try again later.'));
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem(this.tokenKey);
+  }
+
+  clearToken(): void {
+    localStorage.removeItem(this.tokenKey);
+  }
+
+  isAuthenticated(): boolean {
+    return !!this.getToken();
   }
 }
