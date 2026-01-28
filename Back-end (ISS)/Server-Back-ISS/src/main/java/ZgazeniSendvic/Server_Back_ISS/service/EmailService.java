@@ -1,6 +1,6 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
-import ZgazeniSendvic.Server_Back_ISS.model.EmailDetails;
+import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
 
 public interface EmailService {
 

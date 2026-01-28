@@ -2,9 +2,10 @@ package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
+import ZgazeniSendvic.Server_Back_ISS.security.jwt.JwtUtils;
 import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
 import ZgazeniSendvic.Server_Back_ISS.service.DriverServiceImpl;
-import ZgazeniSendvic.Server_Back_ISS.util.TokenUtils;
+//import ZgazeniSendvic.Server_Back_ISS.util.TokenUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,7 @@ class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
-    TokenUtils tokenUtils;
+    JwtUtils tokenUtils;
     @Autowired
     DriverServiceImpl driverService;
 

@@ -1,35 +1,39 @@
 package ZgazeniSendvic.Server_Back_ISS.dto;
 
+import ZgazeniSendvic.Server_Back_ISS.model.Location;
+
+import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 public class RideStopDTO {
 
 
-    private String passedLocations;
-    private Date currentTime;
+    private List<Location> passedLocations;
+    private LocalDateTime currentTime;
 
         RideStopDTO(){}
-    public RideStopDTO(String passedLocations, Date currentTime) {
+    public RideStopDTO(List<Location> passedLocations, LocalDateTime currentTime) {
 
         this.passedLocations = passedLocations;
         this.currentTime = currentTime;
     }
 
 
-    public String getPassedLocations() {
+    public List<Location> getPassedLocations() {
         return passedLocations;
     }
 
-    public Date getCurrentTime() {
+    public LocalDateTime getCurrentTime() {
         return currentTime;
     }
 
 
-    public void setPassedLocations(String currentLocation) {
+    public void setPassedLocations(List<Location> currentLocation) {
         this.passedLocations = currentLocation;
     }
 
-    public void setCurrentTime(Date currentTime) {
+    public void setCurrentTime(LocalDateTime currentTime) {
         this.currentTime = currentTime;
     }
 }

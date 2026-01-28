@@ -1,6 +1,6 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
-import ZgazeniSendvic.Server_Back_ISS.model.EmailDetails;
+import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
 import ZgazeniSendvic.Server_Back_ISS.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

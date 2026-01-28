@@ -1,6 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.security.auth;
 
-import ZgazeniSendvic.Server_Back_ISS.util.TokenUtils;
+//import ZgazeniSendvic.Server_Back_ISS.util.TokenUtils;
+import ZgazeniSendvic.Server_Back_ISS.security.jwt.JwtUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,13 +22,13 @@ import java.io.IOException;
 //is available everywhere necessary
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
-    private TokenUtils tokenUtils;
+    private JwtUtils tokenUtils;
 
     private UserDetailsService userDetailsService;
 
     protected final Log LOGGER = LogFactory.getLog(getClass());
 
-    public TokenAuthenticationFilter(TokenUtils tokenHelper, UserDetailsService userDetailsService) {
+    public TokenAuthenticationFilter(JwtUtils tokenHelper, UserDetailsService userDetailsService) {
         this.tokenUtils = tokenHelper;
         this.userDetailsService = userDetailsService;
     }

@@ -1,12 +1,17 @@
 package ZgazeniSendvic.Server_Back_ISS.config;
 
+import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
+import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetailsService;
+import ZgazeniSendvic.Server_Back_ISS.security.jwt.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import ZgazeniSendvic.Server_Back_ISS.security.auth.RestAuthenticationEntryPoint;
 import ZgazeniSendvic.Server_Back_ISS.security.auth.TokenAuthenticationFilter;
 import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
-import ZgazeniSendvic.Server_Back_ISS.util.TokenUtils;
+//import ZgazeniSendvic.Server_Back_ISS.util.TokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -27,6 +32,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.Arrays;
 
@@ -35,13 +41,11 @@ import java.util.Arrays;
 @EnableMethodSecurity // Enables @PreAuthorize, @Secured etc.
 public class SecurityConfig {
 
-    // Handler for when someone without proper authentication tries accessing certain endpoints
     @Autowired
-    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    JwtAuthenticationFilter jwtFilter;
 
-    // Injection of TokenUtils that will be utilized
     @Autowired
-    private TokenUtils tokenUtils;
+    AccountRepository accountRepository;
 
 
     // Service used for getting information about Accounts, ASIpml implements UserDetailsService
@@ -50,7 +54,7 @@ public class SecurityConfig {
         //it implements USD, so this should be fine? it existing like this???
         //if the method were to return, not the interface, but the ASI, the @Autowire at AuthCOntroller wouldnt know
         //which to take
-        return new AccountServiceImpl();
+        return new CustomUserDetailsService(accountRepository);
     }
 
 
@@ -69,31 +73,24 @@ public class SecurityConfig {
         return authProvider;
     }
 
-
-
-
     @Bean
-    //Skeleton, should use @Preautorize anyway, so most of this will be removed
-    //Permit all -> no JWT required btw
+    //Skeleton, should use @Preauthorize anyway, so most of this will be removed
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults()) // Access from other sites (localhost:4200)
+                .cors(cors -> {}) // Access from other sites (localhost:4200)
                 .csrf(csrf -> csrf.disable()) // JWT does this, so shutdown for now
-                .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(restAuthenticationEntryPoint))
+                //.exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(restAuthenticationEntryPoint))
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/api/auth/register").permitAll()
                         .anyRequest().permitAll() //for testing purposes
-
-
                 ).sessionManagement(session -> { // do not use cookies
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-                });
+                })
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .authenticationProvider(authenticationProvider());
+
                 // JWT before everything else, though not used as for now
                 //.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(new TokenAuthenticationFilter(tokenUtils, userDetailsService()), UsernamePasswordAuthenticationFilter.class);
-        http.authenticationProvider(authenticationProvider());
         return http.build();
     }
 
@@ -116,7 +113,6 @@ public class SecurityConfig {
         return conf.getAuthenticationManager();
     }
 
-    // The password encoder that will be used
     @Bean
     public PasswordEncoder passwordEncoder() {
         PasswordEncoder encoder = new BCryptPasswordEncoder();

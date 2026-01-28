@@ -6,6 +6,7 @@ import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import jakarta.validation.Valid;
 // removed import of all dto's, might break
 
 import org.springframework.http.HttpStatus;
@@ -30,7 +31,20 @@ class RideController {
     RideServiceImpl rideService;
     @Autowired
     OrsRoutingService orsRoutingService;
-    
+
+
+    @Autowired
+    VehiclePositionsService vehiclePositionsService;
+
+    @Autowired
+    NoteAddingService noteAddingService;
+
+    @Autowired
+    RideDriverRatingService rideDriverRatingService;
+
+    @Autowired
+    HistoryOfRidesService historyOfRidesService;
+
     @PutMapping(path = "ride-cancel/{rideID}",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DriveCancelledDTO> cancelDrive(@RequestBody DriveCancelDTO cancelRequest,
@@ -141,43 +155,44 @@ class RideController {
 
     }
 
-    @GetMapping(value = "future-rides",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "future-rides", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<FutureRidesDTO> getFutureRides() {
         FutureRidesService futureRidesService = new FutureRidesService();
         FutureRidesDTO futureRidesDTO = futureRidesService.getFutureRides();
         return new ResponseEntity<FutureRidesDTO>(futureRidesDTO, HttpStatus.OK);
     }
 
-    @GetMapping(value = "history-of-rides/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "history-of-rides/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<HistoryOfRidesDTO> HistoryOfRidesController( @PathVariable Long userId) {
-        HistoryOfRidesService historyOfRidesService = new HistoryOfRidesService();
         HistoryOfRidesDTO historyOfRidesDTO = historyOfRidesService.getHistoryOfRides(userId);
         return ResponseEntity.ok(historyOfRidesDTO);
     }
 
-    @GetMapping(value = "next-ride/{filter}",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<NextRideDTO> getNextRide(@PathVariable("filter") String filter) {
+    @GetMapping(value = "next-ride", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<NextRideDTO> getNextRide() {
         NextRideService nextRideService = new NextRideService();
-        NextRideDTO nextRideDTO = new NextRideDTO();
-        if (filter.equals("1")) {
-            nextRideDTO = nextRideService.getNextRideClosest();
-        } else if (filter.equals("2")) {
-            nextRideDTO = nextRideService.getNextRideCostliest();
-        }
+        NextRideDTO nextRideDTO = nextRideService.getNextRideClosest();
         return new ResponseEntity<NextRideDTO>(nextRideDTO, HttpStatus.OK);
     }
 
     @PostMapping(value="ride-driver-rating/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> rideDriverRating(@PathVariable("userId") Long userId, @RequestBody RideDriverRatingDTO rideDriverRatingDTO) {
-        boolean success = RideDriverRatingService.saveRating(rideDriverRatingDTO);
-        if (success) {
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.status(500).build();
+        try {
+            if (rideDriverRatingDTO.getUserId() == null) {
+                rideDriverRatingDTO.setUserId(userId);
+            }
+            boolean success = rideDriverRatingService.saveRating(rideDriverRatingDTO);
+            if (success) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.status(500).build();
+            }
+        } catch (org.springframework.web.server.ResponseStatusException ex) {
+            return ResponseEntity.status(ex.getStatusCode()).build();
         }
     }
 
-    @PutMapping(
+  @PutMapping(
             value = "ride-start",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -188,25 +203,30 @@ class RideController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping(value="ride-end/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> rideEnd(@PathVariable("userId") Long userId, @RequestBody RideEndDTO rideEndDTO) {
-        RideEndService rideEndService = new RideEndService();
-        boolean success = rideEndService.RideEndService(rideEndDTO);
-        if (success) {
+    @PutMapping(value="ride-end", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> rideEnd(@RequestBody RideEndDTO rideEndDTO) {
+        try {
+            rideService.endRide(rideEndDTO);
             return ResponseEntity.ok().build();
-        } else {
+        } catch (org.springframework.web.server.ResponseStatusException ex) {
+            return ResponseEntity.status(ex.getStatusCode()).build();
+        } catch (Exception e) {
             return ResponseEntity.status(500).build();
         }
     }
 
     @PostMapping(value = "ride-noting-user/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> noteRide(@PathVariable("userId") Long userId, @RequestBody RideNoteDTO rideNoteDTO) {
-        NoteAddingService noteAddingService = new NoteAddingService();
-        boolean success = noteAddingService.addNoteToRide(rideNoteDTO.getRideId(), userId, rideNoteDTO.getNote());
-        if (success) {
-            System.out.println("Ride "+ rideNoteDTO.getRideId() +", note: " + rideNoteDTO.getNote());
+    public ResponseEntity<Void> noteRide(@PathVariable("userId") Long userId, @Valid @RequestBody RideNoteDTO rideNoteDTO) {
+        try {
+            boolean success = noteAddingService.addNoteToRide(rideNoteDTO, userId);
+            if (!success) {
+                return ResponseEntity.status(500).build();
+            }
+            System.out.println("Ride " + rideNoteDTO.getRideId() + ", note: " + rideNoteDTO.getNote());
             return ResponseEntity.ok().build();
-        } else {
+        } catch (org.springframework.web.server.ResponseStatusException ex) {
+            return ResponseEntity.status(ex.getStatusCode()).build();
+        } catch (Exception e) {
             return ResponseEntity.status(500).build();
         }
     }
@@ -223,10 +243,15 @@ class RideController {
 
     @GetMapping(value = "vehicle-positions", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<VehiclePositionsDTO> getVehiclePositions() {
-        VehiclePositionsService vehiclePositionsService = new VehiclePositionsService();
-        List<VehiclePositionDTO> vehiclePositions = vehiclePositionsService.getAllVehiclePositions();
-        VehiclePositionsDTO responseDTO = new VehiclePositionsDTO(vehiclePositions);
+        VehiclePositionsDTO responseDTO = vehiclePositionsService.getAllVehiclePositions();
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "vehicle-positions/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<VehiclePositionDTO> getVehiclePositionById(@PathVariable("id") Long id) {
+        System.out.println("Fetching vehicle position with ID: " + id);
+        VehiclePositionDTO dto = vehiclePositionsService.findById(id);
+        return ResponseEntity.ok(dto);
     }
 
 }
