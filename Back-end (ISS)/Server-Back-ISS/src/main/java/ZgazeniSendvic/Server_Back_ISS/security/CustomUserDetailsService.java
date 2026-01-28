@@ -23,6 +23,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         Account acc = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        if(!acc.isConfirmed()){
+            throw new UsernameNotFoundException("User not confirmed");
+        }
+
         return new CustomUserDetails(acc);
     }
 }
