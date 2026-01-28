@@ -23,7 +23,7 @@ import java.time.LocalDate;
 // removed import of all utils, might break
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/api/")
 class RideController {
 
     @Autowired
@@ -47,6 +47,22 @@ class RideController {
 
 
         return new ResponseEntity<DriveCancelledDTO>(cancelled, HttpStatus.OK);
+
+
+    }
+
+
+    @PutMapping(path = "ride-PANIC/{rideID}",
+            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> panicRide(@RequestBody PanicButtonDTO request,
+                                                         @PathVariable Long rideID) throws Exception{
+
+        //Email would be pulled out of auth
+        //rideService.DummyRideInit();
+        rideService.PanicRide(rideID, request.getEmail());
+
+
+        return new ResponseEntity<String>("Ride set to panic", HttpStatus.OK);
 
 
     }
@@ -125,21 +141,21 @@ class RideController {
 
     }
 
-    @GetMapping(value = "api/future-rides",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "future-rides",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<FutureRidesDTO> getFutureRides() {
         FutureRidesService futureRidesService = new FutureRidesService();
         FutureRidesDTO futureRidesDTO = futureRidesService.getFutureRides();
         return new ResponseEntity<FutureRidesDTO>(futureRidesDTO, HttpStatus.OK);
     }
 
-    @GetMapping(value = "api/history-of-rides/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "history-of-rides/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<HistoryOfRidesDTO> HistoryOfRidesController( @PathVariable Long userId) {
         HistoryOfRidesService historyOfRidesService = new HistoryOfRidesService();
         HistoryOfRidesDTO historyOfRidesDTO = historyOfRidesService.getHistoryOfRides(userId);
         return ResponseEntity.ok(historyOfRidesDTO);
     }
 
-    @GetMapping(value = "api/next-ride/{filter}",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "next-ride/{filter}",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<NextRideDTO> getNextRide(@PathVariable("filter") String filter) {
         NextRideService nextRideService = new NextRideService();
         NextRideDTO nextRideDTO = new NextRideDTO();
@@ -151,7 +167,7 @@ class RideController {
         return new ResponseEntity<NextRideDTO>(nextRideDTO, HttpStatus.OK);
     }
 
-    @PostMapping(value="api/ride-driver-rating/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value="ride-driver-rating/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> rideDriverRating(@PathVariable("userId") Long userId, @RequestBody RideDriverRatingDTO rideDriverRatingDTO) {
         boolean success = RideDriverRatingService.saveRating(rideDriverRatingDTO);
         if (success) {
@@ -161,7 +177,18 @@ class RideController {
         }
     }
 
-    @PutMapping(value="api/ride-end/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(
+            value = "ride-start",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Void> rideStart(@RequestBody RideStartDTO rsDTO) {
+
+        rideService.startRide(rsDTO.getRideId());
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping(value="ride-end/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> rideEnd(@PathVariable("userId") Long userId, @RequestBody RideEndDTO rideEndDTO) {
         RideEndService rideEndService = new RideEndService();
         boolean success = rideEndService.RideEndService(rideEndDTO);
@@ -172,7 +199,7 @@ class RideController {
         }
     }
 
-    @PostMapping(value = "api/ride-noting-user/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "ride-noting-user/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> noteRide(@PathVariable("userId") Long userId, @RequestBody RideNoteDTO rideNoteDTO) {
         NoteAddingService noteAddingService = new NoteAddingService();
         boolean success = noteAddingService.addNoteToRide(rideNoteDTO.getRideId(), userId, rideNoteDTO.getNote());
@@ -184,7 +211,7 @@ class RideController {
         }
     }
 
-    @GetMapping(value = "api/ride-tracking-user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "ride-tracking-user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<VehicleTrackerDTO> rideTracking( @PathVariable("id") Long id) {
         VehicleTrackerService vehicleTrackerService = new VehicleTrackerService();
         VehicleTrackerDTO vehicleTrackerDTO = vehicleTrackerService.getVehicleTrackingData(id);
@@ -194,7 +221,7 @@ class RideController {
         return new ResponseEntity<VehicleTrackerDTO>(vehicleTrackerDTO, HttpStatus.OK);
     }
 
-    @GetMapping(value = "api/vehicle-positions", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "vehicle-positions", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<VehiclePositionsDTO> getVehiclePositions() {
         VehiclePositionsService vehiclePositionsService = new VehiclePositionsService();
         List<VehiclePositionDTO> vehiclePositions = vehiclePositionsService.getAllVehiclePositions();

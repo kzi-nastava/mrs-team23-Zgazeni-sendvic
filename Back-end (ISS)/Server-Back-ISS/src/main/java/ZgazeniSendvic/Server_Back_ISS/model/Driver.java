@@ -1,28 +1,60 @@
 package ZgazeniSendvic.Server_Back_ISS.model;
 
-public class Driver {
-    private Long id;
-    private Account account;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+@Entity
+@DiscriminatorValue("DRIVER")
+public class Driver extends Account {
+
+    @OneToOne
+    @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;
+    @Getter
+    boolean available;
+    boolean driving;
+    @Getter @Setter
+    boolean awaitingDeactivation; // would be better to keep this in a seperate table perhaps
 
-    public Driver() { super(); }
-
-    public Driver(Long id, Account account, Vehicle vehicle) {
+    public Driver() {
         super();
-        this.id = id;
-        this.account = account;
+    }
+
+    public Driver(Vehicle vehicle) {
+        super();
         this.vehicle = vehicle;
     }
 
-    public Long getId() { return id; }
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
 
-    public void setId(Long id) { this.id = id; }
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
+    }
 
-    public Account getAccount() { return account; }
 
-    public void setAccount(Account account) { this.account = account; }
+    //------------Status changes
 
-    public Vehicle getVehicle() { return vehicle; }
+    public void setAvailable(boolean available) {
+        this.available = available;
+        //should awaiting be turned of regardgless? shouldnt ever occur that it should, but just in case
+        awaitingDeactivation = false;
+    }
 
-    public void setVehicle(Vehicle vehicle) { this.vehicle = vehicle; }
+    void setDriving(boolean driving) {
+        if(!driving){
+            if(awaitingDeactivation){
+                available = false;
+                awaitingDeactivation = false;
+            }
+        }
+        this.driving = driving;
+    }
+
+    public boolean getDriving() {
+        return driving;
+    }
 }
+

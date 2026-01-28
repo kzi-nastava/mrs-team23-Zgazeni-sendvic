@@ -2,6 +2,10 @@ package ZgazeniSendvic.Server_Back_ISS.model;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.RegisterRequestDTO;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,26 +22,58 @@ import java.util.Set;
         }
 )
 // auth.getPrincipal() returns your Account IF UserDetails is implemented. (as is in practice example)
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "account_type")
 public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Email
+    @NotBlank
     @Column(nullable = false, unique = true)
     private String email;
+
+    @NotBlank
+    @Size(min = 8)
+    @Column(nullable = false)
     private String password;
+
+    @NotBlank
+    @Size(min = 2)
+    @Column(nullable = false, length = 100)
     private String name;
+    @NotBlank
+    @Size(min = 2)
+    @Column(nullable = false, length = 100)
     private String lastName;
+    @NotBlank
+    @Column(nullable = false)
     private String address;
+    @NotBlank
+    @Pattern(regexp = "^\\d{10,}$")
+    @Column(nullable = false, length = 20)
     private String phoneNumber;
+    @Column(columnDefinition = "TEXT")
     private String imgString;
-    private ArrayList<Route> faveRoutes;
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Set<Role> roles;
     @Getter @Setter
     private boolean isConfirmed = false;
 
-    public Account() { super(); }
+    /* ---------- ROLES ---------- */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(
+            name = "account_roles",
+            joinColumns = @JoinColumn(name = "account_id")
+    )
+    @Column(name = "role")
+    private Set<Role> roles = new HashSet<>();
+
+    public Account() {
+        super();
+        this.roles.add(Role.User);
+    }
 
     public Account(Long id, String email, String password, String name, String lastName,
                    String address, String phoneNumber, String imgString) {
@@ -64,8 +100,12 @@ public class Account {
         this.phoneNumber = request.getPhoneNum();
         this.imgString = request.getPictUrl();
         roles = new HashSet<>();
-        roles.add(Role.ACCOUNT);
+        roles.add(Role.User);
         isConfirmed = false;
+    }
+
+    public boolean hasRole(Role role){
+        return roles.contains(role);
     }
 
     public Long getId() {
@@ -99,6 +139,7 @@ public class Account {
     public void setName(String name) {
         this.name = name;
     }
+    /* ---------- GETTERS / SETTERS ---------- */
 
     public String getLastName() {
         return lastName;
@@ -132,28 +173,25 @@ public class Account {
         this.imgString = imgString;
     }
 
-    public ArrayList<Route> getFaveRoutes() {
-        return faveRoutes;
-    }
 
-    public void setFaveRoutes(ArrayList<Route> faveRoutes) {
-        this.faveRoutes = faveRoutes;
-    }
 
     public Set<Role> getRoles() {
         return roles;
     }
 
-    public List<String> getRolesList(){
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+
+    public List<String> getRolesList() {
         List<String> rolesList = new ArrayList<>();
-        for (Role role: roles){
+        for (Role role : roles) {
             rolesList.add(role.toString());
         }
         return rolesList;
     }
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
+
 
 }

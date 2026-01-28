@@ -3,7 +3,9 @@ package ZgazeniSendvic.Server_Back_ISS.service;
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
+import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -24,6 +26,10 @@ public class RideServiceImpl implements IRideService {
     RideRepository allRides;
     @Autowired
     OrsRoutingService orsRoutingService;
+
+    //for Panic
+    @Autowired
+    AccountRepository accountRepository;
 
     @Override
     public Collection<Ride> getAll() {
@@ -164,6 +170,7 @@ public class RideServiceImpl implements IRideService {
                 -74.0060,                   // longitude
                 false,                      // panic
                 false,                      // canceled
+                false,                      // started
                 99.99,                      // price
                 Arrays.asList("Chicago", "Denver") // locationsPassed
         );
@@ -187,6 +194,22 @@ public class RideServiceImpl implements IRideService {
 
     }
 
+    public void startRide(Long rideId) {
+        Ride ride = allRides.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
+
+        if (ride.isCanceled()) {
+            throw new RuntimeException("Cannot start a canceled ride");
+        }
+
+        if (ride.isStarted()) {
+            throw new RuntimeException("Ride already started");
+        }
+
+        ride.setStarted(true);
+        ride.setDepartureTime(new Date()); // optional but realistic
+        allRides.save(ride);
+    }
 
     public RideStoppedDTO stopRide(Long rideID, RideStopDTO stopReq){
 
@@ -214,10 +237,6 @@ public class RideServiceImpl implements IRideService {
         RideStoppedDTO stopped = new RideStoppedDTO(rideID, ride.getPrice(),  ride.getAllDestinations());
         return stopped;
 
-
-
-
-
     }
 
     @Override
@@ -227,6 +246,34 @@ public class RideServiceImpl implements IRideService {
 
     @Override
     public void deleteAll() {
+
+    }
+
+    @Transactional
+    public void PanicRide(Long rideID, String email) {
+
+        Optional<Ride> foundRide = allRides.findById(rideID);
+        Optional<Account> foundAccount = accountRepository.findByEmail(email);
+        if(foundRide.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
+        }
+
+        if(foundAccount.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found");
+        }
+
+        Ride ride = (Ride) foundRide.get();
+        Account account = (Account) foundAccount.get();
+
+        if(ride.getDriver() != account){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This individual is not the rider");
+        }
+
+        ride.setPanic(true);
+        allRides.save(ride);
+        allRides.flush();
+
+
 
     }
 }
