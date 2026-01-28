@@ -152,14 +152,15 @@ public class RideServiceImpl implements IRideService {
 
         //this is if it canceled
         //NEEDS CHECK
-        /* if(!canCancelRide(ride, rideDTO)){
+        Ride ride = found.get();
+         if(!canCancelRide(ride, rideDTO)){
             DriveCancelledDTO cancelled = new DriveCancelledDTO();
             cancelled.setCancelled(false);
             return cancelled;
         }
 
-         */
-        Ride ride = found.get();
+
+
         ride.setStatus(RideStatus.CANCELED);
         allRides.save(ride);
         allRides.flush();
@@ -202,6 +203,7 @@ public class RideServiceImpl implements IRideService {
         if(auth instanceof AnonymousAuthenticationToken){
             if(false){ //In the future, un. user gets a token perhaps Objects.equals(ride.getSHAToken(), rideDTO.getRideToken())
                 //return compareDates(ride.getStartTime(), rideDTO.getTime(), 10);
+                throw new AccessDeniedException("Unauthenticated No token");
 
             }
             throw new AccessDeniedException("Unauthenticated user didn't have right token");
