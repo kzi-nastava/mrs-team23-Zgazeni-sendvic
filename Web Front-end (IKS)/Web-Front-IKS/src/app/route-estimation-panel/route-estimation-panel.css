@@ -18,6 +18,46 @@
     
 }
 
+.action-buttons {
+  position: fixed;
+  right: 20px;
+  top: 100px;
+  display: flex;
+  gap: 12px;
+  z-index: 10000;
+  flex-direction: row;
+  align-items: center;
+}
+
+.toggle-btn {
+  background-color: #41A79D !important;
+  color: white !important;
+  width: 48px;
+  height: 48px;
+  border-radius: 50% !important;
+}
+
+.action-btn {
+  height: 48px;
+  font-size: 16px;
+  border-radius: 24px !important;
+  color: white !important;
+  font-weight: 500;
+  min-width: 100px;
+}
+
+.estimate-btn {
+  background-color: #41A79D !important;
+}
+
+.cancel-btn {
+  background-color: #FF6B6B !important;
+}
+
+.stop-btn {
+  background-color: #E63946 !important;
+}
+
 
 
 .panel-title {
