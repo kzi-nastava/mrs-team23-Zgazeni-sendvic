@@ -2,6 +2,7 @@ package ZgazeniSendvic.Server_Back_ISS.service;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.OrsRouteResponse;
 import ZgazeniSendvic.Server_Back_ISS.dto.OrsRouteResult;
+import ZgazeniSendvic.Server_Back_ISS.model.Location;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,6 +65,25 @@ public class OrsRoutingService {
 
         return null;
     }
+
+    public OrsRouteResult getFastestRouteWithLocations(List<Location> locations){
+        List<List<Double>> waypoints = new ArrayList<>();
+        for(Location location : locations){
+            List<Double> coordinationSet = new ArrayList<>();
+            coordinationSet.add(location.getLongitude());
+            coordinationSet.add(location.getLatitude());
+
+            waypoints.add(coordinationSet);
+
+
+        }
+
+        return getFastestRouteWithPath(waypoints);
+
+    }
+
+
+
 
     public List<Double> addressToCordinates(String address) {
         try {

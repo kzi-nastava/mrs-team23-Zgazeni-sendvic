@@ -99,6 +99,22 @@ class RideController {
 
     }
 
+    @PostMapping(path = "ride-estimation-coordinates",consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<OrsRouteResult>
+    estimateRideCords(@RequestBody RouteEstimationRequestLocationsDTO estimationRequest)throws Exception{
+
+
+        //RouteEstimationDTO estimation = rideService.routeEstimate(arrival + "," + destinationsStr);
+        OrsRouteResult result = orsRoutingService.getFastestRouteWithLocations (estimationRequest.getLocations());
+
+
+        System.out.println(orsRoutingService.addressToCordinates("Beograd"));
+        return new ResponseEntity<OrsRouteResult>(result, HttpStatus.OK);
+
+
+    }
+
     @PutMapping(path = "ride-tracking/stop/{rideID}",consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RideStoppedDTO> stopRide(@RequestBody RideStopDTO stopReq, @PathVariable Long rideID)
