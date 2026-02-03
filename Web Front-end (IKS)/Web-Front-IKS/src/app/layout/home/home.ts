@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Map } from '../../map/map';
 import { RouteEstimationPanel } from '../../route-estimation-panel/route-estimation-panel';
-import { PanelService } from '../../service/panel.service';
+import { RouteEstimationService } from '../../service/route.estimation.serivce';
 
 @Component({
   selector: 'app-home',
@@ -12,7 +12,7 @@ import { PanelService } from '../../service/panel.service';
   styleUrl: './home.css',
 })
 export class Home {
-  constructor(public panelService: PanelService) {}
+  constructor(public panelService: RouteEstimationService) {}
 
   ngOnInit() {
     this.panelService.hidePanel();
