@@ -82,13 +82,15 @@ class RideController {
     }
 
 
-    @GetMapping(path = "ride-estimation/{arrival}/{destinationsStr}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "ride-estimation",consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<OrsRouteResult>
-    estimateRide(@PathVariable String arrival, @PathVariable String destinationsStr)throws Exception{
+    estimateRide(@RequestBody RouteEstimationRequestDTO estimationRequest)throws Exception{
 
 
         //RouteEstimationDTO estimation = rideService.routeEstimate(arrival + "," + destinationsStr);
-        OrsRouteResult result = orsRoutingService.getFastestRouteAddresses(arrival, destinationsStr);
+        OrsRouteResult result = orsRoutingService.getFastestRouteAddresses(estimationRequest.getBeginningDestination(),
+                estimationRequest.getEndingDestination());
 
 
         orsRoutingService.addressToCordinates("Novi Sad");
