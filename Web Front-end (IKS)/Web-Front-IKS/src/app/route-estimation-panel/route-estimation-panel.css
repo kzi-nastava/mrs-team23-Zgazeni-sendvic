@@ -119,3 +119,10 @@ mat-form-field {
     border-radius:15px !important
   
 }
+
+.error-message {
+  color: #D32F2F;
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}

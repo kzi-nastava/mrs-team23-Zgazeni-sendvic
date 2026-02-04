@@ -24,6 +24,7 @@ import java.time.LocalDate;
 // removed import of all utils, might break
 
 @RestController
+@CrossOrigin (origins="*")
 @RequestMapping("/api/")
 class RideController {
 

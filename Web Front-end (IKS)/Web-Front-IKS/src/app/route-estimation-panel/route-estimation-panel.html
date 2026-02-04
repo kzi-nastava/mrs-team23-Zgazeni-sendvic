@@ -8,17 +8,23 @@
 
     <mat-form-field appearance="fill" class="location-input">
       <mat-label>Starting Location</mat-label>
-      <input matInput />
+      <input matInput [(ngModel)]="beginningDestination" />
     </mat-form-field>
 
     <mat-form-field appearance="fill" color="primary" class="location-input">
       <mat-label>Ending Location</mat-label>
-      <input matInput />
+      <input matInput [(ngModel)]="endingDestination" />
     </mat-form-field>
 
     <button mat-raised-button color="primary" class="estimate-button" (click)="estimateRoute()">
       Estimate Route
     </button>
+
+    <div class="error-message">
+      @if (errorMessage()) {
+        {{ errorMessage() }}
+      }
+    </div>
   </mat-card>
 }
 
