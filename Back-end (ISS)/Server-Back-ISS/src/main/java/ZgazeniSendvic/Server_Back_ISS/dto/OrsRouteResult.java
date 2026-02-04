@@ -11,7 +11,7 @@ public class OrsRouteResult {
     private double distanceMeters;
     private double durationSeconds;
     private List<List<Double>> pathCoordinates;
-    private String Type;
+    private String type;
 
     public double getDistanceKm() { return distanceMeters / 1000.0; }
     public double getDurationMinutes() { return durationSeconds / 60.0; }
