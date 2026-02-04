@@ -30,6 +30,7 @@ export class RouteEstimationPanel {
 
   estimateRoute() {
     this.estimatedTime.set(null);
+    this.routeEstimationService.setRoutePath(null);
     const beginning = this.beginningDestination();
     const ending = this.endingDestination();
 
@@ -48,9 +49,11 @@ export class RouteEstimationPanel {
         if (!response) {
           this.errorMessage.set('Please enter appropriate destinations.');
           this.estimatedTime.set(null);
+          this.routeEstimationService.setRoutePath(null);
           return;
         }
         this.estimatedTime.set(Math.ceil(response.durationMinutes));
+        this.routeEstimationService.setRoutePath(response.pathCoordinates ?? null);
         this.errorMessage.set(null);
       },
       error: (error) => {

@@ -14,6 +14,7 @@ import {
 export class RouteEstimationService {
   private apiUrl = 'http://localhost:8080/api/ride-estimation';
   showEstimationPanel = signal(false);
+  routePath = signal<number[][] | null>(null); //for storing route path coordinates
 
   constructor(private http: HttpClient) {}
 
@@ -35,6 +36,11 @@ export class RouteEstimationService {
 
   hidePanel() {
     this.showEstimationPanel.set(false);
+  }
+
+  setRoutePath(path: number[][] | null) {
+    this.routePath.set(path);
+    //console.log('Route path set to:', path);
   }
 
 
