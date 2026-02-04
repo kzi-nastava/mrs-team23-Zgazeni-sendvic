@@ -7,7 +7,7 @@ export interface RouteEstimationRequest {
     }
 
 
-export interface OrsRouteResult {
+export interface RouteEstimationResponse {
   distanceMeters: number;
   durationSeconds: number;
   pathCoordinates: number[][]; // Array of [longitude, latitude] pairs
