@@ -41,7 +41,7 @@ public class OrsRoutingService {
                 "coordinates", waypoints
         );
 
-        
+
             OrsRouteResponseGeo response = orsWebClient.post() // Decide to send a POST
                 .bodyValue(request) // Set the request as body
                 .retrieve() // Actually send it, expecting a result
