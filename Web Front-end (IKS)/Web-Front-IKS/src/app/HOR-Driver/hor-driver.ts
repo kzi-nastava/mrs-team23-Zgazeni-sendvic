@@ -13,7 +13,7 @@ import { CommonModule } from '@angular/common';
 export class HorDriver implements OnInit {
 
   rides: any[] = [];
-  driverId = 100;
+  driverId = 11;
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
@@ -33,12 +33,21 @@ export class HorDriver implements OnInit {
             timeEnd: new Date(ride.arrivalTime).toLocaleTimeString(),
             origin: ride.origin,
             destination: ride.destination,
-            price: ride.price,
-            canceled: ride.canceled,
-            panic: ride.panic
+            price: ride.price + ' RSD',
+            canceled: ride.canceled ? "Canceled" : "Not Canceled",
+            panic: ride.panic ? "Panic" : "Not Panic"
           }));
+          this.rides.forEach(ride => {
+            this.getAddressFromCoordinates(ride.origin).then(address => {
+              ride.originAddress = address.split(',').slice(0, 2).join(',');
+              this.cdr.markForCheck();
+            });
+            this.getAddressFromCoordinates(ride.destination).then(address => {
+              ride.destinationAddress = address.split(',').slice(0, 2).join(',');
+              this.cdr.markForCheck();
+            });
+          });
           console.log('Rides populated:', this.rides);
-          this.cdr.markForCheck();
         },
         error: (err) => {
           console.error('Error fetching rides:', err);
@@ -46,5 +55,20 @@ export class HorDriver implements OnInit {
           console.error('Error message:', err.message);
         }
       });
+  }
+
+  private getAddressFromCoordinates(coords: { latitude: number; longitude: number }): Promise<string> {
+    return this.http.get<any>(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.longitude}&lon=${coords.latitude}`
+    ).toPromise().then(
+      response => {
+        const address = response?.display_name || 'Unknown location';
+        return String(address);
+      },
+      error => {
+        console.error('Geocoding error:', error);
+        return 'Unknown location';
+      }
+    );
   }
 }
