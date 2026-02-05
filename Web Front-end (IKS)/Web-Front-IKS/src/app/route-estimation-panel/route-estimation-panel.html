@@ -8,31 +8,23 @@
 
     <mat-form-field appearance="fill" class="location-input">
       <mat-label>Starting Location</mat-label>
-      <input matInput />
+      <input matInput [(ngModel)]="beginningDestination" />
     </mat-form-field>
 
     <mat-form-field appearance="fill" color="primary" class="location-input">
       <mat-label>Ending Location</mat-label>
-      <input matInput />
+      <input matInput [(ngModel)]="endingDestination" />
     </mat-form-field>
 
     <button mat-raised-button color="primary" class="estimate-button" (click)="estimateRoute()">
       Estimate Route
     </button>
+
+    <div class="error-message">
+      @if (errorMessage()) {
+        {{ errorMessage() }}
+      }
+    </div>
   </mat-card>
 }
 
-<div class="action-buttons">
-  <button mat-raised-button class="action-btn estimate-btn" (click)="togglePanelVisibility()">
-    Estimate
-  </button>
-  <button mat-raised-button class="action-btn cancel-btn" (click)="onCancel()">
-    Cancel
-  </button>
-  <button mat-raised-button class="action-btn stop-btn" (click)="onStop()">
-    Stop
-  </button>
-  <button mat-raised-button class="action-btn panic-btn" (click)="onPanic()">
-    PANIC
-  </button>
-</div>

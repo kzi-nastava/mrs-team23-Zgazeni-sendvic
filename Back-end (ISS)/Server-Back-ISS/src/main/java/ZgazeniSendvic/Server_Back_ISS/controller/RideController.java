@@ -24,6 +24,7 @@ import java.time.LocalDate;
 // removed import of all utils, might break
 
 @RestController
+@CrossOrigin (origins="*")
 @RequestMapping("/api/")
 class RideController {
 
@@ -82,16 +83,34 @@ class RideController {
     }
 
 
-    @GetMapping(path = "ride-estimation/{arrival}/{destinationsStr}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "ride-estimation",consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<OrsRouteResult>
-    estimateRide(@PathVariable String arrival, @PathVariable String destinationsStr)throws Exception{
+    estimateRide(@RequestBody RouteEstimationRequestDTO estimationRequest)throws Exception{
 
 
         //RouteEstimationDTO estimation = rideService.routeEstimate(arrival + "," + destinationsStr);
-        OrsRouteResult result = orsRoutingService.getFastestRouteAddresses(arrival, destinationsStr);
+        OrsRouteResult result = orsRoutingService.getFastestRouteAddresses(estimationRequest.getBeginningDestination(),
+                estimationRequest.getEndingDestination());
 
 
         orsRoutingService.addressToCordinates("Novi Sad");
+        return new ResponseEntity<OrsRouteResult>(result, HttpStatus.OK);
+
+
+    }
+
+    @PostMapping(path = "ride-estimation-coordinates",consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<OrsRouteResult>
+    estimateRideCords(@RequestBody RouteEstimationRequestLocationsDTO estimationRequest)throws Exception{
+
+
+        //RouteEstimationDTO estimation = rideService.routeEstimate(arrival + "," + destinationsStr);
+        OrsRouteResult result = orsRoutingService.getFastestRouteWithLocations (estimationRequest.getLocations());
+
+
+        System.out.println(orsRoutingService.addressToCordinates("Beograd"));
         return new ResponseEntity<OrsRouteResult>(result, HttpStatus.OK);
 
 
