@@ -28,8 +28,8 @@ public class PictureService {
         Files.createDirectories(uploadRoot);
     }
 
-    public Picture uploadProfileImage(Account account, MultipartFile file) {
-        validateImage(file);
+    public Picture uploadProfilePicture(Account account, MultipartFile file) {
+        validatePicture(file);
 
         // Enforce single profile image per account
         pictureRepository.findByOwner(account)
@@ -70,7 +70,7 @@ public class PictureService {
         }
     }
 
-    private void validateImage(MultipartFile file) {
+    private void validatePicture(MultipartFile file) {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("Empty file");
         }
