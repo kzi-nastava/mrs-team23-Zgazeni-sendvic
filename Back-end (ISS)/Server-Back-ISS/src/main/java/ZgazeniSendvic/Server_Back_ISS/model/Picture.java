@@ -35,9 +35,10 @@ public class Picture {
     @Column(name = "size_bytes")
     private long size;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
     private Account owner;
 
+    // The owner isnt even connected, only the image to the owner is
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
