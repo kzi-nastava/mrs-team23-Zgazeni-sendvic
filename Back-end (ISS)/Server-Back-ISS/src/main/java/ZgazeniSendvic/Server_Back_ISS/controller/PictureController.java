@@ -4,6 +4,7 @@ import ZgazeniSendvic.Server_Back_ISS.dto.PictureResponse;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Picture;
 import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
+import ZgazeniSendvic.Server_Back_ISS.security.jwt.JwtUtils;
 import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
 import ZgazeniSendvic.Server_Back_ISS.service.PictureService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,19 +30,33 @@ public class PictureController {
    @Autowired
    private PictureService pictureService;
 
+   @Autowired
+   JwtUtils tokenUtils;
+
    //WHAT IF ACCOUNT NOT FOUND?
     // Will be handled later, once secure handling is actually implemented
 
-    @PostMapping("/register/profile/{accountId}")
+    @PostMapping("/register/profile")
     public ResponseEntity<PictureResponse> uploadMyProfilePicture(
-            @PathVariable Long accountId,
-            @RequestParam("file") MultipartFile file
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("pictureToken") String pictureToken
     ) {
-        Account account = accountService.findAccount(accountId);
+        try{
+        String email = tokenUtils.getUsernameFromToken(pictureToken);
+        if (email == null) {
+            return ResponseEntity.notFound().build();
+        }
+        //shouldn't fail, because if token is proper, surely the email inside is too, but what if it was deleted?
+        //could cover with global exception or one big try catch tbh
+        Account account = accountService.findAccountByEmail(email);
 
         Picture picture = pictureService.uploadProfilePicture(account, file);
 
         return ResponseEntity.ok(PictureResponse.from(picture));
+        } catch (Exception e){
+            //account didnt exist
+            return ResponseEntity.badRequest().build();
+        }
     }
 
 

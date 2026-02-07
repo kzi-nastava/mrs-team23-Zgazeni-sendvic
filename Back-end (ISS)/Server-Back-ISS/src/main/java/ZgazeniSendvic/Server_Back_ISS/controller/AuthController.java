@@ -43,9 +43,10 @@ class AuthController {
 
 
             LoginRequestedDTO loginDTO = accountService.registerAccount(body);
+            String  pictureToken = tokenUtils.generateToken(accountService.findAccountByEmail(body.getEmail()));
 
 
-        return new ResponseEntity<String>("Account created", HttpStatus.CREATED);
+        return new ResponseEntity<String>("Account created, pictureToken:" + pictureToken, HttpStatus.CREATED);
 
 
     }
