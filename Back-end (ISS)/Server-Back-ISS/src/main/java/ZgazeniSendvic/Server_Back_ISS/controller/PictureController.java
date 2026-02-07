@@ -9,6 +9,7 @@ import ZgazeniSendvic.Server_Back_ISS.service.PictureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,13 +44,20 @@ public class PictureController {
         return ResponseEntity.ok(PictureResponse.from(picture));
     }
 
-    @GetMapping("/retrieve/profile/{accountId}")
+
+    //Time to fix, this is, of course, going to assume proper auth was established
+    @GetMapping("/retrieve/profile")
     public ResponseEntity<Resource> getProfilePictureForTest(
-            @PathVariable Long accountId
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Account account = accountService.findAccount(accountId);
+        //returns 404 if TOKEN INVALID
+        if(userDetails == null) {
+            return ResponseEntity.notFound().build();
+        }
+        Account accountTest = userDetails.getAccount();
+        //System.out.println(accountTest);
         // Metadata needed for contentType
-        Picture picture = pictureService.getProfilePicture(account);
+        Picture picture = pictureService.getProfilePicture(accountTest);
 
         Path filePath = pictureService.getPicturePath(picture);
         Resource resource = new FileSystemResource(filePath);
