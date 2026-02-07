@@ -10,7 +10,7 @@ import java.time.Instant;
 
 @Entity
 @Table(
-        name = "images",
+        name = "pictures",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "file_name")
         }

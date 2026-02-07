@@ -17,13 +17,13 @@ import java.util.UUID;
 
 @Service
 @Transactional
-public class ImageService {
+public class PictureService {
 
     private final PictureRepository pictureRepository;
 
     private final Path uploadRoot = Paths.get("uploads");
 
-    public ImageService(PictureRepository pictureRepository) throws IOException {
+    public PictureService(PictureRepository pictureRepository) throws IOException {
         this.pictureRepository = pictureRepository;
         Files.createDirectories(uploadRoot);
     }
