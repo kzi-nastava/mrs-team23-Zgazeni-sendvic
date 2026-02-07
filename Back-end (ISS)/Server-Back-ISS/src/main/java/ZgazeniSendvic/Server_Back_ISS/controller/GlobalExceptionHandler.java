@@ -7,6 +7,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MultipartException;
 
 import java.time.Instant;
 import java.util.Map;
@@ -33,6 +34,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(ex.getMessage());
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<Map<String, Object>> handleMultipartException(MultipartException ex) {
+
+        Map<String, Object> body = Map.of(
+                "timestamp", Instant.now().toString(),
+                "status", HttpStatus.BAD_REQUEST.value(),
+                "error", "Invalid multipart request",
+                "message", "Request must be sent as multipart/form-data with a file",
+                "exception", ex.getClass().getSimpleName()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(body);
     }
 
 
