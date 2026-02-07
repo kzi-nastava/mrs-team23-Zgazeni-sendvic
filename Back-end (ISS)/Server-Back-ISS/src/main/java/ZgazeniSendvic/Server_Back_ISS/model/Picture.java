@@ -1,6 +1,8 @@
 package ZgazeniSendvic.Server_Back_ISS.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 
@@ -13,7 +15,9 @@ import java.time.Instant;
                 @UniqueConstraint(columnNames = "file_name")
         }
 )
-public class Image {
+@Getter
+@Setter
+public class Picture {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,8 +35,8 @@ public class Image {
     @Column(name = "size_bytes")
     private long size;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private User owner;
+    @OneToOne(cascade = CascadeType.ALL)
+    private Account owner;
 
 
     @CreationTimestamp
