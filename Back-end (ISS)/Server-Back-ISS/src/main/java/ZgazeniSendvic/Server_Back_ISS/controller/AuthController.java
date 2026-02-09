@@ -19,6 +19,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.token.TokenService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @CrossOrigin (origins="*")
 @RequestMapping("/api/auth")
@@ -39,14 +42,17 @@ class AuthController {
 
     @PostMapping(path = "register", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> register(@RequestBody RegisterRequestDTO body) throws Exception{
+    public ResponseEntity<Map<String, String>> register(@RequestBody RegisterRequestDTO body) throws Exception{
 
 
             LoginRequestedDTO loginDTO = accountService.registerAccount(body);
             String  pictureToken = tokenUtils.generateToken(accountService.findAccountByEmail(body.getEmail()));
 
 
-        return new ResponseEntity<String>("Account created, pictureToken:" + pictureToken, HttpStatus.CREATED);
+        Map<String, String> response = new HashMap<>();
+        response.put("pictureToken", pictureToken);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
 
     }
