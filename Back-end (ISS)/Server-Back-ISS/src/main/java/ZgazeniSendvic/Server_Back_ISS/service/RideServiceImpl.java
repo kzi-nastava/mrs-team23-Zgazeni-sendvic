@@ -5,8 +5,8 @@ import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.model.*;
-import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
+import ZgazeniSendvic.Server_Back_ISS.repository.PanicNotificationRepository;
 import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import jakarta.transaction.Transactional;
 import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
@@ -17,13 +17,10 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -41,6 +38,8 @@ public class RideServiceImpl implements IRideService {
     private EmailService emailService;
     @Autowired
     OrsRoutingService orsRoutingService;
+    @Autowired
+    PanicNotificationRepository panicNotificationRepository;
 
     @Override
     public Collection<Ride> getAll() {
@@ -400,30 +399,73 @@ public class RideServiceImpl implements IRideService {
     }
 
     @Transactional
-    public void PanicRide(Long rideID, String email) {
+    public PanicNotificationDTO PanicRide(Long rideID) {
+        //pull out account from auth
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof AnonymousAuthenticationToken) {
+            throw new AccessDeniedException("Unauthenticated user can't panic the ride");
+        }
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        Account account = userDetails.getAccount();
+
 
         Optional<Ride> foundRide = allRides.findById(rideID);
-        Optional<Account> foundAccount = allAccounts.findByEmail(email);
+
         if(foundRide.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
         }
 
-        if(foundAccount.isEmpty()){
+        if(account == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found");
         }
 
-        Ride ride = (Ride) foundRide.get();
-        Account account = (Account) foundAccount.get();
+        Ride ride = getRideForPanic(foundRide, account);
 
-        if(ride.getDriver() != account){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This individual is not the rider");
-        }
+        // Create and save panic notification
+        PanicNotification panicNotification = new PanicNotification(account, ride, LocalDateTime.now());
+        panicNotificationRepository.save(panicNotification);
+        panicNotificationRepository.flush();
 
         ride.setPanic(true);
         allRides.save(ride);
         allRides.flush();
 
+        PanicNotificationDTO notificationDTO = new PanicNotificationDTO(
+                panicNotification.getId(),
+                account.getId(),
+                account.getName() + " " + account.getLastName(),
+                ride.getId(),
+                panicNotification.getCreatedAt(),
+                panicNotification.isResolved()
+        );
 
+        return notificationDTO;
 
+    }
+
+    private static @NonNull Ride getRideForPanic(Optional<Ride> foundRide, Account account) {
+        Ride ride = (Ride) foundRide.get();
+
+        //ride must be currently Active, and the presser must be either a passenger or the driver, otherwise, throw
+        if(ride.getStatus() != RideStatus.ACTIVE){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only active rides can be panicked");
+        }
+        boolean isDriver = Objects.equals(ride.getDriver().getId(), account.getId());
+        boolean isPassenger = false;
+        for(Account passenger : ride.getPassengers()){
+            if(Objects.equals(passenger.getId(), account.getId())){
+                isPassenger = true;
+                break;
+            }
+        }
+        if(!isDriver && !isPassenger){
+            throw new AccessDeniedException("Only passengers or driver can panic the ride");
+        }
+
+        // Check if panic notification already exists for this ride (prevent spamming)
+        if(ride.isPanic()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Panic has already been activated for this ride");
+        }
+        return ride;
     }
 }

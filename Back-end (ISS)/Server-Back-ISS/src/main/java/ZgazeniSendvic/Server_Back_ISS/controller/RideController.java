@@ -61,18 +61,15 @@ class RideController {
 
     }
 
+    @PreAuthorize("hasAnyRole('DRIVER','ACCOUNT','USER')")
+    @PostMapping(path = "ride-PANIC/{rideID}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> panicRide(@PathVariable Long rideID) throws Exception{
 
-    @PutMapping(path = "ride-PANIC/{rideID}",
-            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> panicRide(@RequestBody PanicButtonDTO request,
-                                                         @PathVariable Long rideID) throws Exception{
-
-        //Email would be pulled out of auth
-        //rideService.DummyRideInit();
-        rideService.PanicRide(rideID, request.getEmail());
+        PanicNotificationDTO notification = rideService.PanicRide(rideID);
 
 
-        return new ResponseEntity<String>("Ride set to panic", HttpStatus.OK);
+        return new ResponseEntity<PanicNotificationDTO>(notification, HttpStatus.OK);
 
 
     }
