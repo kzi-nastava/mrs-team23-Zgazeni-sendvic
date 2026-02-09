@@ -52,13 +52,7 @@ class RideController {
     public ResponseEntity<DriveCancelledDTO> cancelDrive(@RequestBody DriveCancelDTO cancelRequest,
                                                          @PathVariable Long rideID) throws Exception{
 
-       //here I would pull out the email out of token if token is present
-        // then would commence attaining the id based on that, by which I would decide wether or not to allow cancelling
-        // for example if its a driver check the reason, otherwise check if too late, by comparing dates
-        //if the check passes, ride is cancelled as showcased below
 
-        //rideService.DummyRideInit();
-        //rideService.DummyRideInit();
         DriveCancelledDTO cancelled = rideService.updateCancel(rideID,cancelRequest);
 
 

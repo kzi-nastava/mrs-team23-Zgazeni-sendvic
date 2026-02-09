@@ -147,7 +147,7 @@ public class RideServiceImpl implements IRideService {
     public DriveCancelledDTO updateCancel(Long rideID, DriveCancelDTO rideDTO) {
         Optional<Ride> found = allRides.findById(rideID);
         if(found.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride cant be cancelled, was not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
         }
 
         //here would be check for reason,
@@ -172,89 +172,81 @@ public class RideServiceImpl implements IRideService {
         cancelled.setCancelled(true);
         cancelled.setRideID(rideID);
         cancelled.setReason(rideDTO.getReason());
-        cancelled.setRequesterName(rideDTO.getRequesterID());
-        cancelled.setTime((new Date()).toString());
+        cancelled.setTime(LocalDateTime.now());
 
         return cancelled;
 
     }
 
-    public boolean canCancelRide(Ride ride, DriveCancelDTO rideDTO){
-        //assuming both users and non users can cancel, I check, if driver cancelled immediately pass
-        //otherwise compare dates, for 10 minute difference
-        //now where could Driver role be? in securityContext for sure, as he would def be logged in?
+    public boolean canCancelRide(Ride ride, DriveCancelDTO rideDTO) {
+        //If not scheduled, then it is at least active, already canceled etc., so it can't be canceled
+        if (ride.getStatus() != RideStatus.SCHEDULED) {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Ride is not scheduled");
+        }
 
-        //hmm lets say through email then, if the token is present, well if auth is present at all
-        //email will be there, so one can assume that I can always send the email of the authenticated user (1)
-        //and if it is an unauthenticated user? how is an unauthenticated user connected to a ride he ordered?
-        //
 
-        /*
-
-        emails are unique and tied to accounts and JWT tokens I use. if the user/driver is currently logged in then
-        auth is present and the token for sure contains an email based on which I can pull out the user with the email
-        from the database and check if present on ride as driver or passenger. if as passenger, do time check, if as
-        rider let it be done. if nothing then disallow same as if time check fails. Now the only concern remaining is
-        how this would be done with an unauthenticated user, as I know not how he would be connected to a ride in the
-        first place. of course though he would have some form of unique Id he had given us, hmmmm
-         */
-
-        // Get principal returns userDetails, I set that up in tokenfilter as principal
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        //Interestingly, when security is on, but the request is unauthenticated, getPrincipal returns anonymousUser
-        if(auth instanceof AnonymousAuthenticationToken){
-            if(false){ //In the future, un. user gets a token perhaps Objects.equals(ride.getSHAToken(), rideDTO.getRideToken())
-                //return compareDates(ride.getStartTime(), rideDTO.getTime(), 10);
+        //If not logged in
+        if (auth instanceof AnonymousAuthenticationToken) {
+            if (true) {
+                //this would be if token is invalid and/or date is too close
                 throw new AccessDeniedException("Unauthenticated No token");
 
             }
-            throw new AccessDeniedException("Unauthenticated user didn't have right token");
+            return true; //if token is valid and date is not too close, then it can be canceled, even if unauthenticated
         }
 
-        //else
-        UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        String email  = userDetails.getUsername();
-        if(ride.getDriver().getEmail().equals(email)){
-            //assuming proper reason
-            //could also use token, though unneccessary
+        //else if logged in
+        try{
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        Account requester = userDetails.getAccount();
+
+        //check if it is the driver of the ride
+        if(Objects.equals(ride.getDriver().getId(), requester.getId())){
+            //if it is, allow, and print out reason
+            System.out.println("Driver " + requester.getName() + " canceled the ride. Reason: " + rideDTO.getReason());
             return true;
-        }
-
-        if(ride.isThisPassenger(email)){
-            //maybe also token comparison
-            return isSameOrBefore(ride.getStartTime(), rideDTO.getTime(), ZoneId.systemDefault());
 
         }
+        //now check if passenger, if it is compare dates using the the 10 min func
+            boolean isPassenger = false;
+            for(Account passenger : ride.getPassengers()){
+                if(Objects.equals(passenger.getId(), requester.getId())){
+                    isPassenger = true;
+                    break;
+                }
+            }
+            if(isPassenger){
+                if(isAtLeastTenMinutesBeforeRide(ride, LocalDateTime.now())){
+                    System.out.println("Passenger " + requester.getName() + " canceled the ride. Reason: " + rideDTO.getReason());
+                    return true;
+                }
+                else{
+                    System.out.println("Passenger " + requester.getName() + " attempted to cancel the ride less than 10 minutes before start. Reason: " + rideDTO.getReason());
+                    throw new AccessDeniedException("Too late to cancel");
+                }
+            }
+            throw new AccessDeniedException("Not passenger or Driver");
 
-        System.out.println("This shouldn't happen");
-        return false;
-
-    }
-    private boolean compareDates(Date date1, Date date2, long minuteDifference, boolean allDate){
-        //if diff is 10 minute or less, its cant be cancelled
-        long diffMillis = date1.getTime() - date2.getTime();
-        long tenMinutesMillis = minuteDifference * 60 * 1000;
-        if (diffMillis < tenMinutesMillis) {
-            System.out.println("Less than 10 minutes apart");
-            return false;
+            //JUST NULLPOINTER
+        }catch ( NullPointerException ex){
+            //shouldn't really occur, but if it does, token somewhere failed, send access denied
+            throw new AccessDeniedException("Failed Authentication");
         }
-        return true;
+
 
     }
 
-    public static boolean isSameOrBefore(
-            LocalDateTime localDateTime,
-            Date date,
-            ZoneId zoneId
-    ) {
-        LocalDate refDate = localDateTime.toLocalDate();
+    private boolean isAtLeastTenMinutesBeforeRide(Ride ride, LocalDateTime timeOfRequest) {
+        LocalDateTime rideStartTime = ride.getStartTime();
+        if (rideStartTime == null) {
+            throw new IllegalStateException("Ride start time is not set");
+        }
+        return timeOfRequest.isBefore(rideStartTime.minusMinutes(10));
 
-        LocalDate dateAsLocal = date.toInstant()
-                .atZone(zoneId)
-                .toLocalDate();
-
-        return !dateAsLocal.isAfter(refDate);
     }
+
+
 
     public void DummyRideInit(){
 
@@ -332,6 +324,7 @@ public class RideServiceImpl implements IRideService {
         }
         OrsRouteResult result = orsRoutingService.getFastestRouteWithPath(coordinates);
         ride.setPrice(result.getPrice());
+        ride.setStatus(RideStatus.FINISHED);
         allRides.save(ride);
         allRides.flush();
 
