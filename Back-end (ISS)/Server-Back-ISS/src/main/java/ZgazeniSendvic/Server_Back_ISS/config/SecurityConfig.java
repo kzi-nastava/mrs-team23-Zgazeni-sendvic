@@ -87,6 +87,7 @@ public class SecurityConfig {
                 //.exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(restAuthenticationEntryPoint))
 
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/ride-tracking/stop/**").authenticated()
                         .anyRequest().permitAll() //for testing purposes
                 ).sessionManagement(session -> { // do not use cookies
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);

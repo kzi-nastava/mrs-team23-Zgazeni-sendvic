@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -116,6 +117,7 @@ class RideController {
 
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PutMapping(path = "ride-tracking/stop/{rideID}",consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RideStoppedDTO> stopRide(@RequestBody RideStopDTO stopReq, @PathVariable Long rideID)
