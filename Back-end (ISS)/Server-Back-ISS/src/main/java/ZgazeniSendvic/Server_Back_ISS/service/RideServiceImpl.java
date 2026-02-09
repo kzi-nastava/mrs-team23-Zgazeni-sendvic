@@ -7,8 +7,10 @@ import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.model.*;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
+import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import jakarta.transaction.Transactional;
 import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -313,18 +315,13 @@ public class RideServiceImpl implements IRideService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, value);
         }
 
-        ArrayList<Location> passedLocations = new ArrayList<Location>(stopReq.getPassedLocations());
 
-        Ride ride = found.get();
+        Ride ride = getRideActiveAndDriver(found);
+
+        ArrayList<Location> passedLocations = new ArrayList<Location>(stopReq.getPassedLocations());
         ride.changeLocations(passedLocations);
         ride.setEndTime(stopReq.getCurrentTime());
-        //allRides.save(ride);
-        //allRides.flush();
 
-        //Now, I could recalculate based on allPassed, though if only the final dest was returned I couldnt do that
-        //In the specification it says only the final Dest is passed, though then the change of midpoints would be
-        //impossible, so I would just calc based on Starting-ending, though the way I did it I get access
-        //to all destinations passed. For now I'll just assume my way is good, and use passedLocs.
         List<List<Double>> coordinates = new ArrayList<>();
 
         for (Location loc : passedLocations) {
@@ -340,8 +337,29 @@ public class RideServiceImpl implements IRideService {
 
         RideStoppedDTO stopped = new RideStoppedDTO(rideID, ride.getPrice(),  ride.getLocations());
         return stopped;
+    }
 
+    private static @NonNull Ride getRideActiveAndDriver(Optional<Ride> found) {
+        Ride ride = found.get();
+        //ride should be active, so that check ought to exist as well
+        if(ride.getStatus() != RideStatus.ACTIVE){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ride is not active");
+        }
 
+        //finally, the one who ordered the stoppage should be THE DRIVER, which also means AUTHENTICATED
+        //so I check if the authenticated user is the driver OF THE RIDE ITSELF, if not, throw
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if(auth instanceof AnonymousAuthenticationToken){
+            throw new AccessDeniedException("Unauthenticated user can't stop the ride");
+        }
+        //assert auth != null;
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        //assert userDetails != null;
+        Account driver = userDetails.getAccount();
+        if(!Objects.equals(ride.getDriver().getId(), driver.getId())){
+            throw new AccessDeniedException("Only the driver can stop the ride");
+        }
+        return ride;
     }
 
     public void endRide(RideEndDTO rideEndDTO) {

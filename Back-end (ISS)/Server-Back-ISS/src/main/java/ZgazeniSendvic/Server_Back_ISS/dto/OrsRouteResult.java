@@ -15,5 +15,8 @@ public class OrsRouteResult {
 
     public double getDistanceKm() { return distanceMeters / 1000.0; }
     public double getDurationMinutes() { return durationSeconds / 60.0; }
-    public double getPrice() {return distanceMeters / 1000.0 * 150; }
+    public double getPrice() {
+        double price = distanceMeters / 1000.0 * 150;
+        return Math.round(price); // rounds to nearest whole number
+    }
 }
