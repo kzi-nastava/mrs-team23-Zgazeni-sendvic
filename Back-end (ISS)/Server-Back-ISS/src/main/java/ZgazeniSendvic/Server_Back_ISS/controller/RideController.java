@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -45,19 +46,15 @@ class RideController {
 
     @Autowired
     HistoryOfRidesService historyOfRidesService;
+    @Autowired
+    PanicNotificationService panicNotificationService;
 
     @PutMapping(path = "ride-cancel/{rideID}",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DriveCancelledDTO> cancelDrive(@RequestBody DriveCancelDTO cancelRequest,
                                                          @PathVariable Long rideID) throws Exception{
 
-       //here I would pull out the email out of token if token is present
-        // then would commence attaining the id based on that, by which I would decide wether or not to allow cancelling
-        // for example if its a driver check the reason, otherwise check if too late, by comparing dates
-        //if the check passes, ride is cancelled as showcased below
 
-        //rideService.DummyRideInit();
-        //rideService.DummyRideInit();
         DriveCancelledDTO cancelled = rideService.updateCancel(rideID,cancelRequest);
 
 
@@ -66,18 +63,16 @@ class RideController {
 
     }
 
+    @PreAuthorize("hasAnyRole('DRIVER','ACCOUNT','USER')")
+    @PostMapping(path = "ride-PANIC/{rideID}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> panicRide(@PathVariable Long rideID) throws Exception{
 
-    @PutMapping(path = "ride-PANIC/{rideID}",
-            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> panicRide(@RequestBody PanicButtonDTO request,
-                                                         @PathVariable Long rideID) throws Exception{
-
-        //Email would be pulled out of auth
-        //rideService.DummyRideInit();
-        rideService.PanicRide(rideID, request.getEmail());
+        PanicNotificationDTO notification = rideService.PanicRide(rideID);
+        panicNotificationService.sendPanicNotificationEmails(notification);
 
 
-        return new ResponseEntity<String>("Ride set to panic", HttpStatus.OK);
+        return new ResponseEntity<PanicNotificationDTO>(notification, HttpStatus.OK);
 
 
     }
@@ -116,6 +111,7 @@ class RideController {
 
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PutMapping(path = "ride-tracking/stop/{rideID}",consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RideStoppedDTO> stopRide(@RequestBody RideStopDTO stopReq, @PathVariable Long rideID)

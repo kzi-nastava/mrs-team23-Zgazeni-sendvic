@@ -90,6 +90,7 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
             throw new IllegalStateException("Email already in use");
         }
 
+        //should be changed to user
         Account account = new Account(requestDTO);
         insert(account);
         sendConfirmationLink(account.getEmail(),account);

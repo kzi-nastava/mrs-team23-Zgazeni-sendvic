@@ -1,6 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.repository;
 
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
+import ZgazeniSendvic.Server_Back_ISS.model.Admin;
 import ZgazeniSendvic.Server_Back_ISS.model.Driver;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -23,5 +24,11 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
       AND d.workedMinutesLast24h < 480
 """)
     List<Driver> findAvailableDrivers();
+
+    //Find all admin accounts
+    @Query("""
+    SELECT a FROM Admin a
+""")
+    List<Admin> findAllAdmins();
 
 }

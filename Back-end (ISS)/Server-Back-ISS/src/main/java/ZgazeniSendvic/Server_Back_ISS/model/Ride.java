@@ -83,18 +83,10 @@ public class Ride {
     public boolean isPanic() { return panic; }
 
     public void changeLocations(ArrayList<Location> newLocations){
-        locations = newLocations;
-
-        calculatePrice();
+        this.locations.clear();
+        this.locations.addAll(newLocations);
 
     }
-
-    public double calculatePrice(){
-        //would calc based on locations on implemented yet;
-        price = 20.0;
-        return price;
-    }
-
 
     private long calculateDuration() {
         if (startTime == null || endTime == null) {
