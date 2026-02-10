@@ -1,15 +1,17 @@
 package ZgazeniSendvic.Server_Back_ISS.security.jwt;
 
+import ZgazeniSendvic.Server_Back_ISS.exception.InvalidRideTokenException;
+import ZgazeniSendvic.Server_Back_ISS.exception.RideTokenExpiredException;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import ZgazeniSendvic.Server_Back_ISS.model.Ride;
+import io.jsonwebtoken.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Component
@@ -214,6 +216,55 @@ public class JwtUtils {
      */
     public String getAuthHeaderFromHeader(HttpServletRequest request) {
         return request.getHeader(AUTH_HEADER);
+    }
+
+
+    // ===============================  Ride token  ==================================
+
+    public Date generateRideExpirationDate(Ride ride) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startTime = ride.getStartTime();
+
+        long milliseconds = Duration.between(now, startTime).toMillis();
+
+        // Safety: if start time is in the past, expire immediately
+        if (milliseconds < 0) {
+            milliseconds = 0;
+        }
+
+        return new Date(System.currentTimeMillis() + milliseconds);
+    }
+    public String generateRideToken(Ride ride){
+        Long rideID = ride.getId();
+        return Jwts.builder()
+                .setSubject(rideID.toString())
+                .setExpiration(generateRideExpirationDate(ride))
+                .signWith(SIGNATURE_ALGORITHM, SECRET).compact();
+    }
+
+    public void validateRideToken(String token) {
+        try {
+            Jwts.parser()
+                    .setSigningKey(SECRET)
+                    .parseClaimsJws(token);
+        } catch (ExpiredJwtException e) {
+            throw new RideTokenExpiredException("Ride token has expired", e);
+        } catch (JwtException e) {
+            throw new InvalidRideTokenException("Invalid ride token", e);
+        } catch (Exception e) {
+            throw new InvalidRideTokenException("Invalid ride token", e);
+        }
+    }
+
+    //extracts ride ID from the token, returns null if invalid
+    public Long getRideIdFromToken(String token) {
+        try {
+            final Claims claims = this.getAllClaimsFromToken(token);
+            String rideIdStr = claims.getSubject();
+            return Long.parseLong(rideIdStr);
+        } catch (Exception e) {
+            throw new InvalidRideTokenException("Invalid ride token", e);
+        }
     }
 
 }

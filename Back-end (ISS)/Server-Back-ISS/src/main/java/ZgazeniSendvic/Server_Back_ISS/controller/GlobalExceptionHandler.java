@@ -1,5 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
+import ZgazeniSendvic.Server_Back_ISS.exception.InvalidRideTokenException;
+import ZgazeniSendvic.Server_Back_ISS.exception.RideTokenExpiredException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -88,6 +90,45 @@ public class GlobalExceptionHandler {
                 "status", String.valueOf(status.value()),
                 "error", status.getReasonPhrase(), // "Forbidden"
                 "message", e.getMessage(),         //
+                "path", request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(body);
+    }
+
+
+    //=============== Ride token exceptions ===============
+
+    @ExceptionHandler(RideTokenExpiredException.class)
+    public ResponseEntity<Map<String, String>> handleRideTokenExpired(
+            RideTokenExpiredException e,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.GONE; // 410
+
+        Map<String, String> body = Map.of(
+                "timestamp", Instant.now().toString(),
+                "status", String.valueOf(status.value()),
+                "error", status.getReasonPhrase(), // "Gone"
+                "message", e.getMessage(),
+                "path", request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(body);
+    }
+
+    @ExceptionHandler(InvalidRideTokenException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidRideToken(
+            InvalidRideTokenException e,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.UNAUTHORIZED; // 401
+
+        Map<String, String> body = Map.of(
+                "timestamp", Instant.now().toString(),
+                "status", String.valueOf(status.value()),
+                "error", status.getReasonPhrase(), // "Unauthorized"
+                "message", e.getMessage(),
                 "path", request.getRequestURI()
         );
 

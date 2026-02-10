@@ -8,6 +8,7 @@ import ZgazeniSendvic.Server_Back_ISS.model.*;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.PanicNotificationRepository;
 import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
+import ZgazeniSendvic.Server_Back_ISS.security.jwt.JwtUtils;
 import jakarta.transaction.Transactional;
 import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
 import org.jspecify.annotations.NonNull;
@@ -40,6 +41,8 @@ public class RideServiceImpl implements IRideService {
     OrsRoutingService orsRoutingService;
     @Autowired
     PanicNotificationRepository panicNotificationRepository;
+    @Autowired
+    JwtUtils jwtUtils;
 
     @Override
     public Collection<Ride> getAll() {
@@ -149,18 +152,8 @@ public class RideServiceImpl implements IRideService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
         }
 
-        //here would be check for reason,
-
-        //this is if it canceled
-        //NEEDS CHECK
         Ride ride = found.get();
-         if(!canCancelRide(ride, rideDTO)){
-            DriveCancelledDTO cancelled = new DriveCancelledDTO();
-            cancelled.setCancelled(false);
-            return cancelled;
-        }
-
-
+        canCancelRide(ride, rideDTO); //will throw if can't otherwise goes through
 
         ride.setStatus(RideStatus.CANCELED);
         allRides.save(ride);
@@ -177,23 +170,24 @@ public class RideServiceImpl implements IRideService {
 
     }
 
-    public boolean canCancelRide(Ride ride, DriveCancelDTO rideDTO) {
+    public void canCancelRide(Ride ride, DriveCancelDTO rideDTO) {
         //If not scheduled, then it is at least active, already canceled etc., so it can't be canceled
+
+        //for testing purposes, make a token and print it out
+        //String testingToken = jwtUtils.generateRideToken(ride);
+        //System.out.println("Generated ride token for testing: " + testingToken);
+
         if (ride.getStatus() != RideStatus.SCHEDULED) {
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Ride is not scheduled");
         }
 
-
+        LocalDateTime now = LocalDateTime.now();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //If not logged in
         if (auth instanceof AnonymousAuthenticationToken) {
-            if (true) {
-                //this would be if token is invalid and/or date is too close
-                throw new AccessDeniedException("Unauthenticated No token");
-
+            validateAndCancelAsAnonymous(ride, rideDTO, now);
+            return;
             }
-            return true; //if token is valid and date is not too close, then it can be canceled, even if unauthenticated
-        }
 
         //else if logged in
         try{
@@ -203,8 +197,7 @@ public class RideServiceImpl implements IRideService {
         //check if it is the driver of the ride
         if(Objects.equals(ride.getDriver().getId(), requester.getId())){
             //if it is, allow, and print out reason
-            System.out.println("Driver " + requester.getName() + " canceled the ride. Reason: " + rideDTO.getReason());
-            return true;
+            return;
 
         }
         //now check if passenger, if it is compare dates using the the 10 min func
@@ -216,12 +209,10 @@ public class RideServiceImpl implements IRideService {
                 }
             }
             if(isPassenger){
-                if(isAtLeastTenMinutesBeforeRide(ride, LocalDateTime.now())){
-                    System.out.println("Passenger " + requester.getName() + " canceled the ride. Reason: " + rideDTO.getReason());
-                    return true;
+                if(isAtLeastTenMinutesBeforeRide(ride, now)){
+                    return;
                 }
                 else{
-                    System.out.println("Passenger " + requester.getName() + " attempted to cancel the ride less than 10 minutes before start. Reason: " + rideDTO.getReason());
                     throw new AccessDeniedException("Too late to cancel");
                 }
             }
@@ -232,8 +223,20 @@ public class RideServiceImpl implements IRideService {
             //shouldn't really occur, but if it does, token somewhere failed, send access denied
             throw new AccessDeniedException("Failed Authentication");
         }
+    }
 
+    private void validateAndCancelAsAnonymous(Ride ride, DriveCancelDTO rideDTO, LocalDateTime now) {
+        String token = rideDTO.getRideToken();
+        jwtUtils.validateRideToken(token);
 
+        Long rideIdFromToken = jwtUtils.getRideIdFromToken(token);
+        if (!Objects.equals(rideIdFromToken, ride.getId())) {
+            throw new AccessDeniedException("Invalid ride token for this ride");
+        }
+
+        if (!isAtLeastTenMinutesBeforeRide(ride, now)) {
+            throw new AccessDeniedException("Too late to cancel for unauthenticated user");
+        }
     }
 
     private boolean isAtLeastTenMinutesBeforeRide(Ride ride, LocalDateTime timeOfRequest) {
