@@ -89,6 +89,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/ride-tracking/stop/**").authenticated()
                         .requestMatchers("/api/ride-PANIC/***").authenticated()
+                        .requestMatchers("/api/HOR/admin/**").authenticated()
                         .anyRequest().permitAll() //for testing purposes
                 ).sessionManagement(session -> { // do not use cookies
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);

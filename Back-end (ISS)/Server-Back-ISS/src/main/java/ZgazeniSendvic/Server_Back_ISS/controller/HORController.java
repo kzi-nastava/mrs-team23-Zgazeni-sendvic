@@ -3,15 +3,22 @@ package ZgazeniSendvic.Server_Back_ISS.controller;
 import ZgazeniSendvic.Server_Back_ISS.dto.AHORAccountDetailsDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.ARideDetailsRequestedDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.ARideRequestedDTO;
+import ZgazeniSendvic.Server_Back_ISS.service.HistoryOfRidesService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.print.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -22,33 +29,27 @@ import java.util.List;
 @RequestMapping("/api/HOR")
 public class HORController {
 
+    @Autowired
+    HistoryOfRidesService historyOfRidesService;
 
+
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/admin/{targetID}",consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<ARideRequestedDTO>> adminRetrieveRides
+    public ResponseEntity<Page<ARideRequestedDTO>> adminRetrieveRides
             (@PathVariable Long targetID,
-             Pageable pageable,
-             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate)
+             @PageableDefault(sort = "creationDate", direction = Sort.Direction.DESC) Pageable pageable,
+             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime startDate,
+             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime endDate)
             throws Exception{
         // here a service would go over the pageable and request params etc...
 
-        ARideRequestedDTO ride = new ARideRequestedDTO(
-                7L,
-                Arrays.asList("Stop A", "Stop B", "Stop C"),
-                "Start Stop",
-                new Date(),
-                new Date(System.currentTimeMillis() + 3600000),
-                false,
-                null,
-                29.99,
-                false
-        );
 
-        List<ARideRequestedDTO> allRides = new ArrayList<>();
-        allRides.add(ride);
 
-        return new ResponseEntity<List<ARideRequestedDTO>>(allRides, HttpStatus.OK);
+        Page<ARideRequestedDTO> allRides = historyOfRidesService.getAllRidesOfAccount
+                (targetID,pageable,startDate,endDate);
+
+        return new ResponseEntity<Page<ARideRequestedDTO>>(allRides, HttpStatus.OK);
 
     }
 

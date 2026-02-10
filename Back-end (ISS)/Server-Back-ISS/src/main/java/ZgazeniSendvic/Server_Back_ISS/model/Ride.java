@@ -49,6 +49,12 @@ public class Ride {
     @Getter @Setter
     @Enumerated(EnumType.STRING)
     private RideStatus status;
+    @Getter @Setter
+    private LocalDateTime creationDate;
+    @Getter @Setter
+    @ManyToOne
+    private Account canceler;
+
 
     @Getter @Setter
     private boolean panic;
