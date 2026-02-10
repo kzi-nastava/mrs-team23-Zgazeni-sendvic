@@ -34,7 +34,7 @@ public class HORController {
 
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(path = "/admin/{targetID}",consumes = MediaType.APPLICATION_JSON_VALUE,
+    @GetMapping(path = "/admin/{targetID}",
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<ARideRequestedDTO>> adminRetrieveRides
             (@PathVariable Long targetID,
