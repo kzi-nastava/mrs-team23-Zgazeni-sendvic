@@ -89,9 +89,18 @@ public class HistoryOfRidesService {
 
         // Validate sort fields
         validateSortFields(pageable, ADMIN_ALLOWED_SORT_FIELDS);
+        System.out.println("=== DEBUGGING ===");
+        System.out.println("fromDate parameter: " + fromDate);
+        System.out.println("toDate parameter: " + toDate);
 
 
         Page<Ride> ridePage = rideRepository.findByAccountAndDateRange(account, fromDate, toDate, pageable);
+
+        System.out.println("Number of results: " + ridePage.getTotalElements());
+        ridePage.getContent().forEach(ride -> {
+            System.out.println("Ride ID: " + ride.getId() +
+                    ", creationDate: " + ride.getCreationDate());
+        });
 
         // Convert Page<Ride> -> Page<ARideRequestedDTO> using mapper
         return ridesToARideRequestedDTOPage(ridePage);
@@ -130,8 +139,8 @@ public class HistoryOfRidesService {
             dto.setStatus(r.getStatus());
 
             // Handle possible null driver
-            Account driver = r.getDriver();
-            dto.setWhoCancelled(driver != null ? driver.getId() : null);
+            Account canceler = r.getCanceler();
+            dto.setWhoCancelled(canceler != null ? canceler.getId() : null);
 
             return dto;
         });

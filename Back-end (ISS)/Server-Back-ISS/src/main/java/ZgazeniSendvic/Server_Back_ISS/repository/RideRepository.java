@@ -44,11 +44,11 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     Page<Ride> findByAccount(@Param("account") Account account, Pageable pageable);
 
     @Query("""
-    SELECT DISTINCT r FROM Ride r
-    LEFT JOIN r.passengers p
+    SELECT r FROM Ride r 
+    LEFT JOIN r.passengers p 
     WHERE (r.driver = :account OR r.creator = :account OR p = :account)
-      AND (:fromDate IS NULL OR r.creationDate >= :fromDate)
-      AND (:toDate IS NULL OR r.creationDate <= :toDate)
+      AND (CAST(:fromDate AS timestamp) IS NULL OR r.creationDate >= :fromDate)
+      AND (CAST(:toDate AS timestamp) IS NULL OR r.creationDate <= :toDate)
     """)
     Page<Ride> findByAccountAndDateRange(
             @Param("account") Account account,

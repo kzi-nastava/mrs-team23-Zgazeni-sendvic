@@ -39,15 +39,15 @@ public class HORController {
     public ResponseEntity<Page<ARideRequestedDTO>> adminRetrieveRides
             (@PathVariable Long targetID,
              @PageableDefault(sort = "creationDate", direction = Sort.Direction.DESC) Pageable pageable,
-             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime startDate,
-             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime endDate)
+             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime fromDate,
+             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime toDate)
             throws Exception{
         // here a service would go over the pageable and request params etc...
 
 
 
         Page<ARideRequestedDTO> allRides = historyOfRidesService.getAllRidesOfAccount
-                (targetID,pageable,startDate,endDate);
+                (targetID,pageable,fromDate,toDate);
 
         return new ResponseEntity<Page<ARideRequestedDTO>>(allRides, HttpStatus.OK);
 
