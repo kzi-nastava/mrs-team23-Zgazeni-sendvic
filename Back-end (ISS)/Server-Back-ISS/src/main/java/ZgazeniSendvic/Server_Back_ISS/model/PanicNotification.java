@@ -16,7 +16,7 @@ public class PanicNotification {
     private Long id;
 
     @Getter @Setter
-    @OneToOne
+    @ManyToOne
     private Account caller;
 
     @Getter @Setter

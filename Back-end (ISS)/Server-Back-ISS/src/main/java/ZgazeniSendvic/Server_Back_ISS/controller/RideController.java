@@ -46,6 +46,8 @@ class RideController {
 
     @Autowired
     HistoryOfRidesService historyOfRidesService;
+    @Autowired
+    PanicNotificationService panicNotificationService;
 
     @PutMapping(path = "ride-cancel/{rideID}",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -67,6 +69,7 @@ class RideController {
     public ResponseEntity<?> panicRide(@PathVariable Long rideID) throws Exception{
 
         PanicNotificationDTO notification = rideService.PanicRide(rideID);
+        panicNotificationService.sendPanicNotificationEmails(notification);
 
 
         return new ResponseEntity<PanicNotificationDTO>(notification, HttpStatus.OK);
