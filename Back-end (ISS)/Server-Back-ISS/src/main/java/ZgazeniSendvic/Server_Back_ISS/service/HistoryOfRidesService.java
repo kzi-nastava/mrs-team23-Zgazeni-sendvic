@@ -40,7 +40,8 @@ public class HistoryOfRidesService {
             "status",
             "canceler",
             "price",
-            "panic"
+            "panic",
+            "creationDate"
     );
 
     private final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
