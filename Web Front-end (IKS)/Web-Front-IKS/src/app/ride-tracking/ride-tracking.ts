@@ -158,6 +158,15 @@ export class RideTracking implements OnInit, OnDestroy {
 
   stopRide(): void {
     console.log('Stop Ride clicked');
+    this.http.put('http://localhost:8080/api/ride-end', { rideId: this.currentRide?.rideId,price: this.currentRide?.price, paid: true, ended: true }).subscribe({
+      next: (response) => {
+        console.log('Ride stopped successfully:', response);
+      },
+      error: (err) => {
+        console.error('Error stopping ride:', err);
+      }
+    });
+    this.openRate();
   }
 
   openNote(): void {
@@ -188,11 +197,30 @@ export class RideTracking implements OnInit, OnDestroy {
   }
 
   sendRating(): void {
-    console.log('Rating sent:', {
+    if (!this.currentRide) {
+      console.error('No current ride to rate');
+      return;
+    }
+    this.http.post(`http://localhost:8080/api/ride-driver-rating/${this.userId}`, {
+      userId: this.userId,
+      rideId: this.currentRide?.rideId,
+      driverRating: this.driverRating,
+      vehicleRating: this.vehicleRating,
+      comment: this.ratingComment
+    }).subscribe({
+      next: (response) => {        
+      console.log('Rating sent successfully:', response);
+      console.log('Rating:', {
       driver: this.driverRating,
       vehicle: this.vehicleRating,
       comment: this.ratingComment,
     });
+      },
+      error: (err) => {
+        console.error('Error sending rating:', err);
+      }
+    });
+    
     this.closeRateForm();
   }
 

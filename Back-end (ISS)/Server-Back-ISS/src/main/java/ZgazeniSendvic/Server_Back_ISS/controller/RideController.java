@@ -192,7 +192,8 @@ class RideController {
     }
 
     @PostMapping(value="ride-driver-rating/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> rideDriverRating(@PathVariable("userId") Long userId, @RequestBody RideDriverRatingDTO rideDriverRatingDTO) {
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<String> rideDriverRating(@PathVariable("userId") Long userId, @RequestBody RideDriverRatingDTO rideDriverRatingDTO) {
         try {
             if (rideDriverRatingDTO.getUserId() == null) {
                 rideDriverRatingDTO.setUserId(userId);
@@ -200,11 +201,10 @@ class RideController {
             boolean success = rideDriverRatingService.saveRating(rideDriverRatingDTO);
             if (success) {
                 return ResponseEntity.ok().build();
-            } else {
-                return ResponseEntity.status(500).build();
             }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to save rating");
         } catch (org.springframework.web.server.ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).build();
+            return ResponseEntity.status(ex.getStatusCode()).body(ex.getReason());
         }
     }
 
