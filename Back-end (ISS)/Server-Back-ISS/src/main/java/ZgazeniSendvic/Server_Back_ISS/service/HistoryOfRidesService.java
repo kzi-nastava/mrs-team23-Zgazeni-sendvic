@@ -1,6 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.ARideRequestedDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.ARideRequestedUserDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.HistoryOfRidesDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.PastRideDTO;
 import ZgazeniSendvic.Server_Back_ISS.exception.AccountNotFoundException;
@@ -10,12 +11,15 @@ import ZgazeniSendvic.Server_Back_ISS.model.Ride;
 import ZgazeniSendvic.Server_Back_ISS.model.RideStatus;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
+import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -41,6 +45,13 @@ public class HistoryOfRidesService {
             "canceler",
             "price",
             "panic",
+            "creationDate"
+    );
+
+    private static final Set<String> USER_ALLOWED_SORT_FIELDS = Set.of(
+            "locations",
+            "startTime",
+            "endTime",
             "creationDate"
     );
 
@@ -146,4 +157,33 @@ public class HistoryOfRidesService {
         });
     }
 
+
+    public Page<ARideRequestedUserDTO> getAllRidesOfAccountUser(Pageable pageable,
+                                                            LocalDateTime fromDate, LocalDateTime toDate){
+        //gets account from security context
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        Account account = userDetails.getAccount();
+
+        // Throw error if account not found
+        if (account == null) {
+            throw new AccountNotFoundException(null);
+        }
+
+        // Validate sort fields before querying
+        validateSortFields(pageable, USER_ALLOWED_SORT_FIELDS);
+
+        // Call the existing admin function with the account ID
+        Page<ARideRequestedDTO> adminDTOs = getAllRidesOfAccount(account.getId(), pageable, fromDate, toDate);
+
+        // Convert Page<ARideRequestedDTO> to Page<ARideRequestedUserDTO>
+        return adminDTOs.map(dto -> {
+            ARideRequestedUserDTO userDTO = new ARideRequestedUserDTO();
+            userDTO.setRideID(dto.getRideID());
+            userDTO.setDestinations(dto.getDestinations());
+            userDTO.setBeginning(dto.getBeginning());
+            userDTO.setEnding(dto.getEnding());
+            return userDTO;
+        });
+    }
 }

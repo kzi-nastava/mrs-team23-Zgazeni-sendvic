@@ -3,6 +3,7 @@ package ZgazeniSendvic.Server_Back_ISS.controller;
 import ZgazeniSendvic.Server_Back_ISS.dto.AHORAccountDetailsDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.ARideDetailsRequestedDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.ARideRequestedDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.ARideRequestedUserDTO;
 import ZgazeniSendvic.Server_Back_ISS.service.HistoryOfRidesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -50,6 +51,26 @@ public class HORController {
                 (targetID,pageable,fromDate,toDate);
 
         return new ResponseEntity<Page<ARideRequestedDTO>>(allRides, HttpStatus.OK);
+
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping(path = "/user",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<ARideRequestedUserDTO>> userRetrieveRides
+            (
+             @PageableDefault(sort = "creationDate", direction = Sort.Direction.DESC) Pageable pageable,
+             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime fromDate,
+             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime toDate)
+            throws Exception{
+        // here a service would go over the pageable and request params etc...
+
+
+
+        Page<ARideRequestedUserDTO> allRides = historyOfRidesService.getAllRidesOfAccountUser
+        (pageable,fromDate,toDate);;
+
+        return new ResponseEntity<Page<ARideRequestedUserDTO>>(allRides, HttpStatus.OK);
 
     }
 
