@@ -1,15 +1,12 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
-import ZgazeniSendvic.Server_Back_ISS.dto.ARideRequestedDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.ARideRequestedUserDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.HistoryOfRidesDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.PastRideDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.exception.AccountNotFoundException;
-import ZgazeniSendvic.Server_Back_ISS.model.Account;
-import ZgazeniSendvic.Server_Back_ISS.model.Location;
-import ZgazeniSendvic.Server_Back_ISS.model.Ride;
-import ZgazeniSendvic.Server_Back_ISS.model.RideStatus;
+import ZgazeniSendvic.Server_Back_ISS.exception.RideNotFoundException;
+import ZgazeniSendvic.Server_Back_ISS.model.*;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
+import ZgazeniSendvic.Server_Back_ISS.repository.RideDriverRatingRepository;
+import ZgazeniSendvic.Server_Back_ISS.repository.RideNoteRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import org.apache.coyote.BadRequestException;
@@ -36,6 +33,10 @@ public class HistoryOfRidesService {
     private RideRepository rideRepository;
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private RideDriverRatingRepository rideDriverRatingRepository;
+    @Autowired
+    private RideNoteRepository rideNoteRepository;
 
     private static final Set<String> ADMIN_ALLOWED_SORT_FIELDS = Set.of(
             "locations",
@@ -186,4 +187,65 @@ public class HistoryOfRidesService {
             return userDTO;
         });
     }
+
+    public ARideDetailsRequestedDTO getRideDetailsForAdmin(Long rideId) {
+        // Fetch the ride by ID
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RideNotFoundException("Ride with ID " + rideId + " not found"));
+
+        // Find all relevant info
+        List<RideDriverRating> ratings = rideDriverRatingRepository.findByRideId(rideId);
+        List<RideNote> notes = rideNoteRepository.findByRideId(rideId);
+
+       ARideDetailsRequestedDTO dto = new ARideDetailsRequestedDTO();
+        dto.setPassengers(new ArrayList<>());
+        dto.setRideDriverRatings(new ArrayList<>());
+        dto.setRideNotes(new ArrayList<>());
+
+
+
+        for(Account account: ride.getPassengers()){
+            AHORAccountDetailsDTO accountDTO = new AHORAccountDetailsDTO();
+            accountDTO.setAccountId(account.getId());
+            accountDTO.setEmail(account.getEmail());
+            accountDTO.setFirstName(account.getName());
+            accountDTO.setLastName(account.getLastName());
+            dto.getPassengers().add(accountDTO);
+        }
+
+        if(ride.getDriver() != null){
+            AHORAccountDetailsDTO driverDTO = new AHORAccountDetailsDTO();
+            driverDTO.setAccountId(ride.getDriver().getId());
+            driverDTO.setEmail(ride.getDriver().getEmail());
+            driverDTO.setFirstName(ride.getDriver().getName());
+            driverDTO.setLastName(ride.getDriver().getLastName());
+            dto.setDriver(driverDTO);
+        }
+
+        for(RideDriverRating rating : ratings){
+            RideDriverRatingDTO ratingDTO = new RideDriverRatingDTO();
+            ratingDTO.setRideId(ride.getId());
+            ratingDTO.setDriverRating(rating.getDriverRating());
+            ratingDTO.setComment(rating.getComment());
+            ratingDTO.setVehicleRating(rating.getVehicleRating());
+            ratingDTO.setUserId(rating.getUserId());
+            dto.getRideDriverRatings().add(ratingDTO);
+        }
+
+        for(RideNote note : notes){
+            RideNoteDTO noteDTO = new RideNoteDTO();
+            // WIll put userId here, despite the context
+            noteDTO.setRideId(note.getUserId());
+            noteDTO.setNote(note.getNote());
+            dto.getRideNotes().add(noteDTO);
+
+        }
+
+        return dto;
+
+
+    }
+
 }
+
+

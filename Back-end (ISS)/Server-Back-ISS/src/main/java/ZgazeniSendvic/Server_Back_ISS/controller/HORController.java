@@ -74,18 +74,26 @@ public class HORController {
 
     }
 
-    @GetMapping(path = "admin/Detailed/{targetID}",consumes = MediaType.APPLICATION_JSON_VALUE,
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(path = "admin/detailed/{targetID}",
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ARideDetailsRequestedDTO> adminRetrieveDetailed(@PathVariable Long targetID)
             throws Exception{
 
-        //would find based on id in service
+        ARideDetailsRequestedDTO detailed = historyOfRidesService.getRideDetailsForAdmin(targetID);
 
-        List<AHORAccountDetailsDTO> passengers = Arrays.asList(new AHORAccountDetailsDTO(), new AHORAccountDetailsDTO());
-        AHORAccountDetailsDTO driver = new AHORAccountDetailsDTO();
-        List<String> reports = Arrays.asList("Passenger was late","DRIVER was friendly");
-        List<Integer> ratings = Arrays.asList(5, 4, 5);
-        ARideDetailsRequestedDTO detailed = new ARideDetailsRequestedDTO(targetID,passengers,driver,reports,ratings);
+        return new ResponseEntity<ARideDetailsRequestedDTO>(detailed, HttpStatus.OK);
+
+    }
+
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping(path = "user/detailed/{targetID}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ARideDetailsRequestedDTO> userRetrieveDetailed(@PathVariable Long targetID)
+            throws Exception{
+
+        ARideDetailsRequestedDTO detailed = historyOfRidesService.getRideDetailsForAdmin(targetID);
 
         return new ResponseEntity<ARideDetailsRequestedDTO>(detailed, HttpStatus.OK);
 
