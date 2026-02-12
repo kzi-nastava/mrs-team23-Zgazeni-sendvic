@@ -147,7 +147,7 @@ public class DataLoader {
             ride1.setEndTime(LocalDateTime.now().plusHours(2));
             ride1.setStatus(RideStatus.SCHEDULED);
             ride1.setPanic(false);
-            ride1.setCreationDate(LocalDateTime.now().minusHours(5));
+            //ride1.setCreationDate(LocalDateTime.now().minusHours(5));
             ride1 = rideRepository.save(ride1);
             System.out.println("Created Ride 1 (Accounts A & B, Driver 1)");
 
@@ -170,7 +170,7 @@ public class DataLoader {
             ride2.setEndTime(LocalDateTime.now().plusHours(4));
             ride2.setStatus(RideStatus.SCHEDULED);
             ride2.setPanic(false);
-            ride2.setCreationDate(LocalDateTime.now().minusHours(20));
+            //ride2.setCreationDate(LocalDateTime.now().minusHours(20));
             ride2 = rideRepository.save(ride2);
             System.out.println("Created Ride 2 (Account A, Driver 1)");
 

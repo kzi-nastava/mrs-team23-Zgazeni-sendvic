@@ -3,6 +3,7 @@ package ZgazeniSendvic.Server_Back_ISS.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -49,7 +50,9 @@ public class Ride {
     @Getter @Setter
     @Enumerated(EnumType.STRING)
     private RideStatus status;
-    @Getter @Setter
+    @CreationTimestamp
+    @Column(updatable = false)
+    @Getter
     private LocalDateTime creationDate;
     @Getter @Setter
     @ManyToOne

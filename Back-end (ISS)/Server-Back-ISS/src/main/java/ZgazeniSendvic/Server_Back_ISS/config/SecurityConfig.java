@@ -94,6 +94,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/HOR/admin/**").authenticated()
                         .requestMatchers("/api/HOR/admin/detailed/**").authenticated()
                         .requestMatchers("/api/HOR/user").authenticated()
+                        .requestMatchers("/api/HOR/user/detailed/**").authenticated()
+
                         .anyRequest().permitAll() //for testing purposes
                 ).sessionManagement(session -> { // do not use cookies
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);

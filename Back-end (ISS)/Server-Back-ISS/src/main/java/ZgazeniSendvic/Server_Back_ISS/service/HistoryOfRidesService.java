@@ -9,10 +9,8 @@ import ZgazeniSendvic.Server_Back_ISS.repository.RideDriverRatingRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideNoteRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
@@ -23,7 +21,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -205,7 +202,7 @@ public class HistoryOfRidesService {
 
 
         for(Account account: ride.getPassengers()){
-            AHORAccountDetailsDTO accountDTO = new AHORAccountDetailsDTO();
+            HORAccountDetailsDTO accountDTO = new HORAccountDetailsDTO();
             accountDTO.setAccountId(account.getId());
             accountDTO.setEmail(account.getEmail());
             accountDTO.setFirstName(account.getName());
@@ -214,7 +211,7 @@ public class HistoryOfRidesService {
         }
 
         if(ride.getDriver() != null){
-            AHORAccountDetailsDTO driverDTO = new AHORAccountDetailsDTO();
+            HORAccountDetailsDTO driverDTO = new HORAccountDetailsDTO();
             driverDTO.setAccountId(ride.getDriver().getId());
             driverDTO.setEmail(ride.getDriver().getEmail());
             driverDTO.setFirstName(ride.getDriver().getName());
@@ -243,6 +240,31 @@ public class HistoryOfRidesService {
 
         return dto;
 
+
+    }
+
+    public URideDetailsRequestedDTO getRideDetailsForUser(Long rideId){
+        // Fetch the ride by ID
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RideNotFoundException("Ride with ID " + rideId + " not found"));
+
+        //based on security context, check if user is passenger, if not throw error
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        Account account = userDetails.getAccount();
+        if(ride.getPassengers().stream().noneMatch(p -> p.getId().equals(account.getId()))){
+            throw new RideNotFoundException("Ride with ID " + rideId + " not found for this user");
+        }
+
+        URideDetailsRequestedDTO dto = new URideDetailsRequestedDTO();
+
+        ARideDetailsRequestedDTO adminDTO = getRideDetailsForAdmin(rideId);
+
+        dto.setDriver(adminDTO.getDriver());
+        dto.setRideDriverRatings(adminDTO.getRideDriverRatings());
+        dto.setRideNotes(adminDTO.getRideNotes());
+
+        return dto;
 
     }
 

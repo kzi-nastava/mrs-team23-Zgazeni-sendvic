@@ -1,9 +1,9 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
-import ZgazeniSendvic.Server_Back_ISS.dto.AHORAccountDetailsDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.ARideDetailsRequestedDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.ARideRequestedDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.ARideRequestedUserDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.URideDetailsRequestedDTO;
 import ZgazeniSendvic.Server_Back_ISS.service.HistoryOfRidesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -13,17 +13,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
 
 @RestController
 @CrossOrigin(origins="*")
@@ -90,12 +85,12 @@ public class HORController {
     @PreAuthorize("hasRole('USER')")
     @GetMapping(path = "user/detailed/{targetID}",
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ARideDetailsRequestedDTO> userRetrieveDetailed(@PathVariable Long targetID)
+    public ResponseEntity<URideDetailsRequestedDTO> userRetrieveDetailed(@PathVariable Long targetID)
             throws Exception{
 
-        ARideDetailsRequestedDTO detailed = historyOfRidesService.getRideDetailsForAdmin(targetID);
+        URideDetailsRequestedDTO detailed = historyOfRidesService.getRideDetailsForUser(targetID);
 
-        return new ResponseEntity<ARideDetailsRequestedDTO>(detailed, HttpStatus.OK);
+        return new ResponseEntity<URideDetailsRequestedDTO>(detailed, HttpStatus.OK);
 
     }
 
