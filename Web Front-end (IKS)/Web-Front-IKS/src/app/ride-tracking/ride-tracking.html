@@ -1,5 +1,5 @@
 <div class="ride-tracking-container">
-  <app-map [showMultipleVehicles]="false"></app-map>
+  <app-map [showMultipleVehicles]="false" (routeMetrics)="onRouteMetrics($event)"></app-map>
   
   <aside class="ride-sidebar">
     <div class="sidebar-content">
