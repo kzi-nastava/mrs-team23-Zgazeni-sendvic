@@ -230,11 +230,14 @@ public class HistoryOfRidesService {
         }
 
         for(RideNote note : notes){
-            RideNoteDTO noteDTO = new RideNoteDTO();
-            // WIll put userId here, despite the context
-            noteDTO.setRideId(note.getUserId());
+            ARideDetailsNoteDTO noteDTO = new ARideDetailsNoteDTO();
+            noteDTO.setNoteId(note.getId());
+            noteDTO.setUserId(note.getUserId());
             noteDTO.setNote(note.getNote());
+
             dto.getRideNotes().add(noteDTO);
+            // WIll put userId here, despite the context
+
 
         }
 

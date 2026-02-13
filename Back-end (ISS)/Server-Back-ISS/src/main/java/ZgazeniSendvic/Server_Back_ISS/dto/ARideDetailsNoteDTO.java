@@ -5,15 +5,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class URideDetailsRequestedDTO {
+public class ARideDetailsNoteDTO {
 
-    private HORAccountDetailsDTO driver;
-    private List<ARideDetailsNoteDTO> rideNotes;
-    private List<RideDriverRatingDTO> rideDriverRatings;
+    Long noteId;
+    Long userId;
+    String note;
+
 }

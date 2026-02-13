@@ -15,7 +15,7 @@ public class ARideDetailsRequestedDTO {
 
     private List<HORAccountDetailsDTO> passengers;
     private HORAccountDetailsDTO driver;
-    private List<RideNoteDTO> rideNotes;
+    private List<ARideDetailsNoteDTO> rideNotes;
     private List<RideDriverRatingDTO> rideDriverRatings;
 
 }
