@@ -1,6 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
+import ZgazeniSendvic.Server_Back_ISS.exception.RideNotFoundException;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
@@ -319,7 +320,7 @@ public class RideServiceImpl implements IRideService {
         Optional<Ride> found = allRides.findById(rideID);
         if (found.isEmpty()) {
             String value = "Ride was not found";
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, value);
+            throw new RideNotFoundException(value);
         }
 
 

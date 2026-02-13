@@ -191,6 +191,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(body);
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, String>> handleRuntimeException(
+            RuntimeException e,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+        Map<String, String> body = Map.of(
+                "timestamp", Instant.now().toString(),
+                "status", String.valueOf(status.value()),
+                "error", status.getReasonPhrase(),
+                "message", e.getMessage(),
+                "path", request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(body);
+    }
+
 
 
 }
