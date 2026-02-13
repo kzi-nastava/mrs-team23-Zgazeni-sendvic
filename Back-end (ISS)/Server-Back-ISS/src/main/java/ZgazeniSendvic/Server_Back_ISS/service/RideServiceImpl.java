@@ -357,9 +357,9 @@ public class RideServiceImpl implements IRideService {
         //finally, the one who ordered the stoppage should be THE DRIVER, which also means AUTHENTICATED
         //so I check if the authenticated user is the driver OF THE RIDE ITSELF, if not, throw
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if(auth instanceof AnonymousAuthenticationToken){
-            throw new AccessDeniedException("Unauthenticated user can't stop the ride");
-        }
+
+
+
         //assert auth != null;
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
         //assert userDetails != null;
