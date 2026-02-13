@@ -11,6 +11,7 @@ import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,6 +42,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.util.Arrays;
 
+@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
 @Configuration // Marks as config, makes all @Beans auto execute
 // @EnableWebSecurity(debug = true) // Enables web security
 @EnableMethodSecurity // Enables @PreAuthorize, @Secured etc.
@@ -89,6 +91,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/ride-tracking/stop/**").authenticated()
                         .requestMatchers("/api/ride-PANIC/***").authenticated()
+                        .requestMatchers("/api/HOR/admin/**").authenticated()
+                        .requestMatchers("/api/HOR/admin/detailed/**").authenticated()
+                        .requestMatchers("/api/HOR/user").authenticated()
+                        .requestMatchers("/api/HOR/user/detailed/**").authenticated()
+
                         .anyRequest().permitAll() //for testing purposes
                 ).sessionManagement(session -> { // do not use cookies
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);

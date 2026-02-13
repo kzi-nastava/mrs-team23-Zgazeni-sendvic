@@ -156,6 +156,7 @@ public class RideServiceImpl implements IRideService {
         canCancelRide(ride, rideDTO); //will throw if can't otherwise goes through
 
         ride.setStatus(RideStatus.CANCELED);
+        setCanceler(ride);
         allRides.save(ride);
         allRides.flush();
 
@@ -168,6 +169,18 @@ public class RideServiceImpl implements IRideService {
 
         return cancelled;
 
+    }
+
+    //Sets canceler if there is one
+    public void setCanceler(Ride ride){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof AnonymousAuthenticationToken) {
+            ride.setCanceler(null);
+            return;
+        }
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        Account canceler = userDetails.getAccount();
+        ride.setCanceler(canceler);
     }
 
     public void canCancelRide(Ride ride, DriveCancelDTO rideDTO) {
