@@ -9,6 +9,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -113,5 +115,105 @@ public class RideRepositoryDockerTest {
         assertFalse(result.isPresent());
         assertTrue(result.isEmpty());
     }
-}
 
+    @Test
+    @DisplayName("Should return rides for account within date range")
+    void testFindByAccountAndDateRange_ReturnsRide() {
+        Account creator = new Account();
+        creator.setEmail("creator-range@test.com");
+        creator.setPassword(passwordEncoder.encode("password123"));
+        creator.setName("Range");
+        creator.setLastName("Creator");
+        creator.setAddress("1 Range St");
+        creator.setPhoneNumber("1111111111");
+        creator.setConfirmed(true);
+        accountRepository.save(creator);
+
+        Driver driver = new Driver();
+        driver.setEmail("driver-range@test.com");
+        driver.setPassword(passwordEncoder.encode("password123"));
+        driver.setName("Range");
+        driver.setLastName("Driver");
+        driver.setAddress("2 Range Ave");
+        driver.setPhoneNumber("2222222222");
+        driver.setConfirmed(true);
+        driver.setActive(true);
+        accountRepository.save(driver);
+
+        Ride ride = new Ride();
+        ride.setDriver(driver);
+        ride.setCreator(creator);
+        ride.setPassengers(new ArrayList<>());
+        ride.setLocations(new ArrayList<>());
+        ride.setPrice(10.0);
+        ride.setStartTime(LocalDateTime.now().minusMinutes(30));
+        ride.setEndTime(LocalDateTime.now().minusMinutes(10));
+        ride.setStatus(RideStatus.ACTIVE);
+        ride.setPanic(false);
+        rideRepository.save(ride);
+
+        LocalDateTime fromDate = LocalDateTime.now().minusHours(1);
+        LocalDateTime toDate = LocalDateTime.now().plusHours(1);
+
+        Page<Ride> result = rideRepository.findByAccountAndDateRange(
+                creator,
+                fromDate,
+                toDate,
+                PageRequest.of(0, 10)
+        );
+
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.getTotalElements());
+        assertEquals(creator.getId(), result.getContent().get(0).getCreator().getId());
+    }
+
+    @Test
+    @DisplayName("Should return empty page when date range excludes rides")
+    void testFindByAccountAndDateRange_EmptyWhenOutOfRange() {
+        Account creator = new Account();
+        creator.setEmail("creator-out@test.com");
+        creator.setPassword(passwordEncoder.encode("password123"));
+        creator.setName("Out");
+        creator.setLastName("Range");
+        creator.setAddress("3 Range St");
+        creator.setPhoneNumber("3333333333");
+        creator.setConfirmed(true);
+        accountRepository.save(creator);
+
+        Driver driver = new Driver();
+        driver.setEmail("driver-out@test.com");
+        driver.setPassword(passwordEncoder.encode("password123"));
+        driver.setName("Out");
+        driver.setLastName("Driver");
+        driver.setAddress("4 Range Ave");
+        driver.setPhoneNumber("4444444444");
+        driver.setConfirmed(true);
+        driver.setActive(true);
+        accountRepository.save(driver);
+
+        Ride ride = new Ride();
+        ride.setDriver(driver);
+        ride.setCreator(creator);
+        ride.setPassengers(new ArrayList<>());
+        ride.setLocations(new ArrayList<>());
+        ride.setPrice(20.0);
+        ride.setStartTime(LocalDateTime.now().minusMinutes(30));
+        ride.setEndTime(LocalDateTime.now().minusMinutes(10));
+        ride.setStatus(RideStatus.ACTIVE);
+        ride.setPanic(false);
+        rideRepository.save(ride);
+
+        LocalDateTime fromDate = LocalDateTime.now().minusDays(10);
+        LocalDateTime toDate = LocalDateTime.now().minusDays(5);
+
+        Page<Ride> result = rideRepository.findByAccountAndDateRange(
+                creator,
+                fromDate,
+                toDate,
+                PageRequest.of(0, 10)
+        );
+
+        assertTrue(result.isEmpty());
+        assertEquals(0, result.getTotalElements());
+    }
+}

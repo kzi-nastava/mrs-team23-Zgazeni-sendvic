@@ -35,15 +35,6 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     //for HOR
 
     @Query("""
-    SELECT DISTINCT r FROM Ride r
-    LEFT JOIN r.passengers p
-    WHERE r.driver = :account
-       OR r.creator = :account
-       OR p = :account
-    """)
-    Page<Ride> findByAccount(@Param("account") Account account, Pageable pageable);
-
-    @Query("""
     SELECT r FROM Ride r 
     LEFT JOIN r.passengers p 
     WHERE (r.driver = :account OR r.creator = :account OR p = :account)
