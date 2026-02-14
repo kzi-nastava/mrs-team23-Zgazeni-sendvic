@@ -210,7 +210,10 @@ public class RideServiceImpl implements IRideService {
 
         //check if it is the driver of the ride
         if(Objects.equals(ride.getDriver().getId(), requester.getId())){
-            //if it is, allow, and print out reason
+            //if it is, allow unless no reason
+            if(rideDTO.getReason() == null || rideDTO.getReason().isBlank()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Reason for cancellation must be provided by the driver");
+            }
             return;
 
         }
