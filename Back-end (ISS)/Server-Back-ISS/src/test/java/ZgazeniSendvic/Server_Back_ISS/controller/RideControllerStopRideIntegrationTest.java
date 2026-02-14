@@ -82,6 +82,7 @@ public class RideControllerStopRideIntegrationTest {
     private Ride activeRide;
     private Ride scheduledRide;
     private Ride finishedRide;
+    private Ride cancelledRide;
     private Location location1;
     private Location location2;
     private Location location3;
@@ -227,6 +228,22 @@ public class RideControllerStopRideIntegrationTest {
         finishedRide.setPanic(false);
         finishedRide = rideRepository.save(finishedRide);
 
+        // Create cancelled ride
+        cancelledRide = new Ride();
+        cancelledRide.setId(null);
+        cancelledRide.setDriver(testDriver);
+        cancelledRide.setCreator(testPassenger);
+        cancelledRide.setPassengers(new ArrayList<>(List.of(testPassenger)));
+        cancelledRide.setLocations(new ArrayList<>(List.of(
+                returnNewLocation(location1),
+                returnNewLocation(location3)
+        )));
+        cancelledRide.setPrice(20.00);
+        cancelledRide.setStartTime(LocalDateTime.now().plusHours(2));
+        cancelledRide.setStatus(RideStatus.CANCELED);
+        cancelledRide.setPanic(false);
+        cancelledRide = rideRepository.save(cancelledRide);
+
         // Mock OrsRoutingService to avoid external API calls
         // Price calculation: distance (15000m = 15km) * 150 = 2250
         OrsRouteResult mockRouteResult = new OrsRouteResult(15000.0, 1200.0,
@@ -271,6 +288,7 @@ public class RideControllerStopRideIntegrationTest {
         assertThat(updatedRide).isPresent();
         assertThat(updatedRide.get().getStatus()).isEqualTo(RideStatus.FINISHED);
         assertThat(updatedRide.get().getEndTime()).isNotNull();
+        assertThat(updatedRide.get().getEndTime()).isEqualTo(stopTime);
         assertThat(updatedRide.get().getPrice()).isEqualTo(mockRouteResult.getPrice());
         assertThat(updatedRide.get().getLocations()).hasSize(3);
     }
@@ -297,7 +315,7 @@ public class RideControllerStopRideIntegrationTest {
 
         // Assert - No changes should occur in database
         long rideCount = rideRepository.count();
-        assertThat(rideCount).isEqualTo(3); // activeRide, scheduledRide, finishedRide
+        assertThat(rideCount).isEqualTo(4); // activeRide, scheduledRide, finishedRide, cancelledRide
     }
 
     @Test
@@ -349,6 +367,32 @@ public class RideControllerStopRideIntegrationTest {
         Optional<Ride> unchangedRide = rideRepository.findById(finishedRide.getId());
         assertThat(unchangedRide).isPresent();
         assertThat(unchangedRide.get().getStatus()).isEqualTo(RideStatus.FINISHED);
+    }
+
+    @Test
+    @DisplayName("Should return 400 when ride is not in ACTIVE status - CANCELLED")
+    void testStopRide_RideNotActive_Cancelled() throws Exception {
+        // Arrange
+        RideStopDTO stopRequest = new RideStopDTO();
+        stopRequest.setPassedLocations(List.of(
+                returnNewLocation(location1),
+                returnNewLocation(location2)
+        ));
+        stopRequest.setCurrentTime(LocalDateTime.now());
+
+        // Act & Assert
+        mockMvc.perform(
+                        put("/api/ride-tracking/stop/{rideID}", cancelledRide.getId())
+                                .with(user(new CustomUserDetails(testDriver)))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(stopRequest)))
+                .andExpect(status().isBadRequest());
+
+        // Assert - Ride status should remain CANCELLED
+        Optional<Ride> unchangedRide = rideRepository.findById(cancelledRide.getId());
+        assertThat(unchangedRide).isPresent();
+        assertThat(unchangedRide.get().getStatus()).isEqualTo(RideStatus.CANCELED);
+        assertThat(unchangedRide.get().getEndTime()).isNull();
     }
 
     @Test
@@ -708,6 +752,7 @@ public class RideControllerStopRideIntegrationTest {
         Optional<Ride> updatedRide = rideRepository.findById(activeRide.getId());
         assertThat(updatedRide).isPresent();
         assertThat(updatedRide.get().getEndTime()).isNotNull();
+        assertThat(updatedRide.get().getEndTime()).isEqualTo(stopTime);
         assertThat(updatedRide.get().getEndTime()).isAfter(updatedRide.get().getStartTime());
     }
 

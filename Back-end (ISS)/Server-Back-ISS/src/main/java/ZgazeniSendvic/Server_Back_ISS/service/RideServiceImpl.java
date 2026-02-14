@@ -346,8 +346,11 @@ public class RideServiceImpl implements IRideService {
         OrsRouteResult result = orsRoutingService.getFastestRouteWithPath(coordinates);
         ride.setPrice(result.getPrice());
         ride.setStatus(RideStatus.FINISHED);
+        ride.setEndTime(stopReq.getCurrentTime());
         allRides.save(ride);
         allRides.flush();
+
+        //should I call end ride here too?
 
         RideStoppedDTO stopped = new RideStoppedDTO(rideID, ride.getPrice(),  ride.getLocations());
         return stopped;
