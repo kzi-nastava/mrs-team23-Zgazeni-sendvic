@@ -1,34 +1,23 @@
-import { Component } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-import { DriverService } from '../../service/driver.service';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { RegisterDriver } from './register-driver';
 
-@Component({
-  selector: 'app-register-driver',
-  templateUrl: './register-driver.html'
-})
-export class RegisterDriver {
-  form: any;
+describe('RegisterDriver', () => {
+  let component: RegisterDriver;
+  let fixture: ComponentFixture<RegisterDriver>;
 
-  constructor(private fb: FormBuilder, private driverService: DriverService) {
-    this.form = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      name: ['', Validators.required],
-      surname: ['', Validators.required],
-      phone: ['', Validators.required],
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [RegisterDriver],
+      schemas: [NO_ERRORS_SCHEMA]
+    }).compileComponents();
 
-      vehicleModel: ['', Validators.required],
-      vehicleType: ['STANDARD', Validators.required],
-      licensePlate: ['', Validators.required],
-      seats: [4, Validators.required],
-      babyTransport: [false],
-      petTransport: [false]
-    });
-  }
+    fixture = TestBed.createComponent(RegisterDriver);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-  submit() {
-    if (this.form.invalid) return;
-
-    this.driverService.createDriver(this.form.value)
-      .subscribe(() => alert('Driver created. Activation email sent.'));
-  }
-}
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
