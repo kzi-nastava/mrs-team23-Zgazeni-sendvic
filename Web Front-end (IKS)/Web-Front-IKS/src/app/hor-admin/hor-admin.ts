@@ -172,7 +172,11 @@ export class HORAdmin {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: page => {
-          this.rides = page.content ?? [];
+          const content = page.content ?? [];
+          this.rides = content.map(ride => {
+            const status = (ride as unknown as { Status?: ARideRequestedDTO['status'] }).Status;
+            return status ? { ...ride, status } : ride;
+          });
           this.totalElements = page.totalElements ?? 0;
           this.pageIndex = page.number ?? this.pageIndex;
           this.pageSize = page.size ?? this.pageSize;
