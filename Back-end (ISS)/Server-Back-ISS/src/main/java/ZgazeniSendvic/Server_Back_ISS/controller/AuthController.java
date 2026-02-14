@@ -83,7 +83,7 @@ class AuthController {
 
         //all checks passed
         driverService.ActivateIfDriver(request.getEmail());
-        LoginRequestedDTO loginDTO = new LoginRequestedDTO(jwt, expiresIn, new AccountLoginDTO(account));
+        LoginRequestedDTO loginDTO = new LoginRequestedDTO(jwt, expiresIn, new AccountLoginDTO(account), account.getRole());
 
         return new ResponseEntity<LoginRequestedDTO>(loginDTO, HttpStatus.CREATED);
     }

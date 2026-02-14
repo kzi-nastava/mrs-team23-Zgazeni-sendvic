@@ -65,5 +65,5 @@ export interface User {
   firstName: string;
   lastName: string;
   pictUrl: string;
-  roles: string[];
+  role: string;
 }
