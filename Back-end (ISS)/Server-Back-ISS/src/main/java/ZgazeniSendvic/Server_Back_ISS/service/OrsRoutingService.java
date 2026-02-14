@@ -180,6 +180,18 @@ public class OrsRoutingService {
         }
     }
 
+    public void validateCoordinatesLocations(List<Location> locations){
+        if(locations == null || locations.size() < 2){
+            throw new IllegalArgumentException("At least 2 coordinates are required");
+        }
+
+        for(Location location : locations){
+            if(location.getLatitude() == null || location.getLongitude() == null){
+                throw new IllegalArgumentException("Every location must have both latitude and longitude");
+            }
+        }
+    }
+
 }
 
 

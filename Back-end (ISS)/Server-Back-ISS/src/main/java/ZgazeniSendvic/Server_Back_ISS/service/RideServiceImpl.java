@@ -325,6 +325,8 @@ public class RideServiceImpl implements IRideService {
             String value = "Ride was not found";
             throw new RideNotFoundException(value);
         }
+        //validation for possible nulls
+        orsRoutingService.validateCoordinatesLocations(stopReq.getPassedLocations());
 
 
         Ride ride = getRideActiveAndDriver(found);
