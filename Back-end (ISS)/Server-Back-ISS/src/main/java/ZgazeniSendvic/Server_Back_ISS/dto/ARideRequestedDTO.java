@@ -27,5 +27,6 @@ public class ARideRequestedDTO {
     private Long whoCancelled;
     private double price;
     private boolean panic;
+    private LocalDateTime creationTime;
 
 }
