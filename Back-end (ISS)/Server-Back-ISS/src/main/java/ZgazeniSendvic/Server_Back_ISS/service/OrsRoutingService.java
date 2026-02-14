@@ -36,7 +36,7 @@ public class OrsRoutingService {
         if (waypoints == null || waypoints.size() < 2) {
             throw new IllegalArgumentException("At least 2 coordinates are required");
         }
-
+        validateCoordinates(waypoints);
         Map<String, Object> request = Map.of(
                 "coordinates", waypoints
         );
@@ -81,6 +81,11 @@ public class OrsRoutingService {
     public OrsRouteResult getFastestRouteWithLocations(List<Location> locations){
         List<List<Double>> waypoints = new ArrayList<>();
         for(Location location : locations){
+
+            if(location.getLatitude() == null || location.getLongitude() == null){
+                throw new IllegalArgumentException("Every location must have both latitude and longitude");
+            }
+
             List<Double> coordinationSet = new ArrayList<>();
             coordinationSet.add(location.getLongitude());
             coordinationSet.add(location.getLatitude());
@@ -160,6 +165,19 @@ public class OrsRoutingService {
     public OrsRouteResult getFastestRouteAddresses(String firstAddress, String secondAddress) {
         List<String> addresses =  List.of(firstAddress, secondAddress);
         return getFastestRouteAddresses(addresses);
+    }
+
+
+    public void validateCoordinates(List<List<Double>> waypoints){
+        if(waypoints == null || waypoints.size() < 2){
+            throw new IllegalArgumentException("At least 2 coordinates are required");
+        }
+
+        for(List<Double> coordinationSet : waypoints){
+            if(coordinationSet.size() != 2){
+                throw new IllegalArgumentException("Each coordinate set must have exactly 2 values (lon, lat)");
+            }
+        }
     }
 
 }

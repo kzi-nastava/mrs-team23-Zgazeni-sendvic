@@ -81,7 +81,7 @@ class RideController {
     @PostMapping(path = "ride-estimation",consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<OrsRouteResult>
-    estimateRide(@RequestBody RouteEstimationRequestDTO estimationRequest)throws Exception{
+    estimateRide(@Valid @RequestBody RouteEstimationRequestDTO estimationRequest)throws Exception{
 
 
         //RouteEstimationDTO estimation = rideService.routeEstimate(arrival + "," + destinationsStr);
