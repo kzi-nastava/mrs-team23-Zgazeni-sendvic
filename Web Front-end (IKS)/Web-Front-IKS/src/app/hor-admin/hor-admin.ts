@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
@@ -86,7 +86,7 @@ export class HORAdmin {
     panic: 'panic'
   };
 
-  constructor(private horService: HorService) {}
+  constructor(private horService: HorService, private cdr: ChangeDetectorRef) {}
 
   applyFilters(): void {
     this.pageIndex = 0;
@@ -115,7 +115,13 @@ export class HORAdmin {
 
   formatRoute(ride: ARideRequestedDTO): string[] {
     const segments = [ride.arrivingPoint, ...(ride.destinations ?? []), ride.endingPoint].filter(Boolean);
-    return segments.map(loc => {
+    const uniqueSegments = segments.filter((loc, index, array) => {
+      if (index === 0) return true;
+      const prev = array[index - 1];
+      return !(loc.latitude === prev.latitude && loc.longitude === prev.longitude);
+    });
+
+    return uniqueSegments.map(loc => {
       const lat = loc.latitude;
       const lon = loc.longitude;
       if (lat === undefined || lon === undefined) return 'Unknown';
@@ -172,7 +178,10 @@ export class HORAdmin {
       fromDate: fromDate ?? undefined,
       toDate: toDate ?? undefined
     })
-      .pipe(finalize(() => (this.loading = false)))
+      .pipe(finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      }))
       .subscribe({
         next: page => {
           const content = page.content ?? [];
@@ -183,9 +192,11 @@ export class HORAdmin {
           this.totalElements = page.totalElements ?? 0;
           this.pageIndex = page.number ?? this.pageIndex;
           this.pageSize = page.size ?? this.pageSize;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.error = 'Failed to load rides. Please try again.';
+          this.cdr.markForCheck();
         }
       });
   }
