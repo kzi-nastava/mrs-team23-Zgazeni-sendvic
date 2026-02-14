@@ -8,25 +8,25 @@
 		</div>
 
 		<form class="filters" [formGroup]="filterForm">
-			<mat-form-field appearance="outline">
+			<mat-form-field appearance="outline" class="typing-fields">
 				<mat-label>Target ID</mat-label>
 				<input matInput type="number" formControlName="targetId" placeholder="Driver or passenger ID">
 			</mat-form-field>
 
-			<mat-form-field appearance="outline">
+			<mat-form-field appearance="outline" class="typing-fields">
 				<mat-label>From date</mat-label>
 				<input matInput [matDatepicker]="fromPicker" formControlName="fromDate">
 				<mat-datepicker-toggle matIconSuffix [for]="fromPicker"></mat-datepicker-toggle>
 				<mat-datepicker #fromPicker></mat-datepicker>
 			</mat-form-field>
 
-			<mat-form-field appearance="outline">
+			<mat-form-field appearance="outline" class="typing-fields">
 				<mat-label>To date</mat-label>
 				<input matInput [matDatepicker]="toPicker" formControlName="toDate">
 				<mat-datepicker-toggle matIconSuffix [for]="toPicker"></mat-datepicker-toggle>
 				<mat-datepicker #toPicker></mat-datepicker>
 			</mat-form-field>
-
+            
 			<div class="filter-actions">
 				<button mat-raised-button color="primary" type="button" (click)="applyFilters()">Apply</button>
 				<button mat-stroked-button type="button" (click)="clearFilters()">Clear</button>
