@@ -12,7 +12,7 @@ import { ForgotPassword } from './forgot-password/forgot-password';
 import { ResetPassword } from './reset-password/reset-password';
 import { ConfirmAccount } from './confirm-account/confirm-account';
 import { RouteEstimationPanel } from './route-estimation-panel/route-estimation-panel';
-
+import { HORAdmin } from './hor-admin/hor-admin';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -28,5 +28,6 @@ export const routes: Routes = [
   { path: 'reset-password', component: ResetPassword },
   { path: 'api/auth/confirm-account', component: ConfirmAccount },
   { path: 'route-estimation', component: RouteEstimationPanel },
+  {path: 'hor-admin', component: HORAdmin},
   { path: '**', redirectTo: '' },
 ];
