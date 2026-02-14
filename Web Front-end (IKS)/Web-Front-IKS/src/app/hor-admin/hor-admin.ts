@@ -43,6 +43,7 @@ import { ARideRequestedDTO, RideStatus } from '../models/hor.models';
 export class HORAdmin {
   displayedColumns: string[] = [
     'rideID',
+    'creationTime',
     'route',
     'beginning',
     'ending',
@@ -71,15 +72,16 @@ export class HORAdmin {
     toDate: [null as Date | null]
   });
 
-  private sortFieldMap: Record<string, string> = {
-    rideID: 'rideID',
-    route: 'destinations',
-    beginning: 'beginning',
-    ending: 'ending',
-    start: 'arrivingPoint',
-    end: 'endingPoint',
+  private sortFieldMap: Record<string, string | null> = {
+    rideID: 'id',
+    creationTime: 'creationDate',
+    route: 'locations',
+    beginning: 'startTime',
+    ending: 'endTime',
+    start: 'locations',
+    end: 'locations',
     status: 'status',
-    canceledBy: 'whoCancelled',
+    canceledBy: 'canceler',
     price: 'price',
     panic: 'panic'
   };
@@ -155,8 +157,9 @@ export class HORAdmin {
 
     const fromDate = this.formatDateParam(this.filterForm.value.fromDate ?? null);
     const toDate = this.formatDateParam(this.filterForm.value.toDate ?? null);
-    const sortParam = this.currentSort.direction
-      ? `${this.sortFieldMap[this.currentSort.active] ?? this.currentSort.active},${this.currentSort.direction}`
+    const mappedSort = this.sortFieldMap[this.currentSort.active] ?? null;
+    const sortParam = this.currentSort.direction && mappedSort
+      ? `${mappedSort},${this.currentSort.direction}`
       : undefined;
 
     this.loading = true;

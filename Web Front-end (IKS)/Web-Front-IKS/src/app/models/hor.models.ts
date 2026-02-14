@@ -14,6 +14,7 @@ export interface ARideRequestedDTO {
   endingPoint: Location;
   beginning: string;
   ending: string;
+  creationTime: string;
   status: RideStatus;
   whoCancelled: number | null;
   price: number;

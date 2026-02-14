@@ -41,6 +41,11 @@
 					<td mat-cell *matCellDef="let ride">{{ ride.rideID }}</td>
 				</ng-container>
 
+				<ng-container matColumnDef="creationTime">
+					<th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
+					<td mat-cell *matCellDef="let ride">{{ ride.creationTime | date:'medium' }}</td>
+				</ng-container>
+
 				<ng-container matColumnDef="route">
 					<th mat-header-cell *matHeaderCellDef mat-sort-header>Route</th>
 					<td mat-cell *matCellDef="let ride">
