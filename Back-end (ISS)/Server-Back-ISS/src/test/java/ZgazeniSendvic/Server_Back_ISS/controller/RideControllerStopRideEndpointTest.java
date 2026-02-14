@@ -1,6 +1,5 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
-import ZgazeniSendvic.Server_Back_ISS.dto.OrsRouteResult;
 import ZgazeniSendvic.Server_Back_ISS.dto.RideStopDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.RideStoppedDTO;
 import ZgazeniSendvic.Server_Back_ISS.exception.RideNotFoundException;
@@ -13,11 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.context.SpringBootTest;
 //import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -33,7 +29,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -41,9 +36,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -58,7 +51,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @DisplayName("RideControllerStopRideIntegrationTest")
-public class RideControllerStopRideIntegrationTest {
+public class RideControllerStopRideEndpointTest {
 
 
     @Autowired
@@ -339,11 +332,11 @@ public class RideControllerStopRideIntegrationTest {
                         .with(user(new CustomUserDetails(testDriver)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidRequest))
-                .andExpect(status().isOk()); // Service accepts it, but should handle gracefully
+                .andExpect(status().isBadRequest()); // Bad request
     }
 
     @Test
-    @DisplayName("Should return 404 when ride ID path variable is invalid")
+    @DisplayName("Should return 400 when ride ID path variable is invalid")
     void testStopRide_InvalidRideId() throws Exception {
         // Arrange
         RideStopDTO stopRequest = new RideStopDTO();
