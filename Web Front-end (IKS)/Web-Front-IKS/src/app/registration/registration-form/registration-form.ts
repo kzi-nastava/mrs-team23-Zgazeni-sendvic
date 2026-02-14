@@ -68,17 +68,29 @@ export class RegistrationForm {
       this.authService.register(request).subscribe({
         next: (response) => {
           console.log('Register successful', response);
+
+          if (this.selectedPhotoFile) {
+            if (!response?.pictureToken) {
+              this.registerError.set('Registration succeeded but image token is missing.');
+              return;
+            }
+
+            this.authService.uploadProfilePicture(this.selectedPhotoFile, response.pictureToken).subscribe({
+              next: () => this.router.navigate(['/login']),
+              error: (error) => {
+                console.error('Picture upload failed', error);
+                this.registerError.set('Registration succeeded, but image upload failed. Please try again.');
+              }
+            });
+
+            return;
+          }
+
           this.router.navigate(['/login']);
         },
         error: (error) => {
-          // Handle special case where 201 response had parsing error
-          if (error.message === 'success') {
-            console.log('Register successful (empty response)');
-            this.router.navigate(['/login']);
-          } else {
-            console.error('Register failed', error);
-            this.registerError.set('Registration failed. Please try again.');
-          }
+          console.error('Register failed', error);
+          this.registerError.set('Registration failed. Please try again.');
         }
       });
 

@@ -7,6 +7,7 @@ import {
   LoginResponse,
   RegisterRequest,
   RegisterResponse,
+  PictureUploadResponse,
   ForgotPasswordRequest,
   ForgotPasswordResponse,
   ResetPasswordRequest,
@@ -18,6 +19,7 @@ import {
 })
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
+  private picturesUrl = 'http://localhost:8080/api/pictures';
   private tokenKey = 'jwt_token';
 
   constructor(private http: HttpClient) {}
@@ -35,18 +37,23 @@ export class AuthService {
       );
   }
 
-  register(request: RegisterRequest): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, request, { responseType: 'text' })
+  register(request: RegisterRequest): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, request)
       .pipe(
         tap(response => console.log('Register response:', response)),
-        catchError(error => {
-          // If it's a successful status code (2xx) with parsing error, treat as success
-          if (error.status === 201 || error.status === 200) {
-            console.log('Register successful (empty response)');
-            return throwError(() => new Error('success'));
-          }
-          return this.handleError(error);
-        })
+        catchError(this.handleError)
+      );
+  }
+
+  uploadProfilePicture(file: File, pictureToken: string): Observable<PictureUploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('pictureToken', pictureToken);
+
+    return this.http.post<PictureUploadResponse>(`${this.picturesUrl}/register/profile`, formData)
+      .pipe(
+        tap(response => console.log('Picture upload response:', response)),
+        catchError(this.handleError)
       );
   }
 
