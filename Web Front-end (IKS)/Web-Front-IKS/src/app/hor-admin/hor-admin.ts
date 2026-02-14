@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
@@ -86,7 +87,14 @@ export class HORAdmin {
     panic: 'panic'
   };
 
-  constructor(private horService: HorService, private cdr: ChangeDetectorRef) {}
+  private readonly geocodeCache = new Map<string, string>();
+  private readonly geocodePending = new Set<string>();
+
+  constructor(
+    private horService: HorService,
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient
+  ) {}
 
   applyFilters(): void {
     this.pageIndex = 0;
@@ -121,12 +129,11 @@ export class HORAdmin {
       return !(loc.latitude === prev.latitude && loc.longitude === prev.longitude);
     });
 
-    return uniqueSegments.map(loc => {
-      const lat = loc.latitude;
-      const lon = loc.longitude;
-      if (lat === undefined || lon === undefined) return 'Unknown';
-      return `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-    });
+    return uniqueSegments.map(loc => this.getLocationLabel(loc));
+  }
+
+  formatLocation(loc: { latitude?: number; longitude?: number }): string {
+    return this.getLocationLabel(loc);
   }
 
   canceledLabel(ride: ARideRequestedDTO): string {
@@ -207,6 +214,39 @@ export class HORAdmin {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  private getLocationLabel(loc: { latitude?: number; longitude?: number }): string {
+    const lat = loc.latitude;
+    const lon = loc.longitude;
+    if (lat === undefined || lon === undefined) return 'Unknown';
+
+    const key = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+    const cached = this.geocodeCache.get(key);
+    if (cached) return cached;
+
+    if (this.geocodePending.has(key)) return key;
+    this.geocodePending.add(key);
+
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+    this.http.get<{ display_name?: string }>(url).subscribe({
+      next: response => {
+        const city = response.display_name ? response.display_name.split(',')[4]?.trim() : null;
+        const name = response.display_name
+          ? response.display_name.split(',').slice(0, 2).concat(city ? [city] : []).join(',')
+          : key;
+        this.geocodeCache.set(key, name);
+        this.geocodePending.delete(key);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.geocodeCache.set(key, key);
+        this.geocodePending.delete(key);
+        this.cdr.markForCheck();
+      }
+    });
+
+    return key;
   }
 
 }
