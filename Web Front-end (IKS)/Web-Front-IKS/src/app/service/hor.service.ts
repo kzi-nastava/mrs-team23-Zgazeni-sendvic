@@ -14,7 +14,7 @@ export interface HorAdminQuery {
 
 @Injectable({ providedIn: 'root' })
 export class HorService {
-  private apiUrl = 'http://localhost:8080/api/history-of-rides';
+  private apiUrl = 'http://localhost:8080/api/HOR';
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 

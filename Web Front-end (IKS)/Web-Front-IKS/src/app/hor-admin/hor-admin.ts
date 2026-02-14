@@ -16,7 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HorService } from '../service/hor.service';
-import { ARideRequestedDTO } from '../models/hor.models';
+import { ARideRequestedDTO, RideStatus } from '../models/hor.models';
 
 @Component({
   selector: 'app-hor-admin',
@@ -127,6 +127,21 @@ export class HORAdmin {
 
   canceledByLabel(ride: ARideRequestedDTO): string {
     return ride.whoCancelled ? String(ride.whoCancelled) : '-';
+  }
+
+  formatStatus(status: RideStatus): string {
+    switch (status) {
+      case RideStatus.SCHEDULED:
+        return 'Scheduled';
+      case RideStatus.ACTIVE:
+        return 'Active';
+      case RideStatus.FINISHED:
+        return 'Finished';
+      case RideStatus.CANCELED:
+        return 'Canceled';
+      default:
+        return String(status ?? '');
+    }
   }
 
   private fetchRides(requireTarget = false): void {

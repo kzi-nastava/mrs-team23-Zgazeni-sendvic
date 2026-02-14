@@ -1,5 +1,12 @@
 import { Location } from '../model/route';
 
+export enum RideStatus {
+  SCHEDULED = 'SCHEDULED',
+  ACTIVE = 'ACTIVE',
+  FINISHED = 'FINISHED',
+  CANCELED = 'CANCELED'
+}
+
 export interface ARideRequestedDTO {
   rideID: number;
   destinations: Location[];
@@ -7,7 +14,7 @@ export interface ARideRequestedDTO {
   endingPoint: Location;
   beginning: string;
   ending: string;
-  status: string;
+  status: RideStatus;
   whoCancelled: number | null;
   price: number;
   panic: boolean;
