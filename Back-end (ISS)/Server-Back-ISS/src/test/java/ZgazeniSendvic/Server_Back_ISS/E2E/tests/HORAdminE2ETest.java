@@ -266,8 +266,8 @@ public class HORAdminE2ETest {
 
         System.out.println("Creating ChromeDriver...");
         driver = new ChromeDriver(options);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(30));
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(2));
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
 
         // Initialize page object
         rideHistoryPage = new HORAdminPage(driver);

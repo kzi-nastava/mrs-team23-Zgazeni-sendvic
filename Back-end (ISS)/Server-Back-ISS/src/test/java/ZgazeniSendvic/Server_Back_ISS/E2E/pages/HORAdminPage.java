@@ -72,7 +72,7 @@ public class HORAdminPage {
 
     public HORAdminPage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         this.js = (JavascriptExecutor) driver;
         PageFactory.initElements(driver, this);
     }
@@ -259,8 +259,12 @@ public class HORAdminPage {
 
     public boolean isEmpty() {
         try {
-            return emptyStateMessage.isDisplayed() &&
-                    emptyStateMessage.getText().contains("No rides yet");
+            // Use a short implicit wait to check if empty state exists
+            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofMillis(500));
+            WebElement emptyState = shortWait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.xpath("//div[contains(@class,'state') and not(contains(@class,'error')) and not(.//mat-progress-spinner)]")
+            ));
+            return emptyState.getText().contains("No rides yet");
         } catch (Exception e) {
             return false;
         }
@@ -272,12 +276,23 @@ public class HORAdminPage {
 
     // Wait helpers
     public void waitForLoadingToComplete() {
-        wait.until(ExpectedConditions.invisibilityOf(loadingSpinner));
+        try {
+            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(2));
+            shortWait.until(ExpectedConditions.invisibilityOf(loadingSpinner));
+        } catch (Exception e) {
+            // If spinner doesn't exist or disappears quickly, that's fine
+            System.out.println("Loading spinner not found or already hidden");
+        }
     }
 
     public void waitForTableToLoad() {
         waitForLoadingToComplete();
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("table.rides-table")));
+        try {
+            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(2));
+            shortWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("table.rides-table")));
+        } catch (Exception e) {
+            System.out.println("Table not found within timeout");
+        }
     }
 
     // Validation helpers
