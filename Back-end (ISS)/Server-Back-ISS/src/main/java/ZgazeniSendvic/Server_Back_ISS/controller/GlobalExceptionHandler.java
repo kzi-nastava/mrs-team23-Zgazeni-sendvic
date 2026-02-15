@@ -12,6 +12,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -208,6 +209,13 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(status).body(body);
     }
+
+        @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+        public ResponseEntity<String> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Invalid Type for parameter '" + ex.getName() + "': expected " + ex.getRequiredType().getSimpleName());
+        }
 
 
 

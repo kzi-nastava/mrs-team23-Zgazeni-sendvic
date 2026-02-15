@@ -3,6 +3,7 @@ package ZgazeniSendvic.Server_Back_ISS.service;
 import ZgazeniSendvic.Server_Back_ISS.dto.OrsRouteResult;
 import ZgazeniSendvic.Server_Back_ISS.dto.RideStopDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.RideStoppedDTO;
+import ZgazeniSendvic.Server_Back_ISS.exception.RideNotFoundException;
 import ZgazeniSendvic.Server_Back_ISS.model.*;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
@@ -54,7 +55,7 @@ public class RideServiceStopRideTest {
     void setUp() throws Exception {
         // Initialize test data - based on DataLoader pattern
         // Create Account/Creator
-        testAccount = new Account();
+        testAccount = new User();
         testAccount.setEmail("accounta@test.com");
         testAccount.setName("John");
         testAccount.setLastName("Doe");
@@ -146,6 +147,7 @@ public class RideServiceStopRideTest {
         assertEquals(rideId, result.getRideID());
         assertEquals(routeResult.getPrice(), result.getNewPrice());
         assertEquals(passedLocations, result.getUpdatedDestinations());
+        assertEquals(stopTime, testRide.getEndTime());
         verify(rideRepository, times(1)).findById(rideId);
         verify(orsRoutingService, times(1)).getFastestRouteWithPath(anyList());
         verify(rideRepository, times(1)).save(testRide);
@@ -153,7 +155,7 @@ public class RideServiceStopRideTest {
     }
 
     @Test
-    @DisplayName("Should throw ResponseStatusException when ride is not found")
+    @DisplayName("Should throw RideNotFound when ride is not found")
     void testStopRide_RideNotFound() {
         // Arrange
         Long rideId = 999L;
@@ -163,11 +165,11 @@ public class RideServiceStopRideTest {
         when(rideRepository.findById(rideId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+        RideNotFoundException exception = assertThrows(RideNotFoundException.class, () -> {
             rideService.stopRide(rideId, stopRequest);
         });
 
-        assertTrue(exception.getReason().contains("Ride was not found"));
+        assertEquals("Ride was not found", exception.getMessage());
         verify(rideRepository, times(1)).findById(rideId);
         verify(rideRepository, never()).save(any());
     }
@@ -218,7 +220,7 @@ public class RideServiceStopRideTest {
         notDriver.setName("Jane");
         notDriver.setLastName("Smith");
 
-        // Set ID on notDriver using reflection (id is inherited from Account)
+        // Set ID on notDriver using reflection
         java.lang.reflect.Field notDriverIdField = Account.class.getDeclaredField("id");
         notDriverIdField.setAccessible(true);
         notDriverIdField.set(notDriver, 2L);

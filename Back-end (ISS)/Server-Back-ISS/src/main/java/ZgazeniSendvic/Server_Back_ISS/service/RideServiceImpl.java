@@ -210,7 +210,10 @@ public class RideServiceImpl implements IRideService {
 
         //check if it is the driver of the ride
         if(Objects.equals(ride.getDriver().getId(), requester.getId())){
-            //if it is, allow, and print out reason
+            //if it is, allow unless no reason
+            if(rideDTO.getReason() == null || rideDTO.getReason().isBlank()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Reason for cancellation must be provided by the driver");
+            }
             return;
 
         }
@@ -322,6 +325,8 @@ public class RideServiceImpl implements IRideService {
             String value = "Ride was not found";
             throw new RideNotFoundException(value);
         }
+        //validation for possible nulls
+        orsRoutingService.validateCoordinatesLocations(stopReq.getPassedLocations());
 
 
         Ride ride = getRideActiveAndDriver(found);
@@ -341,8 +346,11 @@ public class RideServiceImpl implements IRideService {
         OrsRouteResult result = orsRoutingService.getFastestRouteWithPath(coordinates);
         ride.setPrice(result.getPrice());
         ride.setStatus(RideStatus.FINISHED);
+        ride.setEndTime(stopReq.getCurrentTime());
         allRides.save(ride);
         allRides.flush();
+
+        //should I call end ride here too?
 
         RideStoppedDTO stopped = new RideStoppedDTO(rideID, ride.getPrice(),  ride.getLocations());
         return stopped;

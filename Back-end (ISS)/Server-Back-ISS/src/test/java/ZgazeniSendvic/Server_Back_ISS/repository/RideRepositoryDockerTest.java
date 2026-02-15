@@ -1,9 +1,6 @@
 package ZgazeniSendvic.Server_Back_ISS.repository;
 
-import ZgazeniSendvic.Server_Back_ISS.model.Account;
-import ZgazeniSendvic.Server_Back_ISS.model.Driver;
-import ZgazeniSendvic.Server_Back_ISS.model.Ride;
-import ZgazeniSendvic.Server_Back_ISS.model.RideStatus;
+import ZgazeniSendvic.Server_Back_ISS.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -63,7 +60,7 @@ public class RideRepositoryDockerTest {
     @DisplayName("Should return Ride when id exists")
     void testFindById_RideExists() {
         // Create Account
-        Account creator = new Account();
+        Account creator = new User();
         creator.setEmail("creator@test.com");
         creator.setPassword(passwordEncoder.encode("password123"));
         creator.setName("John");
@@ -119,7 +116,7 @@ public class RideRepositoryDockerTest {
     @Test
     @DisplayName("Should return rides for account within date range")
     void testFindByAccountAndDateRange_ReturnsRide() {
-        Account creator = new Account();
+        Account creator = new User();
         creator.setEmail("creator-range@test.com");
         creator.setPassword(passwordEncoder.encode("password123"));
         creator.setName("Range");
@@ -170,7 +167,7 @@ public class RideRepositoryDockerTest {
     @Test
     @DisplayName("Should return empty page when date range excludes rides")
     void testFindByAccountAndDateRange_EmptyWhenOutOfRange() {
-        Account creator = new Account();
+        Account creator = new User();
         creator.setEmail("creator-out@test.com");
         creator.setPassword(passwordEncoder.encode("password123"));
         creator.setName("Out");

@@ -1,6 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.repository;
 
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
+import ZgazeniSendvic.Server_Back_ISS.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,7 @@ public class AccountRepositoryDockerTest {
     @Test
     @DisplayName("Should return true when email exists")
     void testExistsByEmail_EmailExists() {
-        Account accountA = new Account();
+        Account accountA = new User();
         accountA.setEmail("accountTEST@test.com");
         accountA.setPassword(passwordEncoder.encode("password123"));
         accountA.setName("John");
@@ -82,7 +83,7 @@ public class AccountRepositoryDockerTest {
     @Test
     @DisplayName("Should return Account when email exists")
     void testFindByEmail_EmailExists() {
-        Account accountA = new Account();
+        Account accountA = new User();
         accountA.setEmail("findtest@test.com");
         accountA.setPassword(passwordEncoder.encode("password123"));
         accountA.setName("Jane");
