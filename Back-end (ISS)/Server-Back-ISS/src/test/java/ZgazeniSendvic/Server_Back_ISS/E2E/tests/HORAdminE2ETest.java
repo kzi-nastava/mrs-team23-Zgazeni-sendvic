@@ -8,23 +8,19 @@ import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.VehicleRepository;
 import ZgazeniSendvic.Server_Back_ISS.security.jwt.JwtUtils;
 import ZgazeniSendvic.Server_Back_ISS.service.OrsRoutingService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -39,13 +35,9 @@ import static org.mockito.Mockito.when;
 
 
 @Testcontainers
-@SpringBootTest
-@AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
 public class HORAdminE2ETest {
-
-    @Autowired
-    private MockMvc mockMvc;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -69,9 +61,6 @@ public class HORAdminE2ETest {
 
     private OrsRouteResult mockRouteResult;
 
-    private final ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
 
     @Container
@@ -260,6 +249,7 @@ public class HORAdminE2ETest {
     @BeforeAll
     public static void setupClass() {
         WebDriverManager.chromedriver().setup();
+
     }
 
     @BeforeEach
@@ -287,13 +277,28 @@ public class HORAdminE2ETest {
 
 
     @Test
-    public void testPageLoads() {
-        System.out.println("Testing page load...");
-        rideHistoryPage.navigateToWithAuth(BASE_URL, adminToken);
-        rideHistoryPage.waitForTableToLoad();
+    @DisplayName("E2E Test: Admin retrieves all rides for user ID 1 without filtering or sorting")
+    public void testGetAllRidesForUserIdOne() {
+        System.out.println("Testing retrieval of all rides for user ID 1...");
 
-        System.out.println("Page loaded successfully");
-        Assertions.assertNotNull(driver.getTitle());
+        // Navigate to HOR admin page with authentication
+        rideHistoryPage.navigateToWithAuth(BASE_URL, adminToken);
+
+        rideHistoryPage.enterTargetId("1");
+        rideHistoryPage.clickApplyFilters();
+
+        // Verify page has loaded and contains rides
+        boolean hasRides = rideHistoryPage.hasRides();
+        System.out.println("Page has rides: " + hasRides);
+
+        // Get number of rows displayed
+        int numberOfRows = rideHistoryPage.getNumberOfRows();
+        System.out.println("Number of rides displayed: " + numberOfRows);
+
+        // Assert that rides are loaded
+        Assertions.assertTrue(numberOfRows > 0, "Expected rides to be loaded for user ID 1");
+
+        System.out.println("Successfully retrieved all rides for user ID 1");
     }
 
     @AfterEach

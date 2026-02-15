@@ -20,52 +20,54 @@ public class HORAdminPage {
     private JavascriptExecutor js;
 
     // Filter form elements
-    @FindBy(css = "input[formcontrolname='targetId']")
+    @FindBy(css = "form.filters input[formcontrolname='targetId']")
     private WebElement targetIdInput;
 
-    @FindBy(css = "input[formcontrolname='fromDate']")
+    @FindBy(css = "form.filters input[formcontrolname='fromDate']")
     private WebElement fromDateInput;
 
-    @FindBy(css = "input[formcontrolname='toDate']")
+    @FindBy(css = "form.filters input[formcontrolname='toDate']")
     private WebElement toDateInput;
 
-    @FindBy(css = "button[color='primary']")
+    @FindBy(css = "form.filters .filter-actions button[color='primary']")
     private WebElement applyButton;
 
-    @FindBy(css = "button[type='button']:not([color='primary'])")
+    @FindBy(css = "form.filters .filter-actions button[mat-stroked-button]")
     private WebElement clearButton;
 
     // Table elements
     @FindBy(css = "table.rides-table")
     private WebElement ridesTable;
 
-    @FindBy(css = "tr.mat-row")
+    @FindBy(css = "table.rides-table tr[mat-row]")
     private List<WebElement> tableRows;
 
-    @FindBy(css = "th[mat-sort-header]")
+    @FindBy(css = "table.rides-table th[mat-sort-header]")
     private List<WebElement> sortableHeaders;
 
     // State elements
-    @FindBy(css = ".state mat-progress-spinner")
+    @FindBy(css = "div.state mat-progress-spinner")
     private WebElement loadingSpinner;
 
-    @FindBy(css = ".state.error")
+    @FindBy(css = "div.state.error")
     private WebElement errorMessage;
 
-    @FindBy(css = ".state:not(.error)")
+    // Empty state: avoid matching the loading state
+    @FindBy(xpath = "//div[contains(@class,'state') and not(contains(@class,'error')) and not(.//mat-progress-spinner)]")
     private WebElement emptyStateMessage;
 
     // Paginator
     @FindBy(css = "mat-paginator")
     private WebElement paginator;
 
-    @FindBy(css = ".mat-paginator-page-size-select")
+    // MDC class name is different from older Material
+    @FindBy(css = "mat-paginator .mat-mdc-paginator-page-size-select")
     private WebElement pageSizeSelect;
 
-    @FindBy(css = "button.mat-paginator-navigation-next")
+    @FindBy(css = "button.mat-mdc-paginator-navigation-next")
     private WebElement nextPageButton;
 
-    @FindBy(css = "button.mat-paginator-navigation-previous")
+    @FindBy(css = "button.mat-mdc-paginator-navigation-previous")
     private WebElement previousPageButton;
 
     public HORAdminPage(WebDriver driver) {
