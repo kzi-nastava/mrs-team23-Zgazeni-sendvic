@@ -83,7 +83,7 @@ public class RideControllerStopRideEndpointTest {
     @BeforeEach
     void setUp() throws Exception {
         // Initialize test data - based on DataLoader pattern
-        testAccount = new Account();
+        testAccount = new User();
         testAccount.setEmail("accounta@test.com");
         testAccount.setPassword(passwordEncoder.encode("password123"));
         testAccount.setName("John");
@@ -280,7 +280,7 @@ public class RideControllerStopRideEndpointTest {
     void testStopRide_NoDriverRole() throws Exception {
         // Arrange
         Long rideId = 1L;
-        Account regularUser = new Account();
+        Account regularUser = new User();
         regularUser.setEmail("user@test.com");
         regularUser.setName("Regular");
         regularUser.setLastName("User");

@@ -113,7 +113,7 @@ public class RideControllerStopRideIntegrationTest {
         location3 = new Location(20.4500, 44.8500); // Another location
 
         // Create and save test passenger
-        testPassenger = new Account();
+        testPassenger = new User();
         testPassenger.setEmail("passenger@test.com");
         testPassenger.setPassword(passwordEncoder.encode("password123"));
         testPassenger.setName("John");
@@ -633,7 +633,7 @@ public class RideControllerStopRideIntegrationTest {
     @DisplayName("Should accept valid ride with multiple passengers")
     void testStopRide_MultiplePassengers() throws Exception {
         // Arrange
-        Account passenger2 = new Account();
+        Account passenger2 = new User();
         passenger2.setEmail("passenger2@test.com");
         passenger2.setPassword(passwordEncoder.encode("password123"));
         passenger2.setName("Jane");

@@ -55,7 +55,7 @@ public class RideServiceStopRideTest {
     void setUp() throws Exception {
         // Initialize test data - based on DataLoader pattern
         // Create Account/Creator
-        testAccount = new Account();
+        testAccount = new User();
         testAccount.setEmail("accounta@test.com");
         testAccount.setName("John");
         testAccount.setLastName("Doe");
