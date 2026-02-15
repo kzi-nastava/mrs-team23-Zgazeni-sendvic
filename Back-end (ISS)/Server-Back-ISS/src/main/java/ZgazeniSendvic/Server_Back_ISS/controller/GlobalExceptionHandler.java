@@ -1,6 +1,8 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
+import ZgazeniSendvic.Server_Back_ISS.exception.AccountNotFoundException;
 import ZgazeniSendvic.Server_Back_ISS.exception.InvalidRideTokenException;
+import ZgazeniSendvic.Server_Back_ISS.exception.RideNotFoundException;
 import ZgazeniSendvic.Server_Back_ISS.exception.RideTokenExpiredException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -128,6 +130,60 @@ public class GlobalExceptionHandler {
                 "timestamp", Instant.now().toString(),
                 "status", String.valueOf(status.value()),
                 "error", status.getReasonPhrase(), // "Unauthorized"
+                "message", e.getMessage(),
+                "path", request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(body);
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleAccountNotFound(
+            AccountNotFoundException e,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.NOT_FOUND; // 404
+
+        Map<String, String> body = Map.of(
+                "timestamp", Instant.now().toString(),
+                "status", String.valueOf(status.value()),
+                "error", status.getReasonPhrase(), // "Not Found"
+                "message", e.getMessage(),
+                "path", request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(body);
+    }
+
+    @ExceptionHandler(RideNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleAccountNotFound(
+            RideNotFoundException e,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.NOT_FOUND; // 404
+
+        Map<String, String> body = Map.of(
+                "timestamp", Instant.now().toString(),
+                "status", String.valueOf(status.value()),
+                "error", status.getReasonPhrase(), // "Not Found"
+                "message", e.getMessage(),
+                "path", request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(body);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgument(
+            IllegalArgumentException e,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.BAD_REQUEST; // 400
+
+        Map<String, String> body = Map.of(
+                "timestamp", Instant.now().toString(),
+                "status", String.valueOf(status.value()),
+                "error", status.getReasonPhrase(), // "Bad Request"
                 "message", e.getMessage(),
                 "path", request.getRequestURI()
         );

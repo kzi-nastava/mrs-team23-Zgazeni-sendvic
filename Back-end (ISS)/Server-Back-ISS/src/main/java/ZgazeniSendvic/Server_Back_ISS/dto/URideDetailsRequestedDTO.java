@@ -11,11 +11,9 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ARideDetailsRequestedDTO {
+public class URideDetailsRequestedDTO {
 
-    private List<HORAccountDetailsDTO> passengers;
     private HORAccountDetailsDTO driver;
     private List<ARideDetailsNoteDTO> rideNotes;
     private List<RideDriverRatingDTO> rideDriverRatings;
-
 }
