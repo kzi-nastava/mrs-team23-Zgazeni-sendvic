@@ -2,6 +2,7 @@ package ZgazeniSendvic.Server_Back_ISS.E2E.pages;
 
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -16,6 +17,7 @@ public class HORAdminPage {
 
     private WebDriver driver;
     private WebDriverWait wait;
+    private JavascriptExecutor js;
 
     // Filter form elements
     @FindBy(css = "input[formcontrolname='targetId']")
@@ -69,7 +71,30 @@ public class HORAdminPage {
     public HORAdminPage(WebDriver driver) {
         this.driver = driver;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        this.js = (JavascriptExecutor) driver;
         PageFactory.initElements(driver, this);
+    }
+
+    // Set JWT token in localStorage
+    public void setAuthToken(String jwtToken, String role) {
+        js.executeScript(
+                "localStorage.setItem('jwt_token', arguments[0]);" +
+                        "localStorage.setItem('user_role', arguments[1]);",
+                jwtToken, role
+        );
+    }
+
+    // Navigate with authentication
+    public void navigateToWithAuth(String baseUrl, String jwtToken) {
+        // First, navigate to any page on the same domain to set localStorage
+        driver.get(baseUrl);
+
+        // Set the JWT token and role
+        setAuthToken(jwtToken, "ADMIN");
+
+        // Now navigate to the actual page - it will have the token
+        driver.get(baseUrl + "/hor-admin");
+        waitForTableToLoad();
     }
 
     // Navigation
