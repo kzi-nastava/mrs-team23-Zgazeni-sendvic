@@ -81,7 +81,7 @@ class RideController {
     @PostMapping(path = "ride-estimation",consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<OrsRouteResult>
-    estimateRide(@RequestBody RouteEstimationRequestDTO estimationRequest)throws Exception{
+    estimateRide(@Valid @RequestBody RouteEstimationRequestDTO estimationRequest)throws Exception{
 
 
         //RouteEstimationDTO estimation = rideService.routeEstimate(arrival + "," + destinationsStr);
@@ -114,7 +114,7 @@ class RideController {
     @PreAuthorize("hasRole('DRIVER')")
     @PutMapping(path = "ride-tracking/stop/{rideID}",consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RideStoppedDTO> stopRide(@RequestBody RideStopDTO stopReq, @PathVariable Long rideID)
+    public ResponseEntity<RideStoppedDTO> stopRide(@Valid @RequestBody RideStopDTO stopReq, @Valid @PathVariable Long rideID)
             throws Exception{
 
         RideStoppedDTO stopped  =  rideService.stopRide(rideID,stopReq);

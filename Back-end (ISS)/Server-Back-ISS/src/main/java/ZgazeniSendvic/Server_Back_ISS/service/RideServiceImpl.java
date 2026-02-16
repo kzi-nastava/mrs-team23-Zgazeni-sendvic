@@ -1,6 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
+import ZgazeniSendvic.Server_Back_ISS.exception.RideNotFoundException;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
@@ -209,7 +210,10 @@ public class RideServiceImpl implements IRideService {
 
         //check if it is the driver of the ride
         if(Objects.equals(ride.getDriver().getId(), requester.getId())){
-            //if it is, allow, and print out reason
+            //if it is, allow unless no reason
+            if(rideDTO.getReason() == null || rideDTO.getReason().isBlank()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Reason for cancellation must be provided by the driver");
+            }
             return;
 
         }
@@ -319,8 +323,10 @@ public class RideServiceImpl implements IRideService {
         Optional<Ride> found = allRides.findById(rideID);
         if (found.isEmpty()) {
             String value = "Ride was not found";
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, value);
+            throw new RideNotFoundException(value);
         }
+        //validation for possible nulls
+        orsRoutingService.validateCoordinatesLocations(stopReq.getPassedLocations());
 
 
         Ride ride = getRideActiveAndDriver(found);
@@ -340,8 +346,11 @@ public class RideServiceImpl implements IRideService {
         OrsRouteResult result = orsRoutingService.getFastestRouteWithPath(coordinates);
         ride.setPrice(result.getPrice());
         ride.setStatus(RideStatus.FINISHED);
+        ride.setEndTime(stopReq.getCurrentTime());
         allRides.save(ride);
         allRides.flush();
+
+        //should I call end ride here too?
 
         RideStoppedDTO stopped = new RideStoppedDTO(rideID, ride.getPrice(),  ride.getLocations());
         return stopped;
@@ -357,9 +366,9 @@ public class RideServiceImpl implements IRideService {
         //finally, the one who ordered the stoppage should be THE DRIVER, which also means AUTHENTICATED
         //so I check if the authenticated user is the driver OF THE RIDE ITSELF, if not, throw
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if(auth instanceof AnonymousAuthenticationToken){
-            throw new AccessDeniedException("Unauthenticated user can't stop the ride");
-        }
+
+
+
         //assert auth != null;
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
         //assert userDetails != null;
