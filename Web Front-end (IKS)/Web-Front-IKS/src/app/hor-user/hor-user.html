@@ -1,1 +1,90 @@
-<p>hor-user works!</p>
+<div class="page">
+	<div class="card">
+		<div class="header">
+			<div>
+				<h2 class="title">Ride History</h2>
+				<p class="subtitle">Review your completed rides, filter by date, and sort by any field.</p>
+			</div>
+		</div>
+
+		<form class="filters" [formGroup]="filterForm">
+			<mat-form-field appearance="outline" class="typing-fields">
+				<mat-label>From date</mat-label>
+				<input matInput [matDatepicker]="fromPicker" formControlName="fromDate">
+				<mat-datepicker-toggle matIconSuffix [for]="fromPicker"></mat-datepicker-toggle>
+				<mat-datepicker #fromPicker></mat-datepicker>
+			</mat-form-field>
+
+			<mat-form-field appearance="outline" class="typing-fields">
+				<mat-label>To date</mat-label>
+				<input matInput [matDatepicker]="toPicker" formControlName="toDate">
+				<mat-datepicker-toggle matIconSuffix [for]="toPicker"></mat-datepicker-toggle>
+				<mat-datepicker #toPicker></mat-datepicker>
+			</mat-form-field>
+            
+			<div class="filter-actions">
+				<button mat-raised-button color="primary" type="button" (click)="applyFilters()">Apply</button>
+				<button mat-stroked-button type="button" (click)="clearFilters()">Clear</button>
+			</div>
+		</form>
+
+		<div class="table-wrap">
+			<table mat-table [dataSource]="rides" matSort (matSortChange)="onSortChange($event)" class="rides-table">
+
+				<ng-container matColumnDef="rideID">
+					<th mat-header-cell *matHeaderCellDef mat-sort-header>Ride ID</th>
+					<td mat-cell *matCellDef="let ride">{{ ride.rideID }}</td>
+				</ng-container>
+
+				<ng-container matColumnDef="creationTime">
+					<th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
+					<td mat-cell *matCellDef="let ride">{{ ride.creationTime | date:'medium' }}</td>
+				</ng-container>
+
+				<ng-container matColumnDef="route">
+					<th mat-header-cell *matHeaderCellDef mat-sort-header>Route</th>
+					<td mat-cell *matCellDef="let ride">
+						<div class="route">
+							<span *ngFor="let segment of formatRoute(ride); let last = last">
+								{{ segment }}
+								<mat-icon *ngIf="!last" class="arrow">arrow_forward</mat-icon>
+							</span>
+						</div>
+					</td>
+				</ng-container>
+
+				<ng-container matColumnDef="beginning">
+					<th mat-header-cell *matHeaderCellDef mat-sort-header>Start</th>
+					<td mat-cell *matCellDef="let ride">{{ ride.beginning | date:'medium' }}</td>
+				</ng-container>
+
+				<ng-container matColumnDef="ending">
+					<th mat-header-cell *matHeaderCellDef mat-sort-header>End</th>
+					<td mat-cell *matCellDef="let ride">{{ ride.ending | date:'medium' }}</td>
+				</ng-container>
+
+				<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+				<tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+			</table>
+		</div>
+
+		<div class="state" *ngIf="loading">
+			<mat-progress-spinner mode="indeterminate" diameter="36"></mat-progress-spinner>
+			<span>Loading rides...</span>
+		</div>
+
+		<div class="state error" *ngIf="error">{{ error }}</div>
+
+		<div class="state" *ngIf="!loading && !error && rides.length === 0">
+			<span>No rides yet.</span>
+		</div>
+
+		<mat-paginator
+			[length]="totalElements"
+			[pageIndex]="pageIndex"
+			[pageSize]="pageSize"
+			[pageSizeOptions]="[5, 10, 25, 50]"
+			(page)="onPageChange($event)">
+		</mat-paginator>
+	</div>
+</div>

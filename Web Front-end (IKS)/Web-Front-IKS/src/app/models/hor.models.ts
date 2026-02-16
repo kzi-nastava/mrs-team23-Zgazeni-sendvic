@@ -64,3 +64,11 @@ export interface ARideDetailsRequestedDTO {
   endingPoint?: Location;
   destinations?: Location[];
 }
+
+export interface ARideRequestedUserDTO {
+  rideID: number;
+  destinations: Location[];
+  beginning: string;
+  ending: string;
+  creationTime: string;
+}
