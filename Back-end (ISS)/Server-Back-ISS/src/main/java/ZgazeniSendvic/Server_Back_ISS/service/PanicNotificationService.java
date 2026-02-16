@@ -1,19 +1,27 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.PanicNotificationDTO;
-import ZgazeniSendvic.Server_Back_ISS.model.Account;
-import ZgazeniSendvic.Server_Back_ISS.model.PanicNotification;
-import ZgazeniSendvic.Server_Back_ISS.model.Ride;
+import ZgazeniSendvic.Server_Back_ISS.model.*;
 import ZgazeniSendvic.Server_Back_ISS.repository.PanicNotificationRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
+import ZgazeniSendvic.Server_Back_ISS.repository.VehicleRepository;
+import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
+import jakarta.transaction.Transactional;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -27,6 +35,9 @@ public class PanicNotificationService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private VehicleRepository vehicleRepository;
 
     /**
      * Sends panic notification emails to all participants in the ride (driver and passengers)
@@ -177,6 +188,139 @@ public class PanicNotificationService {
         Optional<PanicNotification> panic = panicNotificationRepository.findByRideId(rideId);
         return panic.isPresent() && !panic.get().isResolved();
     }
+
+
+    //====================== Logic stuf ========================
+
+    //Also marks vehicle
+    @Transactional
+    public PanicNotificationDTO PanicRide(Long rideID) {
+        //pull out account from auth
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof AnonymousAuthenticationToken) {
+            throw new AccessDeniedException("Unauthenticated user can't panic the ride");
+        }
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        Account account = userDetails.getAccount();
+
+
+        Optional<Ride> foundRide = rideRepository.findById(rideID);
+
+        if(foundRide.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
+        }
+
+        if(account == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found");
+        }
+
+        Ride ride = getRideForPanic(rideID, account);
+
+        // Create and save panic notification
+        PanicNotification panicNotification = new PanicNotification(account, ride, LocalDateTime.now());
+        panicNotificationRepository.save(panicNotification);
+        panicNotificationRepository.flush();
+
+        ride.setPanic(true);
+        //here should mark the vehicle, and resolving should unmark the vehicle?
+        rideRepository.save(ride);
+        rideRepository.flush();
+        Vehicle vehicle = ride.getDriver().getVehicle();
+        if(vehicle != null){
+            vehicle.setPanicMark(true);
+            vehicleRepository.save(vehicle);
+        }
+
+
+        PanicNotificationDTO notificationDTO = new PanicNotificationDTO(
+                panicNotification.getId(),
+                account.getId(),
+                account.getName() + " " + account.getLastName(),
+                ride.getId(),
+                panicNotification.getCreatedAt(),
+                panicNotification.isResolved(),
+                null
+        );
+
+        return notificationDTO;
+
+    }
+
+    private  @NonNull Ride getRideForPanic(Long rideID, Account account) {
+
+        Optional<Ride> foundRide = rideRepository.findById(rideID);
+
+        if(foundRide.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
+        }
+
+        if(account == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found");
+        }
+
+        Ride ride = (Ride) foundRide.get();
+
+        //ride must be currently Active, and the presser must be either a passenger or the driver, otherwise, throw
+        if(ride.getStatus() != RideStatus.ACTIVE){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only active rides can be panicked");
+        }
+        boolean isDriver = Objects.equals(ride.getDriver().getId(), account.getId());
+        boolean isPassenger = false;
+        for(Account passenger : ride.getPassengers()){
+            if(Objects.equals(passenger.getId(), account.getId())){
+                isPassenger = true;
+                break;
+            }
+        }
+        if(!isDriver && !isPassenger){
+            throw new AccessDeniedException("Only passengers or driver can panic the ride");
+        }
+
+        // Check if panic notification already exists for this ride (prevent spamming)
+        if(ride.isPanic()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Panic has already been activated for this ride");
+        }
+        return ride;
+    }
+
+    @Transactional
+    public PanicNotificationDTO resolvePanicById(Long panicNotificationId) {
+        Optional<PanicNotification> panicOptional = panicNotificationRepository.findById(panicNotificationId);
+
+        if (panicOptional.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Panic notification not found");
+        }
+
+        PanicNotification panic = panicOptional.get();
+        panic.setResolved(true); // also sets the date of resolving
+        panicNotificationRepository.save(panic);
+
+        //unmark the vehicle
+        Ride ride = panic.getRide();
+        if(ride != null){
+            Vehicle vehicle = ride.getDriver().getVehicle();
+            if(vehicle != null){
+                vehicle.setPanicMark(false);
+                vehicleRepository.save(vehicle);
+            }
+        }
+
+        //make dto
+        PanicNotificationDTO notificationDTO = new PanicNotificationDTO(
+                panic.getId(),
+                panic.getCaller() != null ? panic.getCaller().getId() : null,
+                panic.getCaller() != null ? panic.getCaller().getName() + " " + panic.getCaller().getLastName() : "Unknown",
+                panic.getRide() != null ? panic.getRide().getId() : null,
+                panic.getCreatedAt(),
+                panic.isResolved(),
+                panic.getResolvedAt()
+        );
+
+        return notificationDTO;
+
+    }
+
+
 }
 
 

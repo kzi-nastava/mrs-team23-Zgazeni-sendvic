@@ -1,6 +1,8 @@
 package ZgazeniSendvic.Server_Back_ISS.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(
@@ -27,6 +29,9 @@ public class Vehicle {
     private int numOfSeats;
     private boolean babiesAllowed;
     private boolean petsAllowed;
+    @Getter
+    @Setter
+    private boolean panicMark = false;
 
     public Vehicle() { }
 
