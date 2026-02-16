@@ -204,6 +204,7 @@ public class HORAdminE2ETest {
         activeRide.setStartTime(LocalDateTime.now().minusMinutes(30));
         activeRide.setStatus(RideStatus.ACTIVE);
         activeRide.setPanic(false);
+        activeRide.setCreationDate(LocalDateTime.now().minusDays(10));
         activeRide = rideRepository.save(activeRide);
 
 
@@ -242,6 +243,7 @@ public class HORAdminE2ETest {
         scheduledRide.setStartTime(LocalDateTime.now().plusHours(1));
         scheduledRide.setStatus(RideStatus.SCHEDULED);
         scheduledRide.setPanic(false);
+        scheduledRide.setCreationDate(LocalDateTime.now().plusDays(10));
         scheduledRide = rideRepository.save(scheduledRide);
 
 
@@ -521,6 +523,49 @@ public class HORAdminE2ETest {
         Assertions.assertEquals(ridesPage.getContent().size(), initialRows, "Expected number of rides to match filtered results");
 
         // No check of same position, as they are random
+    }
+
+
+    @Test
+    @DisplayName("E2E Test: Filter by date and sort by price")
+    public void testFilterByDateAndSortByPrice(){
+        System.out.println("Testing filter by date and sort by price...");
+
+        // Navigate to HOR admin page with authentication
+        rideHistoryPage.navigateToWithAuth(BASE_URL, adminToken);
+        System.out.println("Successfully filtered rides by date range: " + adminToken);
+
+        rideHistoryPage.enterTargetId(ridePassanger.getId().toString());
+        LocalDateTime from = LocalDateTime.now().minusDays(3);
+        LocalDateTime to = LocalDateTime.now().plusDays(3);
+        rideHistoryPage.enterFromDate(from.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        rideHistoryPage.enterToDate(to.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        rideHistoryPage.sortByPrice();
+
+        //get them directly from backend
+        Page<Ride> ridesPage = rideRepository.findByAccountAndDateRange(
+                accountRepository.findById(ridePassanger.getId()).orElse(null),
+                from,
+                to,
+                PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "price"))
+        );
+
+        // assert row number
+        int initialRows = rideHistoryPage.getNumberOfRows();
+        System.out.println("Initial number of rides: " + initialRows);
+        Assertions.assertEquals(ridesPage.getContent().size(), initialRows, "Expected number of rides to match filtered results");
+
+        for (int i = 0; i < ridesPage.getContent().size(); i++) {
+            Ride ride = ridesPage.getContent().get(i);
+            //compare ID's
+            String displayedId = rideHistoryPage.getRideIdFromRow(i);
+            Long rideId = ride.getId();
+            Long displayedIdLong = Long.parseLong(displayedId);
+            Assertions.assertEquals(displayedIdLong, rideId, "Expected ride id " + rideId);
+
+        }
+
+
     }
 
     @AfterEach
