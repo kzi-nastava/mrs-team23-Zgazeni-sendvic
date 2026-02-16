@@ -17,8 +17,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog } from '@angular/material/dialog';
 import { HorService } from '../service/hor.service';
-import { ARideRequestedUserDTO } from '../models/hor.models';
+import { ARideRequestedUserDTO, URideDetailsRequestedDTO } from '../models/hor.models';
+import { DetailedHorUser } from './detailed-hor-user/detailed-hor-user';
 
 @Component({
   selector: 'app-hor-user',
@@ -49,7 +51,8 @@ export class HORUser {
     'creationTime',
     'route',
     'beginning',
-    'ending'
+    'ending',
+    'details'
   ];
 
   rides: ARideRequestedUserDTO[] = [];
@@ -82,7 +85,8 @@ export class HORUser {
   constructor(
     private horService: HorService,
     private cdr: ChangeDetectorRef,
-    private http: HttpClient
+    private http: HttpClient,
+    private dialog: MatDialog
   ) {
     this.fetchRides();
   }
@@ -115,6 +119,45 @@ export class HORUser {
   formatRoute(ride: ARideRequestedUserDTO): string[] {
     const locations = ride.destinations ?? [];
     return locations.map(loc => this.getLocationLabel(loc));
+  }
+
+  onDetailsClick(ride: ARideRequestedUserDTO): void {
+    if (!ride.rideID) return;
+    
+    this.horService.getUserRideDetails(ride.rideID).subscribe({
+      next: (details: URideDetailsRequestedDTO) => {
+        console.log('Ride Details:', details);
+        // Add route information from the ride data
+        const detailsWithRoute: URideDetailsRequestedDTO & {
+          arrivingPoint?: { latitude: number; longitude: number };
+          endingPoint?: { latitude: number; longitude: number };
+          destinations?: { latitude: number; longitude: number }[];
+        } = {
+          ...details,
+          arrivingPoint: ride.destinations?.[0],
+          endingPoint: ride.destinations?.[ride.destinations.length - 1],
+          destinations: ride.destinations?.slice(1, -1)
+        };
+        this.openDetailedView(detailsWithRoute);
+      },
+      error: (error) => {
+        console.error('Failed to load ride details:', error);
+      }
+    });
+  }
+
+  private openDetailedView(details: URideDetailsRequestedDTO & {
+    arrivingPoint?: { latitude: number; longitude: number };
+    endingPoint?: { latitude: number; longitude: number };
+    destinations?: { latitude: number; longitude: number }[];
+  }): void {
+    this.dialog.open(DetailedHorUser, {
+      data: details,
+      width: '90%',
+      maxWidth: '1000px',
+      maxHeight: '90vh',
+      panelClass: 'detailed-ride-dialog'
+    });
   }
 
   private fetchRides(applyFilter = false): void {

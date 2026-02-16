@@ -72,3 +72,9 @@ export interface ARideRequestedUserDTO {
   ending: string;
   creationTime: string;
 }
+
+export interface URideDetailsRequestedDTO {
+  driver: HORAccountDetailsDTO;
+  rideNotes: ARideDetailsNoteDTO[];
+  rideDriverRatings: RideDriverRatingDTO[];
+}
