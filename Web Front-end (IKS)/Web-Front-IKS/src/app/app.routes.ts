@@ -16,6 +16,7 @@ import { HORAdmin } from './hor-admin/hor-admin';
 import {HORUser} from "./hor-user/hor-user";
 import { DetailedHorAdmin } from './hor-admin/detailed-hor-admin/detailed-hor-admin';
 import { DetailedHorUser } from './hor-user/detailed-hor-user/detailed-hor-user';
+import { PanicNotifications } from './panic-notifications/panic-notifications'
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'profile/user', component: UserProfile },
@@ -34,5 +35,6 @@ export const routes: Routes = [
   {path: 'hor-admin/detailed/:id', component: DetailedHorAdmin},
   {path: 'hor-user', component: HORUser},
   {path: 'hor-user/detailed/:id', component: DetailedHorUser},
+  {path: 'panic-notifications', component: PanicNotifications},
   { path: '**', redirectTo: '' },
 ];
