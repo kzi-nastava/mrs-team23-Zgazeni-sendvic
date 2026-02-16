@@ -1,4 +1,4 @@
-import { Component, Inject, ChangeDetectionStrategy, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -10,6 +10,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ARideDetailsRequestedDTO } from '../../models/hor.models';
 import { Map } from '../../map/map';
+import * as L from 'leaflet';
 
 @Component({
   selector: 'app-detailed-hor-admin',
@@ -36,13 +37,50 @@ export class DetailedHorAdmin implements AfterViewInit {
 
   constructor(
     public dialogRef: MatDialogRef<DetailedHorAdmin>,
-    @Inject(MAT_DIALOG_DATA) public data: ARideDetailsRequestedDTO
+    @Inject(MAT_DIALOG_DATA) public data: ARideDetailsRequestedDTO,
+    private cdr: ChangeDetectorRef
   ) {
     this.rideDetails = data;
   }
 
   ngAfterViewInit(): void {
-    // Map will initialize automatically
+    setTimeout(() => {
+      if (this.mapComponent && this.rideDetails) {
+        this.displayRouteOnMap();
+      }
+    }, 100);
+  }
+
+  private displayRouteOnMap(): void {
+    if (!this.mapComponent || !this.rideDetails.arrivingPoint || !this.rideDetails.endingPoint) {
+      return;
+    }
+
+    const startPoint: L.LatLngTuple = [
+      this.rideDetails.arrivingPoint.latitude,
+      this.rideDetails.arrivingPoint.longitude
+    ];
+
+    const endPoint: L.LatLngTuple = [
+      this.rideDetails.endingPoint.latitude,
+      this.rideDetails.endingPoint.longitude
+    ];
+
+    let routePoints: L.LatLngTuple[] = [startPoint];
+
+    // Add intermediate destinations if available
+    if (this.rideDetails.destinations && this.rideDetails.destinations.length > 0) {
+      routePoints.push(
+        ...this.rideDetails.destinations
+          .filter(dest => dest && dest.latitude !== undefined && dest.longitude !== undefined)
+          .map(dest => [dest.latitude, dest.longitude] as L.LatLngTuple)
+      );
+    }
+
+    routePoints.push(endPoint);
+
+    // Update map with route
+    this.mapComponent.updateRideLocation(startPoint, endPoint, routePoints);
   }
 
   getRatingStars(rating: number): string[] {

@@ -172,7 +172,14 @@ export class HORAdmin {
     this.horService.getAdminRideDetails(ride.rideID).subscribe({
       next: (details: ARideDetailsRequestedDTO) => {
         console.log('Ride Details:', details);
-        this.openDetailedView(details);
+        // Add route information from the ride data
+        const detailsWithRoute: ARideDetailsRequestedDTO = {
+          ...details,
+          arrivingPoint: ride.arrivingPoint,
+          endingPoint: ride.endingPoint,
+          destinations: ride.destinations
+        };
+        this.openDetailedView(detailsWithRoute);
       },
       error: (error) => {
         console.error('Failed to load ride details:', error);

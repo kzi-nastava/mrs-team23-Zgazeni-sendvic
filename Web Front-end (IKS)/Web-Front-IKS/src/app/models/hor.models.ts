@@ -60,4 +60,7 @@ export interface ARideDetailsRequestedDTO {
   driver: HORAccountDetailsDTO;
   rideNotes: ARideDetailsNoteDTO[];
   rideDriverRatings: RideDriverRatingDTO[];
+  arrivingPoint?: Location;
+  endingPoint?: Location;
+  destinations?: Location[];
 }
