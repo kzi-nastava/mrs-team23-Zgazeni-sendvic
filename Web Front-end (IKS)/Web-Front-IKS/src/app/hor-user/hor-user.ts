@@ -47,7 +47,6 @@ import { DetailedHorUser } from './detailed-hor-user/detailed-hor-user';
 })
 export class HORUser {
   displayedColumns: string[] = [
-    'rideID',
     'creationTime',
     'route',
     'beginning',
