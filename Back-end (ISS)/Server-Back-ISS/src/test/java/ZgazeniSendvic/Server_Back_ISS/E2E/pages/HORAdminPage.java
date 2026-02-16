@@ -352,8 +352,8 @@ public class HORAdminPage {
             case "locations" -> "Route";
             case "starttime" -> "Start";
             case "endtime" -> "End";
-            case "from" -> "From";
-            case "to" -> "To";
+            case "startlatitude" -> "From";
+            case "endlatitude" -> "To";
             case "status" -> "Status";
             case "canceler" -> "Canceled";
             case "price" -> "Price";

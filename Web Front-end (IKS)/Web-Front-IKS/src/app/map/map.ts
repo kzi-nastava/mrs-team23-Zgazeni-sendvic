@@ -99,6 +99,15 @@ export class Map implements AfterViewInit {
     this.updateRideLocationInternal(update);
   }
 
+  fitToBounds(points: L.LatLngTuple[]): void {
+    if (!this.mapInstance || points.length === 0) {
+      return;
+    }
+
+    const bounds = L.latLngBounds(points);
+    this.mapInstance.fitBounds(bounds, { padding: [50, 50] });
+  }
+
   private setVehicleMarkersInternal(vehicles: VehiclePosition[]): void {
     if (!this.vehicleLayer) {
       return;

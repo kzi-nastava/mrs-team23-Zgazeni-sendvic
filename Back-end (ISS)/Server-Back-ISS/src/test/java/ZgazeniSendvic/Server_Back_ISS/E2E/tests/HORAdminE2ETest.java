@@ -84,8 +84,8 @@ public class HORAdminE2ETest {
             "price",
             "panic",
             "creationDate",
-            "From",
-            "To"
+            "startLatitude",
+            "endLatitude"
     );
 
 
@@ -306,7 +306,7 @@ public class HORAdminE2ETest {
         ChromeOptions options = new ChromeOptions();
 
         // Essential for Ubuntu/Linux headless environments
-        //options.addArguments("--headless=new");
+        options.addArguments("--headless=new");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-gpu");
@@ -397,6 +397,7 @@ public class HORAdminE2ETest {
     @MethodSource(value = "provideFieldsForSorting")
     @DisplayName("E2E Test: Sort by given field ascending")
     public void testSortByGivenFieldAscending(String field){
+        field = fieldTransform(field);
 
         System.out.println("Testing sort by field: " + field);
 
@@ -438,6 +439,7 @@ public class HORAdminE2ETest {
     @MethodSource(value = "provideFieldsForSorting")
     @DisplayName("E2E Test: Sort by given field ascending")
     public void testSortByGivenFieldDescending(String field){
+        field = fieldTransform(field);
 
         System.out.println("Testing sort by field: " + field);
 
@@ -577,6 +579,14 @@ public class HORAdminE2ETest {
 
     public Location returnNewLocation(Location location) {
         return new Location(location.getLongitude(), location.getLatitude());
+    }
+
+    private String fieldTransform(String field) {
+        if (field.equals("locations")) {
+            return "startLatitude";
+        }
+        return field;
+
     }
 
 }

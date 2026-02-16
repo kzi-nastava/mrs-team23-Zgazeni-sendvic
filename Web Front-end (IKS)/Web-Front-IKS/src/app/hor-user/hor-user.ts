@@ -19,11 +19,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { HorService } from '../service/hor.service';
-import { ARideRequestedDTO, RideStatus, ARideDetailsRequestedDTO } from '../models/hor.models';
-import { DetailedHorAdmin } from './detailed-hor-admin/detailed-hor-admin';
+import { ARideRequestedUserDTO, URideDetailsRequestedDTO } from '../models/hor.models';
+import { DetailedHorUser } from './detailed-hor-user/detailed-hor-user';
 
 @Component({
-  selector: 'app-hor-admin',
+  selector: 'app-hor-user',
   standalone: true,
   imports: [
     CommonModule,
@@ -41,27 +41,20 @@ import { DetailedHorAdmin } from './detailed-hor-admin/detailed-hor-admin';
     MatProgressSpinnerModule,
     MatTooltipModule
   ],
-  templateUrl: './hor-admin.html',
-  styleUrl: './hor-admin.css',
+  templateUrl: './hor-user.html',
+  styleUrl: './hor-user.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HORAdmin {
+export class HORUser {
   displayedColumns: string[] = [
-    'rideID',
     'creationTime',
     'route',
     'beginning',
     'ending',
-    'start',
-    'end',
-    'status',
-    'canceledBy',
-    'price',
-    'panic',
     'details'
   ];
 
-  rides: ARideRequestedDTO[] = [];
+  rides: ARideRequestedUserDTO[] = [];
   totalElements = 0;
   pageIndex = 0;
   pageSize = 10;
@@ -73,7 +66,6 @@ export class HORAdmin {
   private fb = inject(FormBuilder);
 
   filterForm = this.fb.group({
-    targetId: [null as number | null],
     fromDate: [null as Date | null],
     toDate: [null as Date | null]
   });
@@ -83,14 +75,7 @@ export class HORAdmin {
     creationTime: 'creationDate',
     route: 'startLatitude',
     beginning: 'startTime',
-    ending: 'endTime',
-    start: 'startLatitude',
-    end: 'endLatitude',
-    status: 'status',
-    canceledBy: 'canceler',
-    price: 'price',
-    panic: 'panic',
-    details: null
+    ending: 'endTime'
   };
 
   private readonly geocodeCache = new Map<string, string>();
@@ -101,7 +86,9 @@ export class HORAdmin {
     private cdr: ChangeDetectorRef,
     private http: HttpClient,
     private dialog: MatDialog
-  ) {}
+  ) {
+    this.fetchRides();
+  }
 
   applyFilters(): void {
     this.pageIndex = 0;
@@ -109,7 +96,7 @@ export class HORAdmin {
   }
 
   clearFilters(): void {
-    this.filterForm.reset({ targetId: null, fromDate: null, toDate: null });
+    this.filterForm.reset({ fromDate: null, toDate: null });
     this.pageIndex = 0;
     this.rides = [];
     this.totalElements = 0;
@@ -128,56 +115,27 @@ export class HORAdmin {
     this.fetchRides();
   }
 
-  formatRoute(ride: ARideRequestedDTO): string[] {
-    const segments = [ride.arrivingPoint, ...(ride.destinations ?? []), ride.endingPoint].filter(Boolean);
-    const uniqueSegments = segments.filter((loc, index, array) => {
-      if (index === 0) return true;
-      const prev = array[index - 1];
-      return !(loc.latitude === prev.latitude && loc.longitude === prev.longitude);
-    });
-
-    return uniqueSegments.map(loc => this.getLocationLabel(loc));
+  formatRoute(ride: ARideRequestedUserDTO): string[] {
+    const locations = ride.destinations ?? [];
+    return locations.map(loc => this.getLocationLabel(loc));
   }
 
-  formatLocation(loc: { latitude?: number; longitude?: number }): string {
-    return this.getLocationLabel(loc);
-  }
-
-  canceledLabel(ride: ARideRequestedDTO): string {
-    return ride.whoCancelled ? 'Yes' : 'No';
-  }
-
-  canceledByLabel(ride: ARideRequestedDTO): string {
-    return ride.whoCancelled ? String(ride.whoCancelled) : '-';
-  }
-
-  formatStatus(status: RideStatus): string {
-    switch (status) {
-      case RideStatus.SCHEDULED:
-        return 'Scheduled';
-      case RideStatus.ACTIVE:
-        return 'Active';
-      case RideStatus.FINISHED:
-        return 'Finished';
-      case RideStatus.CANCELED:
-        return 'Canceled';
-      default:
-        return String(status ?? '');
-    }
-  }
-
-  onDetailsClick(ride: ARideRequestedDTO): void {
+  onDetailsClick(ride: ARideRequestedUserDTO): void {
     if (!ride.rideID) return;
     
-    this.horService.getAdminRideDetails(ride.rideID).subscribe({
-      next: (details: ARideDetailsRequestedDTO) => {
+    this.horService.getUserRideDetails(ride.rideID).subscribe({
+      next: (details: URideDetailsRequestedDTO) => {
         console.log('Ride Details:', details);
         // Add route information from the ride data
-        const detailsWithRoute: ARideDetailsRequestedDTO = {
+        const detailsWithRoute: URideDetailsRequestedDTO & {
+          arrivingPoint?: { latitude: number; longitude: number };
+          endingPoint?: { latitude: number; longitude: number };
+          destinations?: { latitude: number; longitude: number }[];
+        } = {
           ...details,
-          arrivingPoint: ride.arrivingPoint,
-          endingPoint: ride.endingPoint,
-          destinations: ride.destinations
+          arrivingPoint: ride.destinations?.[0],
+          endingPoint: ride.destinations?.[ride.destinations.length - 1],
+          destinations: ride.destinations?.slice(1, -1)
         };
         this.openDetailedView(detailsWithRoute);
       },
@@ -187,8 +145,12 @@ export class HORAdmin {
     });
   }
 
-  private openDetailedView(details: ARideDetailsRequestedDTO): void {
-    this.dialog.open(DetailedHorAdmin, {
+  private openDetailedView(details: URideDetailsRequestedDTO & {
+    arrivingPoint?: { latitude: number; longitude: number };
+    endingPoint?: { latitude: number; longitude: number };
+    destinations?: { latitude: number; longitude: number }[];
+  }): void {
+    this.dialog.open(DetailedHorUser, {
       data: details,
       width: '90%',
       maxWidth: '1000px',
@@ -197,15 +159,7 @@ export class HORAdmin {
     });
   }
 
-  private fetchRides(requireTarget = false): void {
-    const targetId = this.filterForm.value.targetId;
-    if (!targetId) {
-      if (requireTarget) {
-        this.error = 'Target ID is required.';
-      }
-      return;
-    }
-
+  private fetchRides(applyFilter = false): void {
     const fromDate = this.filterForm.value.fromDate 
       ? this.toLocalDateString(this.filterForm.value.fromDate) 
       : null;
@@ -220,7 +174,7 @@ export class HORAdmin {
     this.loading = true;
     this.error = '';
 
-    this.horService.getAdminRides(targetId, {
+    this.horService.getUserRides({
       page: this.pageIndex,
       size: this.pageSize,
       sort: sortParam,
@@ -234,10 +188,7 @@ export class HORAdmin {
       .subscribe({
         next: page => {
           const content = page.content ?? [];
-          this.rides = content.map(ride => {
-            const status = (ride as unknown as { Status?: ARideRequestedDTO['status'] }).Status;
-            return status ? { ...ride, status } : ride;
-          });
+          this.rides = content;
           this.totalElements = page.totalElements ?? 0;
           this.pageIndex = page.number ?? this.pageIndex;
           this.pageSize = page.size ?? this.pageSize;
@@ -293,5 +244,4 @@ export class HORAdmin {
 
     return key;
   }
-
 }

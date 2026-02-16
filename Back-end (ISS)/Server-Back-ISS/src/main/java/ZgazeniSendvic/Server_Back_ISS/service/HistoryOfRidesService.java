@@ -37,21 +37,24 @@ public class HistoryOfRidesService {
 
     private static final Set<String> ADMIN_ALLOWED_SORT_FIELDS = Set.of(
             "id",
-            "locations",
             "startTime",
             "endTime",
             "status",
             "canceler",
             "price",
             "panic",
-            "creationDate"
+            "creationDate",
+            "startLatitude",    // for sorting by beginning location
+            "endLatitude"       // for sorting by ending location
+
     );
 
     private static final Set<String> USER_ALLOWED_SORT_FIELDS = Set.of(
-            "locations",
             "startTime",
             "endTime",
-            "creationDate"
+            "creationDate",
+            "startLatitude",    // for sorting by beginning location
+            "endLatitude"       // for sorting by ending location
     );
 
     private final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -183,6 +186,7 @@ public class HistoryOfRidesService {
             userDTO.setDestinations(dto.getDestinations());
             userDTO.setBeginning(dto.getBeginning());
             userDTO.setEnding(dto.getEnding());
+            userDTO.setCreationTime(dto.getCreationTime());
             return userDTO;
         });
     }
