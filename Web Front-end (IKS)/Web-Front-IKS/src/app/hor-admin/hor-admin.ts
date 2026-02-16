@@ -168,8 +168,12 @@ export class HORAdmin {
       return;
     }
 
-    const fromDate = this.formatDateParam(this.filterForm.value.fromDate ?? null);
-    const toDate = this.formatDateParam(this.filterForm.value.toDate ?? null);
+    const fromDate = this.filterForm.value.fromDate 
+      ? this.toLocalDateString(this.filterForm.value.fromDate) 
+      : null;
+    const toDate = this.filterForm.value.toDate 
+      ? this.toLocalDateString(this.filterForm.value.toDate) 
+      : null;
     const mappedSort = this.sortFieldMap[this.currentSort.active] ?? null;
     const sortParam = this.currentSort.direction && mappedSort
       ? `${mappedSort},${this.currentSort.direction}`
@@ -208,12 +212,15 @@ export class HORAdmin {
       });
   }
 
-  private formatDateParam(date: Date | null): string | null {
-    if (!date) return null;
+  private toLocalDateString(date: Date): string {
+    // Convert to ISO datetime string (YYYY-MM-DDTHH:mm:ss) for LocalDateTime parameter
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
   }
 
   private getLocationLabel(loc: { latitude?: number; longitude?: number }): string {

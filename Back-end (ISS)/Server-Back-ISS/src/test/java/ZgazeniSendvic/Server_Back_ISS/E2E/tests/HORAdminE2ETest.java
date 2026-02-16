@@ -7,15 +7,22 @@ import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.VehicleRepository;
 import ZgazeniSendvic.Server_Back_ISS.security.jwt.JwtUtils;
+import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
 import ZgazeniSendvic.Server_Back_ISS.service.OrsRoutingService;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -27,8 +34,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
@@ -54,12 +64,29 @@ public class HORAdminE2ETest {
     @MockitoBean
     private OrsRoutingService orsRoutingService;
 
+
     @Autowired
     private JwtUtils jwtUtils;
 
     private String adminToken;
 
     private OrsRouteResult mockRouteResult;
+
+    private Account ridePassanger;
+
+    private static final Set<String> ADMIN_ALLOWED_SORT_FIELDS = Set.of(
+            "id",
+            "locations",
+            "startTime",
+            "endTime",
+            "status",
+            "canceler",
+            "price",
+            "panic",
+            "creationDate",
+            "From",
+            "To"
+    );
 
 
 
@@ -76,7 +103,7 @@ public class HORAdminE2ETest {
         registry.add("spring.datasource.password", postgres::getPassword);
     }
 
-    @BeforeEach
+
     void setUpDB() {
         // Clean up database
         rideRepository.deleteAll();
@@ -97,7 +124,7 @@ public class HORAdminE2ETest {
         testPassenger.setAddress("123 Passenger St, Test City");
         testPassenger.setPhoneNumber("1234567890");
         testPassenger.setConfirmed(true);
-        testPassenger = accountRepository.save(testPassenger);
+        ridePassanger = accountRepository.save(testPassenger);
 
         Account Admin = new Admin();
         Admin.setEmail("Admina@test.com");
@@ -178,6 +205,25 @@ public class HORAdminE2ETest {
         activeRide.setStatus(RideStatus.ACTIVE);
         activeRide.setPanic(false);
         activeRide = rideRepository.save(activeRide);
+
+
+        // Ride Not belonging to user I check
+
+        Ride OtherRide = new Ride();
+        OtherRide.setId(null);
+        OtherRide.setDriver(testDriver);
+        OtherRide.setCreator(testDriver);
+        OtherRide.setPassengers(new ArrayList<>(List.of()));
+        OtherRide.setLocations(new ArrayList<>(List.of(
+                returnNewLocation(location1),
+                returnNewLocation(location2)
+        )));
+        OtherRide.setPrice(9999999);
+        OtherRide.setStartTime(LocalDateTime.now().minusMinutes(30));
+        OtherRide.setStatus(RideStatus.ACTIVE);
+        OtherRide.setPanic(false);
+        OtherRide = rideRepository.save(OtherRide);
+
 
 
 
@@ -273,6 +319,7 @@ public class HORAdminE2ETest {
         rideHistoryPage = new HORAdminPage(driver);
 
         System.out.println("Driver created successfully");
+        setUpDB();
     }
 
 
@@ -284,7 +331,7 @@ public class HORAdminE2ETest {
         // Navigate to HOR admin page with authentication
         rideHistoryPage.navigateToWithAuth(BASE_URL, adminToken);
 
-        rideHistoryPage.enterTargetId("1");
+        rideHistoryPage.enterTargetId(ridePassanger.getId().toString());
         rideHistoryPage.clickApplyFilters();
 
         // Verify page has loaded and contains rides
@@ -299,6 +346,181 @@ public class HORAdminE2ETest {
         Assertions.assertTrue(numberOfRows > 0, "Expected rides to be loaded for user ID 1");
 
         System.out.println("Successfully retrieved all rides for user ID 1");
+    }
+
+
+
+    @Test
+    @DisplayName("E2E Test: Sort by price displays rides in correct order")
+    public void testSortByPrice_MatchesBackendOrder() {
+        System.out.println("Testing sort by price...");
+
+        // Navigate to HOR admin page with authentication
+        rideHistoryPage.navigateToWithAuth(BASE_URL, adminToken);
+
+        rideHistoryPage.enterTargetId(ridePassanger.getId().toString());
+        rideHistoryPage.sortByPrice();
+
+        // Wait for initial load
+        int initialRows = rideHistoryPage.getNumberOfRows();
+        System.out.println("Initial number of rides: " + initialRows);
+        Assertions.assertTrue(initialRows > 0, "Expected rides to be loaded");
+
+        //get them sorted by price in descending order from the backend
+        Page<Ride> ridesPage = rideRepository.findByAccountAndDateRange(
+                accountRepository.findById(1L).orElse(null),
+                null,
+                null,
+                PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "price"))
+        );
+
+        //check ID's are in same positions
+        for (int i = 0; i < ridesPage.getContent().size(); i++) {
+            Ride ride = ridesPage.getContent().get(i);
+            String displayedPrice = rideHistoryPage.getPriceFromRow(i);
+            System.out.println("Displayed price at row " + i + ": " + displayedPrice);
+            Assertions.assertTrue(displayedPrice.contains(String.format("%.2f", ride.getPrice())),
+                    "Expected price " + ride.getPrice() + " at row " + i);
+        }
+    }
+
+
+
+    static Stream<String> provideFieldsForSorting() {
+        return ADMIN_ALLOWED_SORT_FIELDS.stream();
+    }
+
+
+    @ParameterizedTest
+    @MethodSource(value = "provideFieldsForSorting")
+    @DisplayName("E2E Test: Sort by given field ascending")
+    public void testSortByGivenFieldAscending(String field){
+
+        System.out.println("Testing sort by field: " + field);
+
+        // Navigate to HOR admin page with authentication
+        rideHistoryPage.navigateToWithAuth(BASE_URL, adminToken);
+        System.out.println("Successfully filtered rides by given field: " + adminToken);
+
+        rideHistoryPage.enterTargetId(ridePassanger.getId().toString());
+        rideHistoryPage.sortByGivenFieldASC(field, true);
+
+        // Wait for initial load
+        int initialRows = rideHistoryPage.getNumberOfRows();
+        System.out.println("Initial number of rides: " + initialRows);
+        Assertions.assertTrue(initialRows > 0, "Expected rides to be loaded");
+
+        //get them sorted by price in descending order from the backend
+        Page<Ride> ridesPage = rideRepository.findByAccountAndDateRange(
+                accountRepository.findById(ridePassanger.getId()).orElse(null),
+                null,
+                null,
+                PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, field))
+        );
+
+        //check ID's are in same positions
+        for (int i = 0; i < ridesPage.getContent().size(); i++) {
+            Ride ride = ridesPage.getContent().get(i);
+            //compare ID's
+            String displayedId = rideHistoryPage.getRideIdFromRow(i);
+            Long rideId = ride.getId();
+            Long displayedIdLong = Long.parseLong(displayedId);
+            Assertions.assertEquals(displayedIdLong, rideId, "Expected ride id " + rideId);
+
+        }
+
+
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "provideFieldsForSorting")
+    @DisplayName("E2E Test: Sort by given field ascending")
+    public void testSortByGivenFieldDescending(String field){
+
+        System.out.println("Testing sort by field: " + field);
+
+        // Navigate to HOR admin page with authentication
+        rideHistoryPage.navigateToWithAuth(BASE_URL, adminToken);
+        System.out.println("Successfully filtered rides by given field: " + adminToken);
+
+        rideHistoryPage.enterTargetId(ridePassanger.getId().toString());
+        rideHistoryPage.sortByGivenFieldASC(field, false);
+
+        // Wait for initial load
+        int initialRows = rideHistoryPage.getNumberOfRows();
+        System.out.println("Initial number of rides: " + initialRows);
+        Assertions.assertTrue(initialRows > 0, "Expected rides to be loaded");
+
+        //get them sorted by price in descending order from the backend
+        Page<Ride> ridesPage = rideRepository.findByAccountAndDateRange(
+                accountRepository.findById(ridePassanger.getId()).orElse(null),
+                null,
+                null,
+                PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, field))
+        );
+
+        //check ID's are in same positions
+        for (int i = 0; i < ridesPage.getContent().size(); i++) {
+            Ride ride = ridesPage.getContent().get(i);
+            //compare ID's
+            String displayedId = rideHistoryPage.getRideIdFromRow(i);
+            Long rideId = ride.getId();
+            Long displayedIdLong = Long.parseLong(displayedId);
+            Assertions.assertEquals(displayedIdLong, rideId, "Expected ride id " + rideId);
+
+        }
+
+
+    }
+
+    static Stream<Arguments> provideDatesForFiltering() {
+        return Stream.of(
+                Arguments.of(null, null),
+                Arguments.of(null, LocalDateTime.now().plusDays(99)),
+                Arguments.of(LocalDateTime.now().minusDays(99), null),
+                Arguments.of(LocalDateTime.now().plusDays(99), null),
+                Arguments.of(null, LocalDateTime.now().minusDays(99))
+        );
+    }
+
+
+    @ParameterizedTest
+    @MethodSource(value = "provideDatesForFiltering")
+    @DisplayName("E2E Test: Filter by date range")
+    public void testFilterByDateRange(LocalDateTime from, LocalDateTime to){
+        System.out.println("Testing filter by date range: from " + from + " to " + to);
+
+        // Navigate to HOR admin page with authentication
+        rideHistoryPage.navigateToWithAuth(BASE_URL, adminToken);
+        System.out.println("Successfully filtered rides by date range: " + adminToken);
+
+        rideHistoryPage.enterTargetId(ridePassanger.getId().toString());
+        if(from != null) {
+            rideHistoryPage.enterFromDate(from.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        }
+        if(to != null) {
+            rideHistoryPage.enterToDate(to.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        }
+        rideHistoryPage.clickApplyFilters();
+
+
+
+        //get them directly from backend
+        Page<Ride> ridesPage = rideRepository.findByAccountAndDateRange(
+                accountRepository.findById(ridePassanger.getId()).orElse(null),
+                from,
+                to,
+                PageRequest.of(0, 10)
+        );
+
+
+
+        // Wait for initial load
+        int initialRows = rideHistoryPage.getNumberOfRows();
+        System.out.println("Initial number of rides: " + initialRows);
+        Assertions.assertEquals(ridesPage.getContent().size(), initialRows, "Expected number of rides to match filtered results");
+
+        // No check of same position, as they are random
     }
 
     @AfterEach

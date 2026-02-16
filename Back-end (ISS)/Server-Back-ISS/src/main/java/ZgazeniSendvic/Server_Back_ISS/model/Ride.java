@@ -51,8 +51,8 @@ public class Ride {
     @Enumerated(EnumType.STRING)
     private RideStatus status;
     @CreationTimestamp
-    @Column(updatable = false)
-    @Getter
+    @Column(updatable = true)
+    @Getter @Setter
     private LocalDateTime creationDate;
     @Getter @Setter
     @ManyToOne

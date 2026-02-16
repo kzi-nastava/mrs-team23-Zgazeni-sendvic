@@ -88,20 +88,15 @@ public class HORAdminPage {
 
     // Navigate with authentication
     public void navigateToWithAuth(String baseUrl, String jwtToken) {
-        // First, navigate to any page on the same domain to set localStorage
         driver.get(baseUrl);
-
-        // Set the JWT token and role
         setAuthToken(jwtToken, "ADMIN");
-
-        // Now navigate to the actual page - it will have the token
         driver.get(baseUrl + "/hor-admin");
         waitForTableToLoad();
     }
 
     // Navigation
     public void navigateTo(String baseUrl) {
-        driver.get(baseUrl + "/hor-admin"); // Adjust path as needed
+        driver.get(baseUrl + "/hor-admin");
     }
 
     // Filter actions
@@ -147,10 +142,10 @@ public class HORAdminPage {
         clickApplyFilters();
     }
 
-    // Sorting actions
+    // Retrieve sorted
     public void sortByColumn(String columnName) {
         WebElement header = driver.findElement(
-                By.xpath("//th[contains(text(), '" + columnName + "')]")
+                By.xpath("//table[contains(@class,'rides-table')]//th[@mat-sort-header and contains(normalize-space(.), '" + columnName + "')]")
         );
         wait.until(ExpectedConditions.elementToBeClickable(header));
         header.click();
@@ -165,6 +160,10 @@ public class HORAdminPage {
         sortByColumn("Created");
     }
 
+    public void sortByRoute() {
+        sortByColumn("Route");
+    }
+
     public void sortByStart() {
         sortByColumn("Start");
     }
@@ -173,29 +172,45 @@ public class HORAdminPage {
         sortByColumn("End");
     }
 
+    public void sortByFrom() {
+        sortByColumn("From");
+    }
+
+    public void sortByTo() {
+        sortByColumn("To");
+    }
+
     public void sortByStatus() {
         sortByColumn("Status");
+    }
+
+    public void sortByCanceled() {
+        sortByColumn("Canceled");
     }
 
     public void sortByPrice() {
         sortByColumn("Price");
     }
 
+    public void sortByPanic() {
+        sortByColumn("Panic");
+    }
+
     // Table data retrieval
     public int getNumberOfRows() {
         waitForLoadingToComplete();
-        return tableRows.size();
+        return driver.findElements(By.cssSelector("table.rides-table tr[mat-row]")).size();
     }
 
     public List<WebElement> getTableRows() {
         waitForLoadingToComplete();
-        return tableRows;
+        return driver.findElements(By.cssSelector("table.rides-table tr[mat-row]"));
     }
 
     public String getCellValue(int rowIndex, String columnName) {
         String columnIndex = getColumnIndex(columnName);
         WebElement cell = driver.findElement(
-                By.xpath("//tr[@class='mat-row'][" + (rowIndex + 1) + "]/td[" + columnIndex + "]")
+                By.xpath("//table[contains(@class,'rides-table')]//tr[@mat-row][" + (rowIndex + 1) + "]/td[" + columnIndex + "]")
         );
         return cell.getText();
     }
@@ -229,7 +244,7 @@ public class HORAdminPage {
         wait.until(ExpectedConditions.elementToBeClickable(pageSizeSelect));
         pageSizeSelect.click();
         WebElement option = driver.findElement(
-                By.xpath("//mat-option/span[contains(text(), '" + size + "')]")
+                By.xpath("//mat-option//span[contains(@class,'mat-mdc-option-text') and contains(., '" + size + "')]")
         );
         option.click();
         waitForLoadingToComplete();
@@ -259,7 +274,6 @@ public class HORAdminPage {
 
     public boolean isEmpty() {
         try {
-            // Use a short implicit wait to check if empty state exists
             WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofMillis(500));
             WebElement emptyState = shortWait.until(ExpectedConditions.visibilityOfElementLocated(
                     By.xpath("//div[contains(@class,'state') and not(contains(@class,'error')) and not(.//mat-progress-spinner)]")
@@ -280,7 +294,6 @@ public class HORAdminPage {
             WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(2));
             shortWait.until(ExpectedConditions.invisibilityOf(loadingSpinner));
         } catch (Exception e) {
-            // If spinner doesn't exist or disappears quickly, that's fine
             System.out.println("Loading spinner not found or already hidden");
         }
     }
@@ -297,14 +310,12 @@ public class HORAdminPage {
 
     // Validation helpers
     public boolean isTableSorted(String columnName, boolean ascending) {
-        // Get all values from the specified column
         List<WebElement> cells = driver.findElements(
-                By.xpath("//td[position()=" + getColumnIndex(columnName) + "]")
+                By.xpath("//table[contains(@class,'rides-table')]//tr[@mat-row]/td[" + getColumnIndex(columnName) + "]")
         );
 
-        if (cells.size() < 2) return true; // Can't verify sort with less than 2 items
+        if (cells.size() < 2) return true;
 
-        // Check if values are in order (simplified - expand based on data type)
         for (int i = 0; i < cells.size() - 1; i++) {
             String current = cells.get(i).getText();
             String next = cells.get(i + 1).getText();
@@ -333,5 +344,36 @@ public class HORAdminPage {
             default -> "1";
         };
     }
+
+    public void sortByGivenFieldASC(String columnName, boolean ascending) {
+        String realFieldName = switch (columnName.toLowerCase()) {
+            case "id" -> "Ride ID";
+            case "creationdate" -> "Created";
+            case "locations" -> "Route";
+            case "starttime" -> "Start";
+            case "endtime" -> "End";
+            case "from" -> "From";
+            case "to" -> "To";
+            case "status" -> "Status";
+            case "canceler" -> "Canceled";
+            case "price" -> "Price";
+            case "panic" -> "Panic";
+            default -> columnName;
+        };
+
+        if(ascending){
+            sortByColumn(realFieldName);
+        } else {
+            sortByColumn(realFieldName);
+            sortByColumn(realFieldName);
+        }
+
+
+    }
+
+        public void sortByGivenFieldDESC(String columnName) {
+            sortByColumn(columnName);
+            sortByColumn(columnName);
+        }
 
 }
