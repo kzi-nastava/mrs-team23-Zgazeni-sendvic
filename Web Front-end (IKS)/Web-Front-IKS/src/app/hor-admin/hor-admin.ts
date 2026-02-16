@@ -16,8 +16,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { HorService } from '../service/hor.service';
-import { ARideRequestedDTO, RideStatus } from '../models/hor.models';
+import { ARideRequestedDTO, RideStatus, ARideDetailsRequestedDTO } from '../models/hor.models';
 
 @Component({
   selector: 'app-hor-admin',
@@ -35,7 +36,8 @@ import { ARideRequestedDTO, RideStatus } from '../models/hor.models';
     MatButtonModule,
     MatIconModule,
     MatCardModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTooltipModule
   ],
   templateUrl: './hor-admin.html',
   styleUrl: './hor-admin.css',
@@ -53,7 +55,8 @@ export class HORAdmin {
     'status',
     'canceledBy',
     'price',
-    'panic'
+    'panic',
+    'details'
   ];
 
   rides: ARideRequestedDTO[] = [];
@@ -84,7 +87,8 @@ export class HORAdmin {
     status: 'status',
     canceledBy: 'canceler',
     price: 'price',
-    panic: 'panic'
+    panic: 'panic',
+    details: null
   };
 
   private readonly geocodeCache = new Map<string, string>();
@@ -157,6 +161,20 @@ export class HORAdmin {
       default:
         return String(status ?? '');
     }
+  }
+
+  onDetailsClick(ride: ARideRequestedDTO): void {
+    if (!ride.rideID) return;
+    
+    this.horService.getAdminRideDetails(ride.rideID).subscribe({
+      next: (details: ARideDetailsRequestedDTO) => {
+        console.log('Ride Details:', details);
+        // TODO: Open detailed view component
+      },
+      error: (error) => {
+        console.error('Failed to load ride details:', error);
+      }
+    });
   }
 
   private fetchRides(requireTarget = false): void {
