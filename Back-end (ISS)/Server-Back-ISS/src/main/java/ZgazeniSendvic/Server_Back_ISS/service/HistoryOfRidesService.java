@@ -186,6 +186,7 @@ public class HistoryOfRidesService {
             userDTO.setDestinations(dto.getDestinations());
             userDTO.setBeginning(dto.getBeginning());
             userDTO.setEnding(dto.getEnding());
+            userDTO.setCreationTime(dto.getCreationTime());
             return userDTO;
         });
     }

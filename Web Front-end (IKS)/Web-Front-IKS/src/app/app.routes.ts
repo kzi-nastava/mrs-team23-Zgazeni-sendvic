@@ -13,7 +13,9 @@ import { ResetPassword } from './reset-password/reset-password';
 import { ConfirmAccount } from './confirm-account/confirm-account';
 import { RouteEstimationPanel } from './route-estimation-panel/route-estimation-panel';
 import { HORAdmin } from './hor-admin/hor-admin';
+import {HORUser} from "./hor-user/hor-user";
 import { DetailedHorAdmin } from './hor-admin/detailed-hor-admin/detailed-hor-admin';
+import { DetailedHorUser } from './hor-user/detailed-hor-user/detailed-hor-user';
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'profile/user', component: UserProfile },
@@ -30,5 +32,7 @@ export const routes: Routes = [
   { path: 'route-estimation', component: RouteEstimationPanel },
   {path: 'hor-admin', component: HORAdmin},
   {path: 'hor-admin/detailed/:id', component: DetailedHorAdmin},
+  {path: 'hor-user', component: HORUser},
+  {path: 'hor-user/detailed/:id', component: DetailedHorUser},
   { path: '**', redirectTo: '' },
 ];

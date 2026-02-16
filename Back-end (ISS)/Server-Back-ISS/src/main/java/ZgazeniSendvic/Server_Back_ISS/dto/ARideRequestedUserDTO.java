@@ -19,4 +19,5 @@ public class ARideRequestedUserDTO {
     private List<Location> destinations;
     private LocalDateTime beginning;
     private LocalDateTime ending;
+    private LocalDateTime creationTime;
 }
