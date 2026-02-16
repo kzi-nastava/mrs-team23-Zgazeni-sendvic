@@ -138,7 +138,11 @@ export class PanicNotifications {
       next: (updated: PanicNotificationDTO) => {
         const index = this.panics.findIndex(p => p.id === panic.id);
         if (index !== -1) {
-          this.panics[index] = updated;
+          this.panics = [
+            ...this.panics.slice(0, index),
+            updated,
+            ...this.panics.slice(index + 1)
+          ];
         }
         this.resolvingIds.delete(panic.id);
         this.cdr.markForCheck();
