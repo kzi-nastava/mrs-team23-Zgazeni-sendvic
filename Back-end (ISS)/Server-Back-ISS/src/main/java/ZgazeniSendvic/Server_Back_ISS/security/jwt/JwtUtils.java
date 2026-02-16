@@ -143,22 +143,12 @@ public class JwtUtils {
 
     // returns all claims
     private Claims getAllClaimsFromToken(String token) {
-        Claims claims;
-        try {
-            claims = Jwts.parser()
-                    .setSigningKey(SECRET)
-                    .parseClaimsJws(token)
-                    .getBody();
-        } catch (ExpiredJwtException ex) {
-            throw ex;
-        } catch (Exception e) {
-            claims = null;
-        }
-
-        // Obtaining extra info : claims.get(key)
-
-        return claims;
+        return Jwts.parser()
+                .setSigningKey(SECRET)
+                .parseClaimsJws(token)
+                .getBody();
     }
+
 
     // =================================================================
 
@@ -177,16 +167,14 @@ public class JwtUtils {
      * that which is from the database they wont match
      */
     public Boolean validateToken(String token, UserDetails userDetails) {
-        //Would work if the userDetails was Accound which it isnt
-        //Account account = (Account) userDetails;
-        final String email = getUsernameFromToken(token);
-        final Date created = getIssuedAtDateFromToken(token);
 
-        // Token is valid when:
-        return (email != null // email isn't null
-                && email.equals(userDetails.getUsername())) ;// Token name is equal to userDetails name
-                //would be password-reset date check, for now nothing);
+        final String email = getUsernameFromToken(token);
+
+        return (email != null
+                && email.equals(userDetails.getUsername())
+                && !isTokenExpired(token));
     }
+
     /**
      * Funkcija proverava da li je lozinka korisnika izmenjena nakon izdavanja tokena.
      *
@@ -197,6 +185,12 @@ public class JwtUtils {
     private Boolean isCreatedBeforeLastPasswordReset(Date created, Date lastPasswordReset) {
         return (lastPasswordReset != null && created.before(lastPasswordReset));
     }
+
+    public Boolean isTokenExpired(String token) {
+        final Date expiration = getExpirationDateFromToken(token);
+        return expiration.before(new Date());
+    }
+
 
     // =================================================================
 

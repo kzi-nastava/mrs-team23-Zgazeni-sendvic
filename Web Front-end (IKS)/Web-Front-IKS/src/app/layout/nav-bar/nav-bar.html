@@ -8,16 +8,13 @@
       <button mat-raised-button color="primary" [routerLink]="['/ride-tracking']">Ride Tracking</button>
       <button mat-raised-button color="primary" [routerLink]="['/hor-driver']">HOR Driver</button>
       <button mat-raised-button color="primary" [routerLink]="['/future-rides']">Future Rides</button>
-      <button mat-raised-button color="primary" [routerLink]="['/profile/user']">User Profile</button>
-      <button mat-raised-button color="primary" [routerLink]="['/profile/driver']">Driver Profile</button>
-      <button mat-raised-button color="primary" [routerLink]="['/profile/admin']">Admin Profile</button>
       <button mat-raised-button color="primary" [routerLink]="['/login']">Log in</button>
       <button mat-raised-button color="primary" [routerLink]="['/reset-password']">Reset password</button>
     </div>
     <div class="button-container">
       <button type="button" class="logout" aria-label="Log out of your account" (click)="logout()">Log out</button>
     </div>
-    <a [routerLink]="['/profile/user']" class="profile-link" aria-label="Go to your profile page">
+    <a [routerLink]="['/profile']" class="profile-link" aria-label="Go to your profile page">
       <img src="assets/profiles/profile-placeholder.jpg" class="profile-pic" />
     </a>
   </div>

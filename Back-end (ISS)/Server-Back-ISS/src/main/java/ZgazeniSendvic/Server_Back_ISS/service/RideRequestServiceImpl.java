@@ -59,7 +59,7 @@ public class RideRequestServiceImpl implements IRideRequestService {
         double price = basePrice + dto.getEstimatedDistanceKm() * 120;
         request.setEstimatedPrice(price);
 
-        request.setStatus(RideRequestStatus.PENDING);
+        request.setStatus(RequestStatus.PENDING);
 
         rideRequestRepository.save(request);
     }

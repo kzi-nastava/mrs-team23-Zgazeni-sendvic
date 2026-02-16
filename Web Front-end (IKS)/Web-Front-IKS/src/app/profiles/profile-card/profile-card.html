@@ -1,8 +1,8 @@
 <div class="card">
   <div class="image-wrapper">
-    <img src="assets/profiles/profile-placeholder.jpg" alt="Profile" />
-
-    <button class="edit-btn">
+    <img [src]="profileImage || 'assets/profiles/profile-placeholder.jpg'" alt="Profile" />
+    
+    <button class="edit-btn" (click)="onEditClick()">
       <img src="assets/profiles/pencil-edit-button.svg" alt="Edit Profile" />
     </button>
   </div>
@@ -30,23 +30,12 @@
 
     <div class="grid-row">
       <div class="field">
-        <div class="label">Date of birth:</div>
-        <div class="value">{{ dob }}</div>
-      </div>
-      <div class="field">
         <div class="label">Email:</div>
         <div class="value">{{ email }}</div>
       </div>
-    </div>
-
-    <div class="grid-row">
       <div class="field">
         <div class="label">Phone:</div>
         <div class="value">{{ phone }}</div>
-      </div>
-      <div class="field">
-        <div class="label">Password:</div>
-        <div class="value">{{ password }}</div>
       </div>
     </div>
   </div>

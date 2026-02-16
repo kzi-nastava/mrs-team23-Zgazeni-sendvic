@@ -79,37 +79,27 @@ public class SecurityConfig {
     }
 
     @Bean
-    //Skeleton, should use @Preauthorize anyway, so most of this will be removed
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> {}) // Access from other sites (localhost:4200)
-                .csrf(csrf -> csrf.disable()) // JWT does this, so shutdown for now
-                //.exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(restAuthenticationEntryPoint))
-
+                .cors(cors -> {})
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() //for testing purposes
-                ).sessionManagement(session -> { // do not use cookies
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-                })
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .authenticationProvider(authenticationProvider());
+                        // public endpoints
+                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
 
-                // JWT before everything else, though not used as for now
-                //.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                        // authenticated endpoints
+                        .requestMatchers("/api/account/me", "/api/account/me/change-request").authenticated()
+
+                        // everything else
+                        .anyRequest().permitAll()
+                )
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
-    }
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        // Authentication(filters ,security context etc) is completely ignored for the following:
-        return (web) -> web.ignoring()
-                .requestMatchers(HttpMethod.POST, "/auth/login","/api/auth/login", "/api/auth/register")
-
-
-                // Allowing access to static resources
-                .requestMatchers(HttpMethod.GET, "/", "/webjars/*", "/*.html", "/favicon.ico",
-                        "/*/*.html", "/*/*.css", "/*/*.js");
-
     }
 
     @Bean
