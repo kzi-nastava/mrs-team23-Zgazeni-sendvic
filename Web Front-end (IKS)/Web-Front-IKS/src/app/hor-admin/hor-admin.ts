@@ -17,8 +17,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog } from '@angular/material/dialog';
 import { HorService } from '../service/hor.service';
 import { ARideRequestedDTO, RideStatus, ARideDetailsRequestedDTO } from '../models/hor.models';
+import { DetailedHorAdmin } from './detailed-hor-admin/detailed-hor-admin';
 
 @Component({
   selector: 'app-hor-admin',
@@ -97,7 +99,8 @@ export class HORAdmin {
   constructor(
     private horService: HorService,
     private cdr: ChangeDetectorRef,
-    private http: HttpClient
+    private http: HttpClient,
+    private dialog: MatDialog
   ) {}
 
   applyFilters(): void {
@@ -169,11 +172,21 @@ export class HORAdmin {
     this.horService.getAdminRideDetails(ride.rideID).subscribe({
       next: (details: ARideDetailsRequestedDTO) => {
         console.log('Ride Details:', details);
-        // TODO: Open detailed view component
+        this.openDetailedView(details);
       },
       error: (error) => {
         console.error('Failed to load ride details:', error);
       }
+    });
+  }
+
+  private openDetailedView(details: ARideDetailsRequestedDTO): void {
+    this.dialog.open(DetailedHorAdmin, {
+      data: details,
+      width: '90%',
+      maxWidth: '1000px',
+      maxHeight: '90vh',
+      panelClass: 'detailed-ride-dialog'
     });
   }
 
