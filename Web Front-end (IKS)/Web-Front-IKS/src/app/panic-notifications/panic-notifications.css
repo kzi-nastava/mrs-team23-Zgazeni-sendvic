@@ -105,6 +105,13 @@
 	background: var(--accent);
 }
 
+.error-text {
+	display: block;
+	color: #b00020;
+	font-size: 12px;
+	margin-top: 4px;
+}
+
 .state {
 	display: flex;
 	align-items: center;

@@ -37,4 +37,15 @@ export class PanicNotificationsService {
       { headers, params }
     );
   }
+
+  resolvePanic(id: number): Observable<PanicNotificationDTO> {
+    const authToken = this.authService.getToken();
+    const headers = authToken ? new HttpHeaders({ Authorization: `Bearer ${authToken}` }) : undefined;
+
+    return this.http.post<PanicNotificationDTO>(
+      `${this.apiUrl}/resolve/${id}`,
+      {},
+      { headers }
+    );
+  }
 }

@@ -50,7 +50,8 @@ export class PanicNotifications {
     'rideId',
     'createdAt',
     'resolved',
-    'resolvedAt'
+    'resolvedAt',
+    'actions'
   ];
 
   panics: PanicNotificationDTO[] = [];
@@ -59,6 +60,9 @@ export class PanicNotifications {
   pageSize = 10;
   loading = false;
   error = '';
+
+  resolvingIds = new Set<number>();
+  resolveErrors = new Map<number, string>();
 
   currentSort: Sort = { active: '', direction: '' };
 
@@ -120,6 +124,31 @@ export class PanicNotifications {
 
   formatResolved(resolved: boolean): string {
     return resolved ? 'Yes' : 'No';
+  }
+
+  resolvePanic(panic: PanicNotificationDTO): void {
+    if (!panic.id) return;
+    if (panic.resolved) return;
+
+    this.resolvingIds.add(panic.id);
+    this.resolveErrors.delete(panic.id);
+    this.cdr.markForCheck();
+
+    this.panicService.resolvePanic(panic.id).subscribe({
+      next: (updated: PanicNotificationDTO) => {
+        const index = this.panics.findIndex(p => p.id === panic.id);
+        if (index !== -1) {
+          this.panics[index] = updated;
+        }
+        this.resolvingIds.delete(panic.id);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.resolveErrors.set(panic.id, 'Failed to resolve notification');
+        this.resolvingIds.delete(panic.id);
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   private fetchPanics(): void {

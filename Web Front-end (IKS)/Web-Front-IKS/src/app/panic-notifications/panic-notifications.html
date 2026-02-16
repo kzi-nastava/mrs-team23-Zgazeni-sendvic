@@ -70,6 +70,22 @@
 					<td mat-cell *matCellDef="let panic">{{ formatDateTime(panic.resolvedAt) }}</td>
 				</ng-container>
 
+				<ng-container matColumnDef="actions">
+					<th mat-header-cell *matHeaderCellDef>Actions</th>
+					<td mat-cell *matCellDef="let panic">
+						<button 
+							mat-icon-button 
+							color="accent"
+							(click)="resolvePanic(panic)"
+							[disabled]="panic.resolved || resolvingIds.has(panic.id)"
+							matTooltip="Mark as resolved">
+							<mat-icon *ngIf="!resolvingIds.has(panic.id)">check_circle</mat-icon>
+							<mat-progress-spinner *ngIf="resolvingIds.has(panic.id)" mode="indeterminate" diameter="24"></mat-progress-spinner>
+						</button>
+						<span class="error-text" *ngIf="resolveErrors.has(panic.id)">{{ resolveErrors.get(panic.id) }}</span>
+					</td>
+				</ng-container>
+
 				<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
 				<tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 			</table>
