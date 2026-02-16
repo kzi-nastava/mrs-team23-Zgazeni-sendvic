@@ -81,6 +81,9 @@ export class DetailedHorAdmin implements AfterViewInit {
 
     // Update map with route
     this.mapComponent.updateRideLocation(startPoint, endPoint, routePoints);
+    
+    // Fit map to show entire route
+    this.mapComponent.fitToBounds(routePoints);
   }
 
   getRatingStars(rating: number): string[] {
