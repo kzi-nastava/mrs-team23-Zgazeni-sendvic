@@ -98,6 +98,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/HOR/user").authenticated()
                         .requestMatchers("/api/HOR/user/detailed/**").authenticated()
                         .requestMatchers("/api/panic-notifications/resolve/**").authenticated()
+                        .requestMatchers("/api/panic-notifications/retrieve").authenticated()
 
                         .anyRequest().permitAll() //for testing purposes
                 ).sessionManagement(session -> { // do not use cookies

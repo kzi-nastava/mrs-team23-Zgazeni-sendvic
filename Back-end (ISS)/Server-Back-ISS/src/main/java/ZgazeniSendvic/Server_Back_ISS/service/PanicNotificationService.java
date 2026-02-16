@@ -12,6 +12,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -21,8 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class PanicNotificationService {
@@ -38,6 +41,17 @@ public class PanicNotificationService {
 
     @Autowired
     private VehicleRepository vehicleRepository;
+
+    // a while list
+    private static final Set<String> ALL_PANIC_SORTS = Set.of(
+            "id",
+            "caller",
+            "ride",
+            "createdAt",
+            "resolved",
+            "resolvedAt"
+
+    );
 
     /**
      * Sends panic notification emails to all participants in the ride (driver and passengers)
@@ -111,6 +125,8 @@ public class PanicNotificationService {
                 "System Alert";
     }
 
+
+
     /**
      * Retrieves all unresolved panic notifications with pagination, ordered by newest first
      */
@@ -122,15 +138,6 @@ public class PanicNotificationService {
         return panicPage.map(this::convertToDTO);
     }
 
-    /**
-     * Retrieves all panic notifications with pagination, ordered by newest first
-     */
-    public Page<PanicNotificationDTO> getAllPanicNotifications(Pageable pageable) {
-        Page<PanicNotification> panicPage = panicNotificationRepository.findAll(pageable);
-
-        // Convert to DTO and sort by newest first (descending)
-        return panicPage.map(this::convertToDTO);
-    }
 
     /**
      * Retrieves panic notifications for a specific ride
@@ -318,6 +325,32 @@ public class PanicNotificationService {
 
         return notificationDTO;
 
+    }
+
+    /**
+     * Retrieves all panic notifications with pagination, ordered by newest first
+     */
+    public Page<PanicNotificationDTO> getAllPanicNotifications(Pageable pageable, LocalDateTime fromDate,
+                                                               LocalDateTime toDate) {
+
+        validateSortFields(pageable, ALL_PANIC_SORTS);
+        Page<PanicNotificationDTO> panicPage = panicNotificationRepository.findAllDtos(pageable, fromDate, toDate);
+
+        // Convert to DTO and sort by newest first (descending)
+        return panicPage;
+    }
+
+    public void validateSortFields(Pageable pageable, Set<String> allowedFields) {
+        if (pageable.getSort().isSorted()) {
+            for (Sort.Order order : pageable.getSort()) {
+                if (!allowedFields.contains(order.getProperty())) {
+                    throw new IllegalArgumentException(
+                            "Invalid sort field: " + order.getProperty() +
+                                    ". Allowed fields are: " + allowedFields
+                    );
+                }
+            }
+        }
     }
 
 
