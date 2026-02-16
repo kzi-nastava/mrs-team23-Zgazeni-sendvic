@@ -50,9 +50,7 @@ public class Ride {
     @Getter @Setter
     @Enumerated(EnumType.STRING)
     private RideStatus status;
-    @CreationTimestamp
-    @Column(updatable = false)
-    @Getter
+    @Getter @Setter
     private LocalDateTime creationDate;
     @Getter @Setter
     @ManyToOne
@@ -61,6 +59,13 @@ public class Ride {
 
     @Getter @Setter
     private boolean panic;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.creationDate == null) {
+            this.creationDate = LocalDateTime.now();
+        }
+    }
 
     public Ride(Long id, Driver driver, Account creator, List<Account> passengers, List<Location> locations,
                 double price, LocalDateTime startTime, LocalDateTime endTime, RideStatus status, boolean panic) {

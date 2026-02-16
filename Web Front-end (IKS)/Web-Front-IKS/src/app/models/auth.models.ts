@@ -28,8 +28,16 @@ export interface RegisterRequest {
 }
 
 export interface RegisterResponse {
-  message: string; //redirects to login, so only message for now
+  pictureToken: string; //redirects to login, so only message for now
  
+}
+
+export interface PictureUploadResponse {
+  id: number;
+  url: string;
+  contentType: string;
+  size: number;
+  createdAt: string;
 }
 
 export interface ForgotPasswordRequest {
@@ -57,5 +65,5 @@ export interface User {
   firstName: string;
   lastName: string;
   pictUrl: string;
-  roles: string[];
+  role: string;
 }

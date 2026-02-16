@@ -36,6 +36,7 @@ public class HistoryOfRidesService {
     private RideNoteRepository rideNoteRepository;
 
     private static final Set<String> ADMIN_ALLOWED_SORT_FIELDS = Set.of(
+            "id",
             "locations",
             "startTime",
             "endTime",
@@ -146,6 +147,7 @@ public class HistoryOfRidesService {
             dto.setEnding(r.getEndTime());
             dto.setPrice(r.getPrice());
             dto.setStatus(r.getStatus());
+            dto.setCreationTime(r.getCreationDate());
 
             // Handle possible null driver
             Account canceler = r.getCanceler();

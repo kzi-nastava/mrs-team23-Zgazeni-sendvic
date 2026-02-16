@@ -160,6 +160,33 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!--for E2E testing -->
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+			<scope>test</scope>
+
+		</dependency>
+
+
+		<!-- WebDriverManager - automatically manages browser drivers -->
+		<dependency>
+			<groupId>io.github.bonigarcia</groupId>
+			<artifactId>webdrivermanager</artifactId>
+			<version>5.9.2</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Commons IO -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.17.0</version>
+			<scope>test</scope>
+		</dependency>
+
+
+
 
 
 	</dependencies>

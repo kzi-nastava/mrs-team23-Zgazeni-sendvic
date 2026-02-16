@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import {
@@ -7,6 +7,7 @@ import {
   LoginResponse,
   RegisterRequest,
   RegisterResponse,
+  PictureUploadResponse,
   ForgotPasswordRequest,
   ForgotPasswordResponse,
   ResetPasswordRequest,
@@ -18,7 +19,10 @@ import {
 })
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
+  private picturesUrl = 'http://localhost:8080/api/pictures';
   private tokenKey = 'jwt_token';
+  private roleKey = 'user_role';
+  private profilePictureKey = 'profile_picture';
 
   constructor(private http: HttpClient) {}
 
@@ -30,24 +34,55 @@ export class AuthService {
           if (response.token) {
             localStorage.setItem(this.tokenKey, response.token);
           }
+          if (response.user?.role) {
+            localStorage.setItem(this.roleKey, response.user.role);
+          }
         }),
         catchError(this.handleError)
       );
   }
 
-  register(request: RegisterRequest): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, request, { responseType: 'text' })
+  register(request: RegisterRequest): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, request)
       .pipe(
         tap(response => console.log('Register response:', response)),
-        catchError(error => {
-          // If it's a successful status code (2xx) with parsing error, treat as success
-          if (error.status === 201 || error.status === 200) {
-            console.log('Register successful (empty response)');
-            return throwError(() => new Error('success'));
-          }
-          return this.handleError(error);
-        })
+        catchError(this.handleError)
       );
+  }
+
+  uploadProfilePicture(file: File, pictureToken: string): Observable<PictureUploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('pictureToken', pictureToken);
+
+    return this.http.post<PictureUploadResponse>(`${this.picturesUrl}/register/profile`, formData)
+      .pipe(
+        tap(response => console.log('Picture upload response:', response)),
+        catchError(this.handleError)
+      );
+  }
+
+  fetchProfilePicture(token?: string): Observable<Blob> {
+    const authToken = token ?? this.getToken();
+    const headers = authToken ? new HttpHeaders({ Authorization: `Bearer ${authToken}` }) : undefined;
+
+    return this.http.get(`${this.picturesUrl}/retrieve/profile`, {
+      headers,
+      responseType: 'blob'
+    }).pipe(
+      tap(() => console.log('Profile picture retrieved')),
+      catchError(this.handleError)
+    );
+  }
+
+  storeProfilePicture(blob: Blob): void {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        localStorage.setItem(this.profilePictureKey, reader.result);
+      }
+    };
+    reader.readAsDataURL(blob);
   }
 
   forgotPassword(request: ForgotPasswordRequest): Observable<any> {
@@ -105,8 +140,14 @@ export class AuthService {
     return localStorage.getItem(this.tokenKey);
   }
 
+  getRole(): string | null {
+    return localStorage.getItem(this.roleKey);
+  }
+
   clearToken(): void {
     localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.roleKey);
+    localStorage.removeItem(this.profilePictureKey);
   }
 
   isAuthenticated(): boolean {
