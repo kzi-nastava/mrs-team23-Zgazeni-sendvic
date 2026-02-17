@@ -17,6 +17,7 @@ public class PanicNotificationDTO {
     private Long rideId;
     private LocalDateTime createdAt;
     private boolean resolved;
+    private LocalDateTime resolvedAt = null;
 
 }
 

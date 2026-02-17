@@ -26,8 +26,11 @@ public class PanicNotification {
     @Getter @Setter
     private LocalDateTime createdAt;
 
+    @Getter
+    private boolean resolved = false;
+
     @Getter @Setter
-    private boolean resolved;
+    private LocalDateTime resolvedAt = null;
 
     public PanicNotification() {
         this.resolved = false;
@@ -39,6 +42,16 @@ public class PanicNotification {
         this.createdAt = createdAt;
         this.resolved = false;
     }
+
+    public void setResolved(boolean resolved) {
+        this.resolved = resolved;
+        if (resolved) {
+            this.resolvedAt = LocalDateTime.now();
+        } else {
+            this.resolvedAt = null;
+        }
+    }
+
 }
 
 

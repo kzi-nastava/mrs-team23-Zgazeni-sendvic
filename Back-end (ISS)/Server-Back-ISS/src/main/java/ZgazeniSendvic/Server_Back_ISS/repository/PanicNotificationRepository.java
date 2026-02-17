@@ -1,6 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.repository;
 
 import ZgazeniSendvic.Server_Back_ISS.model.PanicNotification;
+import ZgazeniSendvic.Server_Back_ISS.dto.PanicNotificationDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import org.springframework.data.domain.Page;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,7 +57,33 @@ public interface PanicNotificationRepository extends JpaRepository<PanicNotifica
         ORDER BY pn.createdAt DESC
     """)
     List<PanicNotification> findAllUnresolvedOrderByCreatedAtDesc();
+
+    // Find all panic notifications with optional date range filtering
+    @Query("""
+        SELECT pn FROM PanicNotification pn
+        WHERE (CAST(:fromDate AS timestamp) IS NULL OR pn.createdAt >= :fromDate)
+          AND (CAST(:toDate AS timestamp) IS NULL OR pn.createdAt <= :toDate)
+    """)
+    Page<PanicNotification> findAll(Pageable pageable,
+                                   @Param("fromDate") LocalDateTime fromDate,
+                                   @Param("toDate") LocalDateTime toDate);
+
+    // Find all panic notifications with optional date range filtering as DTOs
+    @Query("""
+        SELECT new ZgazeniSendvic.Server_Back_ISS.dto.PanicNotificationDTO(
+            pn.id,
+            pn.caller.id,
+            CONCAT(pn.caller.name, ' ', pn.caller.lastName),
+            pn.ride.id,
+            pn.createdAt,
+            pn.resolved,
+            pn.resolvedAt
+        )
+        FROM PanicNotification pn
+        WHERE (CAST(:fromDate AS timestamp) IS NULL OR pn.createdAt >= :fromDate)
+          AND (CAST(:toDate AS timestamp) IS NULL OR pn.createdAt <= :toDate)
+    """)
+    Page<PanicNotificationDTO> findAllDtos(Pageable pageable,
+                                           @Param("fromDate") LocalDateTime fromDate,
+                                           @Param("toDate") LocalDateTime toDate);
 }
-
-
-

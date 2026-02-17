@@ -68,7 +68,7 @@ class RideController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> panicRide(@PathVariable Long rideID) throws Exception{
 
-        PanicNotificationDTO notification = rideService.PanicRide(rideID);
+        PanicNotificationDTO notification = panicNotificationService.PanicRide(rideID);
         panicNotificationService.sendPanicNotificationEmails(notification);
 
 
