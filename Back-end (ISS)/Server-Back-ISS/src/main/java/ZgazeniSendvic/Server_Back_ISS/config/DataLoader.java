@@ -35,7 +35,7 @@ public class DataLoader {
 
             // ============ CREATE ACCOUNTS ============
             // Account A (User/Passenger)
-            Account accountA = new Account();
+            Account accountA = new User();
             accountA.setEmail("accounta@test.com");
             accountA.setPassword(passwordEncoder.encode("password123"));
             accountA.setName("John");
@@ -47,7 +47,7 @@ public class DataLoader {
             System.out.println("Created Account A: " + accountA.getEmail());
 
             // Account B (User/Passenger)
-            Account accountB = new Account();
+            Account accountB = new User();
             accountB.setEmail("accountb@test.com");
             accountB.setPassword(passwordEncoder.encode("password123"));
             accountB.setName("Jane");

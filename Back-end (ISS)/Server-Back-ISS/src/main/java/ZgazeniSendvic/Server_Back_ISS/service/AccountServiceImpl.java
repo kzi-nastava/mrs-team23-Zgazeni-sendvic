@@ -5,6 +5,7 @@ import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Driver;
 import ZgazeniSendvic.Server_Back_ISS.model.AccountConfirmationToken;
 //import ZgazeniSendvic.Server_Back_ISS.model.EmailDetails; WRONG IMPORT
+import ZgazeniSendvic.Server_Back_ISS.model.User;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 
 import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
@@ -91,7 +92,15 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         }
 
         //should be changed to user
-        Account account = new Account(requestDTO);
+        Account account = new User();
+        account.setEmail(requestDTO.getEmail());
+        account.setPassword(requestDTO.getPassword());
+        account.setName(requestDTO.getFirstName());
+        account.setLastName(requestDTO.getLastName());
+        account.setPhoneNumber(requestDTO.getPhoneNum());
+        account.setAddress(requestDTO.getAddress());
+
+
         insert(account);
         sendConfirmationLink(account.getEmail(),account);
 
@@ -104,8 +113,8 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
 
         EmailDetails emailDetails = new EmailDetails();
         emailDetails.setRecipient(email); // sender is automatically set
-        emailDetails.setSubject("Confirm ypir DriveBy account");
-        emailDetails.setMsgBody("http://localhost:8080/api/auth/confirm-account?token=" + rawToken);
+        emailDetails.setSubject("Confirm your DriveBy account");
+        emailDetails.setMsgBody("http://localhost:4200/api/auth/confirm-account?token=" + rawToken);
         emailService.sendSimpleMail(emailDetails);
 
     }
@@ -208,7 +217,7 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         EmailDetails emailDetails = new EmailDetails();
         emailDetails.setRecipient(email); // sender is automatically set
         emailDetails.setSubject("Reset your DriveBy password");
-        emailDetails.setMsgBody("http://localhost:8080/api/auth/reset-password?token=" + rawToken);
+        emailDetails.setMsgBody("http://localhost:4200/reset-password?token=" + rawToken);
         emailService.sendSimpleMail(emailDetails);
 
     }

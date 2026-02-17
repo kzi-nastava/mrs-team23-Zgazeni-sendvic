@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { RegistrationForm } from './registration-form';
@@ -8,20 +8,22 @@ describe('RegistrationForm', () => {
   let component: RegistrationForm;
   let fixture: ComponentFixture<RegistrationForm>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let router: Router;
+  let routerNavigateSpy: jasmine.Spy;
 
   beforeEach(async () => {
     authServiceSpy = jasmine.createSpyObj<AuthService>('AuthService', ['register', 'uploadProfilePicture']);
-    routerSpy = jasmine.createSpyObj<Router>('Router', ['navigate']);
-
     await TestBed.configureTestingModule({
       imports: [RegistrationForm],
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: Router, useValue: routerSpy }
+        provideRouter([])
       ]
     })
     .compileComponents();
+
+    router = TestBed.inject(Router);
+    routerNavigateSpy = spyOn(router, 'navigate');
 
     fixture = TestBed.createComponent(RegistrationForm);
     component = fixture.componentInstance;
@@ -142,7 +144,7 @@ describe('RegistrationForm', () => {
     });
   });
 
-  describe('SECTION 3 - Submit sends entered data', () => {
+  describe('SECTION 3 - Submit behavior', () => {
     it('should not submit when form is invalid', () => {
       const markAllAsTouchedSpy = spyOn(component.form, 'markAllAsTouched').and.callThrough();
 
@@ -170,7 +172,7 @@ describe('RegistrationForm', () => {
         password: 'Password1',
         pictUrl: 'DefaultUrl'
       });
-      expect(routerSpy.navigate).toHaveBeenCalledWith(['/login']);
+      expect(routerNavigateSpy).toHaveBeenCalledWith(['/login']);
     });
 
     it('should upload selected photo after registration', () => {
@@ -192,7 +194,35 @@ describe('RegistrationForm', () => {
       component.submit();
 
       expect(authServiceSpy.uploadProfilePicture).toHaveBeenCalledWith(file, pictureToken);
-      expect(routerSpy.navigate).toHaveBeenCalledWith(['/login']);
+      expect(routerNavigateSpy).toHaveBeenCalledWith(['/login']);
+    });
+
+    it('should set error when picture token is missing', () => {
+      authServiceSpy.register.and.returnValue(of({ pictureToken: '' }));
+
+      setValidFormValues();
+      component.selectedPhotoFile = new File(['abc'], 'photo.png', { type: 'image/png' });
+
+      component.submit();
+
+      expect(component.registerError()).toBe('Registration succeeded but image token is missing.');
+      expect(routerNavigateSpy).not.toHaveBeenCalled();
+      expect(authServiceSpy.uploadProfilePicture).not.toHaveBeenCalled();
+    });
+
+    it('should set error when picture upload fails', () => {
+      const pictureToken = 'token-err';
+
+      authServiceSpy.register.and.returnValue(of({ pictureToken }));
+      authServiceSpy.uploadProfilePicture.and.returnValue(throwError(() => new Error('upload failed')));
+
+      setValidFormValues();
+      component.selectedPhotoFile = new File(['abc'], 'photo.png', { type: 'image/png' });
+
+      component.submit();
+
+      expect(component.registerError()).toBe('Registration succeeded, but image upload failed. Please try again.');
+      expect(routerNavigateSpy).not.toHaveBeenCalled();
     });
 
     it('should set error when registration fails', () => {
@@ -203,7 +233,18 @@ describe('RegistrationForm', () => {
       component.submit();
 
       expect(component.registerError()).toBe('Registration failed. Please try again.');
-      expect(routerSpy.navigate).not.toHaveBeenCalled();
+      expect(routerNavigateSpy).not.toHaveBeenCalled();
+    });
+
+    it('should clear previous error on submit', () => {
+      component.registerError.set('Old error');
+      authServiceSpy.register.and.returnValue(of({ pictureToken: 'token-123' }));
+
+      setValidFormValues();
+
+      component.submit();
+
+      expect(component.registerError()).toBeNull();
     });
   });
 
@@ -224,4 +265,54 @@ describe('RegistrationForm', () => {
     control?.markAsTouched();
     control?.updateValueAndValidity();
   }
+
+  describe('SECTION 4 - UI helpers and validators', () => {
+    it('should toggle password visibility flags', () => {
+      const initialPasswordState = component.hidePassword;
+      const initialConfirmState = component.hideConfirmPassword;
+
+      component.togglePasswordVisibility();
+      component.toggleConfirmPasswordVisibility();
+
+      expect(component.hidePassword).toBe(!initialPasswordState);
+      expect(component.hideConfirmPassword).toBe(!initialConfirmState);
+    });
+
+    it('should return empty error message when control has no errors', () => {
+      component.form.patchValue({ firstName: 'Ana' });
+      expect(component.getErrorMessage('firstName', 'First name')).toBe('');
+    });
+
+    it('should set password mismatch error on confirm password', () => {
+      component.form.patchValue({ password: 'Password1', confirmPassword: 'Different123' });
+      touchField('confirmPassword');
+      expect(component.getErrorMessage('confirmPassword', 'Confirm password')).toBe('Passwords do not match');
+    });
+
+    it('should accept matching passwords', () => {
+      component.form.patchValue({ password: 'Password1', confirmPassword: 'Password1' });
+      touchField('confirmPassword');
+      expect(component.getErrorMessage('confirmPassword', 'Confirm password')).toBe('');
+    });
+
+    it('should update selected photo and button label', () => {
+      const file = new File(['abc'], 'photo.png', { type: 'image/png' });
+      component.onPhotoSelected({ target: { files: [file] } });
+
+      expect(component.selectedPhotoFile).toBe(file);
+      expect(component.photoButtonLabel).toContain('photo.png');
+    });
+
+    it('should not accept non-image file', () => {
+      const file = new File(['abc'], 'doc.txt', { type: 'text/plain' });
+      component.onPhotoSelected({ target: { files: [file] } });
+
+      expect(component.selectedPhotoFile).toBeNull();
+    });
+
+    it('should show upload label on hover', () => {
+      component.isHoveringUploadBtn = true;
+      expect(component.photoButtonLabel).toBe('Upload photo');
+    });
+  });
 });

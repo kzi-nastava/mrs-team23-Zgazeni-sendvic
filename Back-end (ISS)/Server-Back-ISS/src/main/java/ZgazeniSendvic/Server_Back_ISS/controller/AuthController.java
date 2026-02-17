@@ -7,6 +7,7 @@ import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
 import ZgazeniSendvic.Server_Back_ISS.service.DriverServiceImpl;
 //import ZgazeniSendvic.Server_Back_ISS.util.TokenUtils;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -42,7 +43,7 @@ class AuthController {
 
     @PostMapping(path = "register", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, String>> register(@RequestBody RegisterRequestDTO body) throws Exception{
+    public ResponseEntity<Map<String, String>> register(@Valid @RequestBody RegisterRequestDTO body) throws Exception{
 
 
             LoginRequestedDTO loginDTO = accountService.registerAccount(body);
@@ -59,7 +60,7 @@ class AuthController {
 
     @PostMapping(path = "login", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<LoginRequestedDTO> login(@RequestBody LoginRequestDTO request) throws Exception {
+    public ResponseEntity<LoginRequestedDTO> login(@Valid @RequestBody LoginRequestDTO request) throws Exception {
 
         UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(
                 request.getEmail(), request.getPassword());
