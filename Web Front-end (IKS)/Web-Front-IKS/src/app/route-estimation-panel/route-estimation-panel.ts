@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, EventEmitter, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,6 +20,7 @@ import { RouteEstimationService } from '../service/route.estimation.serivce';
   styleUrl: './route-estimation-panel.css',
 })
 export class RouteEstimationPanel {
+  @Output() routeRequested = new EventEmitter<{ start: string; end: string }>();
   estimatedTime = signal<number | null>(null);
   panelVisible = signal<boolean>(true);
   beginningDestination = signal<string>('');
@@ -54,6 +55,7 @@ export class RouteEstimationPanel {
         }
         this.estimatedTime.set(Math.ceil(response.durationMinutes));
         this.routeEstimationService.setRoutePath(response.pathCoordinates ?? null);
+        this.routeRequested.emit({ start: beginning, end: ending });
         this.errorMessage.set(null);
       },
       error: (error) => {
