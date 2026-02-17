@@ -124,3 +124,24 @@
 .state.error {
 	color: #b00020;
 }
+
+/* Snackbar styles */
+:host ::ng-deep .panic-snackbar {
+	background: #f44336 !important;
+	color: white !important;
+	font-weight: 600;
+}
+
+:host ::ng-deep .panic-snackbar .mat-simple-snack-bar-content {
+	font-size: 16px;
+}
+
+:host ::ng-deep .resolved-snackbar {
+	background: #4caf50 !important;
+	color: white !important;
+	font-weight: 600;
+}
+
+:host ::ng-deep .resolved-snackbar .mat-simple-snack-bar-content {
+	font-size: 14px;
+}

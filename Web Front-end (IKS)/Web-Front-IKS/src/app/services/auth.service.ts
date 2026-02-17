@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
@@ -24,7 +24,10 @@ export class AuthService {
   private roleKey = 'user_role';
   private profilePictureKey = 'profile_picture';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private injector: Injector
+  ) {}
 
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, request)
@@ -36,10 +39,26 @@ export class AuthService {
           }
           if (response.user?.role) {
             localStorage.setItem(this.roleKey, response.user.role);
+            
+            // If admin, connect to panic notifications WebSocket immediately
+            if (response.user.role === 'ADMIN') {
+              this.connectAdminToWebSocket();
+            }
           }
         }),
         catchError(this.handleError)
       );
+  }
+
+  private connectAdminToWebSocket(): void {
+    // Use dynamic import to avoid circular dependency issues
+    import('../service/panic-notifications.service').then(module => {
+      const panicService = this.injector.get(module.PanicNotificationsService);
+      panicService.connectToWebSocket();
+      console.log('Admin WebSocket connection established');
+    }).catch(err => {
+      console.error('Failed to connect admin WebSocket:', err);
+    });
   }
 
   register(request: RegisterRequest): Observable<RegisterResponse> {
@@ -145,6 +164,18 @@ export class AuthService {
   }
 
   clearToken(): void {
+    // Disconnect WebSocket if admin
+    const role = this.getRole();
+    if (role === 'ADMIN') {
+      import('../service/panic-notifications.service').then(module => {
+        const panicService = this.injector.get(module.PanicNotificationsService);
+        panicService.disconnectFromWebSocket();
+        console.log('Admin WebSocket disconnected on logout');
+      }).catch(err => {
+        console.error('Failed to disconnect admin WebSocket:', err);
+      });
+    }
+    
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.roleKey);
     localStorage.removeItem(this.profilePictureKey);
