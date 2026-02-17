@@ -7,6 +7,7 @@ import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.VehicleRepository;
 import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
+import ZgazeniSendvic.Server_Back_ISS.websocket.PanicNotificationWebSocketService;
 import jakarta.transaction.Transactional;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,9 @@ public class PanicNotificationService {
 
     @Autowired
     private VehicleRepository vehicleRepository;
+
+    @Autowired
+    private PanicNotificationWebSocketService panicNotificationWebSocketService;
 
     // a while list
     private static final Set<String> ALL_PANIC_SORTS = Set.of(
@@ -249,6 +253,9 @@ public class PanicNotificationService {
                 null
         );
 
+        // Send WebSocket notification to all admins
+        panicNotificationWebSocketService.sendPanicNotificationToAdmins(notificationDTO);
+
         return notificationDTO;
 
     }
@@ -322,6 +329,9 @@ public class PanicNotificationService {
                 panic.isResolved(),
                 panic.getResolvedAt()
         );
+
+        // Send WebSocket notification to all admins that panic is resolved
+        panicNotificationWebSocketService.sendPanicResolvedToAdmins(notificationDTO);
 
         return notificationDTO;
 
