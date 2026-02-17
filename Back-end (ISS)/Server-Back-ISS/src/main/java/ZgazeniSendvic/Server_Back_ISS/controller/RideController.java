@@ -126,6 +126,7 @@ class RideController {
 
 
 
+    @PreAuthorize("hasRole('DRIVER')")
     @GetMapping(value = "future-rides", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<FutureRidesDTO> getFutureRides() {
         FutureRidesService futureRidesService = new FutureRidesService();
@@ -133,6 +134,7 @@ class RideController {
         return new ResponseEntity<FutureRidesDTO>(futureRidesDTO, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @GetMapping(value = "history-of-rides/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<HistoryOfRidesDTO> HistoryOfRidesController( @PathVariable Long userId) {
@@ -147,6 +149,7 @@ class RideController {
         return new ResponseEntity<NextRideDTO>(nextRideDTO, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('USER')")
     @PostMapping(value="ride-driver-rating/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<String> rideDriverRating(@PathVariable("userId") Long userId, @RequestBody RideDriverRatingDTO rideDriverRatingDTO) {
@@ -175,6 +178,7 @@ class RideController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PutMapping(value="ride-end", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> rideEnd(@RequestBody RideEndDTO rideEndDTO) {
         try {
@@ -187,6 +191,7 @@ class RideController {
         }
     }
 
+    @PreAuthorize("hasRole('USER')")
     @PostMapping(value = "ride-noting-user/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> noteRide(@PathVariable("userId") Long userId, @Valid @RequestBody RideNoteDTO rideNoteDTO) {
         try {
@@ -203,6 +208,7 @@ class RideController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('USER','DRIVER')")
     @GetMapping(value = "ride-tracking-user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<VehicleTrackerDTO> rideTracking( @PathVariable("id") Long id) {
         VehicleTrackerService vehicleTrackerService = new VehicleTrackerService();

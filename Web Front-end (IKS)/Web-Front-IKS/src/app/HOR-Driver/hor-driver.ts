@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'hor-driver',
@@ -13,15 +14,28 @@ import { CommonModule } from '@angular/common';
 export class HorDriver implements OnInit {
 
   rides: any[] = [];
-  driverId = 12;
+  driverId: number | null = null;
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
+    this.driverId = this.authService.getCurrentUserId();
+    if (!this.driverId) {
+      console.error('No logged in user found for ride history');
+      return;
+    }
     this.fetchRides();
   }
 
   fetchRides(): void {
+    if (!this.driverId) {
+      console.error('No logged in user found for ride history');
+      return;
+    }
     this.http.get<{ rides: any[] }>(`http://localhost:8080/api/history-of-rides/${this.driverId}`)
       .subscribe({
         next: (response) => {

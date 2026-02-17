@@ -21,6 +21,7 @@ export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
   private picturesUrl = 'http://localhost:8080/api/pictures';
   private tokenKey = 'jwt_token';
+  private userIdKey = 'user_id';
   private roleKey = 'user_role';
   private profilePictureKey = 'profile_picture';
 
@@ -36,6 +37,9 @@ export class AuthService {
           console.log('Login response:', response);
           if (response.token) {
             localStorage.setItem(this.tokenKey, response.token);
+          }
+          if (response.user?.userID) {
+            localStorage.setItem(this.userIdKey, String(response.user.userID));
           }
           if (response.user?.role) {
             localStorage.setItem(this.roleKey, response.user.role);
@@ -177,11 +181,52 @@ export class AuthService {
     }
     
     localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.userIdKey);
     localStorage.removeItem(this.roleKey);
     localStorage.removeItem(this.profilePictureKey);
   }
 
   isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  getCurrentUserId(): number | null {
+    const storedUserId = localStorage.getItem(this.userIdKey);
+    if (storedUserId) {
+      const numericId = Number(storedUserId);
+      if (Number.isFinite(numericId)) {
+        return numericId;
+      }
+    }
+
+    const token = this.getToken();
+    if (!token) {
+      return null;
+    }
+
+    const payload = this.decodeJwtPayload(token);
+    if (!payload) {
+      return null;
+    }
+
+    const rawId = payload['userID'] ?? payload['userId'] ?? payload['id'] ?? payload['sub'];
+    const numericId = typeof rawId === 'string' ? Number(rawId) : Number(rawId);
+    return Number.isFinite(numericId) ? numericId : null;
+  }
+
+  private decodeJwtPayload(token: string): Record<string, unknown> | null {
+    const parts = token.split('.');
+    if (parts.length < 2) {
+      return null;
+    }
+
+    const normalized = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(normalized.length + (4 - (normalized.length % 4)) % 4, '=');
+
+    try {
+      return JSON.parse(atob(padded)) as Record<string, unknown>;
+    } catch {
+      return null;
+    }
   }
 }
