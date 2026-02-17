@@ -1,12 +1,20 @@
 package ZgazeniSendvic.Server_Back_ISS.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class RegisterRequestDTO {
 
+    @NotBlank
     private String email;
+    @NotBlank
     private String password;
+    @NotBlank
     private String firstName;
+    @NotBlank
     private String lastName;
+    @NotBlank
     private String address;
+    @NotBlank
     private String phoneNum;
     private String pictUrl;
 
