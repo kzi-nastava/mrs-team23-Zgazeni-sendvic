@@ -124,15 +124,14 @@ class AuthController {
     }
 
 
-    @PostMapping(path = "/logout", consumes = MediaType.APPLICATION_JSON_VALUE,
+    @PostMapping(path = "/logout",
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> logOut(@RequestBody logOutDTO request)
+    public ResponseEntity<String> logOut()
             throws Exception {
 
 
-        if(driverService.isAvailableDriver(request.getEmail())) {
-            return new ResponseEntity<String>("Driver must be unavailable", HttpStatus.FORBIDDEN);
-        }
+        driverService.ThrowIfNotAllowedToLogOut();
+
 
         return new ResponseEntity<String>("Log Out successful", HttpStatus.OK);
 
