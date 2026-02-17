@@ -8,13 +8,33 @@
 
     <mat-form-field appearance="fill" class="location-input">
       <mat-label>Starting Location</mat-label>
-      <input matInput [(ngModel)]="beginningDestination" />
+      <input
+        matInput
+        [(ngModel)]="beginningDestination"
+        [matAutocomplete]="startAuto"
+        (ngModelChange)="onStartInput($event)"
+      />
     </mat-form-field>
+    <mat-autocomplete #startAuto="matAutocomplete" (optionSelected)="onStartSelected($event.option.value)">
+      @for (option of startSuggestions(); track option) {
+        <mat-option [value]="option">{{ option }}</mat-option>
+      }
+    </mat-autocomplete>
 
     <mat-form-field appearance="fill" color="primary" class="location-input">
       <mat-label>Ending Location</mat-label>
-      <input matInput [(ngModel)]="endingDestination" />
+      <input
+        matInput
+        [(ngModel)]="endingDestination"
+        [matAutocomplete]="endAuto"
+        (ngModelChange)="onEndInput($event)"
+      />
     </mat-form-field>
+    <mat-autocomplete #endAuto="matAutocomplete" (optionSelected)="onEndSelected($event.option.value)">
+      @for (option of endSuggestions(); track option) {
+        <mat-option [value]="option">{{ option }}</mat-option>
+      }
+    </mat-autocomplete>
 
     <button mat-raised-button color="primary" class="estimate-button" (click)="estimateRoute()">
       Estimate Route

@@ -3,19 +3,18 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
-import {
-  RouteEstimationRequest,
-  RouteEstimationResponse
-} from '../models/route.estimation.models';
-import { RouteEstimationService } from '../service/route.estimation.serivce';
+import { HttpClient } from '@angular/common/http';
+import { Subject, of } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 
 
 @Component({
   selector: 'app-route-estimation-panel',
-  imports: [CommonModule, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, FormsModule],
+  imports: [CommonModule, MatCardModule, MatFormFieldModule, MatInputModule, MatAutocompleteModule, MatButtonModule, MatIconModule, FormsModule],
   templateUrl: './route-estimation-panel.html',
   styleUrl: './route-estimation-panel.css',
 })
@@ -26,12 +25,33 @@ export class RouteEstimationPanel {
   beginningDestination = signal<string>('');
   endingDestination = signal<string>('');
   errorMessage = signal<string | null>(null);
+  startSuggestions = signal<string[]>([]);
+  endSuggestions = signal<string[]>([]);
+  private startQuery$ = new Subject<string>();
+  private endQuery$ = new Subject<string>();
 
-  constructor(private routeEstimationService: RouteEstimationService) {}
+  constructor(
+    private http: HttpClient
+  ) {
+    this.startQuery$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((query) => this.fetchSuggestions(query))
+      )
+      .subscribe((results) => this.startSuggestions.set(results));
+
+    this.endQuery$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((query) => this.fetchSuggestions(query))
+      )
+      .subscribe((results) => this.endSuggestions.set(results));
+  }
 
   estimateRoute() {
     this.estimatedTime.set(null);
-    this.routeEstimationService.setRoutePath(null);
     const beginning = this.beginningDestination();
     const ending = this.endingDestination();
 
@@ -42,28 +62,37 @@ export class RouteEstimationPanel {
 
     this.errorMessage.set(null);
 
-    this.routeEstimationService.estimateRoute({
-      beginningDestination: beginning,
-      endingDestination: ending
-    }).subscribe({
-      next: (response: RouteEstimationResponse) => {
-        if (!response) {
-          this.errorMessage.set('Please enter appropriate destinations.');
-          this.estimatedTime.set(null);
-          this.routeEstimationService.setRoutePath(null);
-          return;
-        }
-        this.estimatedTime.set(Math.ceil(response.durationMinutes));
-        this.routeEstimationService.setRoutePath(response.pathCoordinates ?? null);
-        this.routeRequested.emit({ start: beginning, end: ending });
-        this.errorMessage.set(null);
-      },
-      error: (error) => {
-        console.error('Error estimating route:', error);
-        this.errorMessage.set('Please enter appropriate destinations.');
-        this.estimatedTime.set(null);
-      }
-    });
+    this.routeRequested.emit({ start: beginning, end: ending });
+  }
+
+  onStartInput(value: string) {
+    const query = value?.trim() ?? '';
+    if (query.length < 3) {
+      this.startSuggestions.set([]);
+      return;
+    }
+
+    this.startQuery$.next(query);
+  }
+
+  onEndInput(value: string) {
+    const query = value?.trim() ?? '';
+    if (query.length < 3) {
+      this.endSuggestions.set([]);
+      return;
+    }
+
+    this.endQuery$.next(query);
+  }
+
+  onStartSelected(value: string) {
+    this.beginningDestination.set(value);
+    this.startSuggestions.set([]);
+  }
+
+  onEndSelected(value: string) {
+    this.endingDestination.set(value);
+    this.endSuggestions.set([]);
   }
 
   togglePanelVisibility() {
@@ -83,5 +112,17 @@ export class RouteEstimationPanel {
   onPanic() {
     console.log('PANIC clicked');
     // Handle panic action
+  }
+
+  private fetchSuggestions(query: string) {
+    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&q=${encodeURIComponent(query)}`;
+    return this.http.get<Array<{ display_name?: string }>>(url).pipe(
+      map((results) =>
+        (results ?? [])
+          .map((item) => item.display_name)
+          .filter((name): name is string => Boolean(name))
+      ),
+      catchError(() => of([]))
+    );
   }
 }
