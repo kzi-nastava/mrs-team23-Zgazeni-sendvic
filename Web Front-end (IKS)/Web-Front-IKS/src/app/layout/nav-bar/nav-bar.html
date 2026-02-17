@@ -6,6 +6,11 @@
   <div class="right">
     <div class="button-container1">      @if (isHomePage()) {
         <button mat-raised-button color="accent" (click)="panelService.togglePanel()">Estimate Route</button>
+      }      @if (isAdmin()) {
+        <button mat-raised-button color="warn" [routerLink]="['/panic-notifications']">
+          <mat-icon>warning</mat-icon>
+          Panic Notifications
+        </button>
       }      <button mat-raised-button color="primary" [routerLink]="['/ride-tracking']">Ride Tracking</button>
       <button mat-raised-button color="primary" [routerLink]="['/hor-driver']">HOR Driver</button>
       <button mat-raised-button color="primary" [routerLink]="['/future-rides']">Future Rides</button>
@@ -13,7 +18,6 @@
       <button mat-raised-button color="primary" [routerLink]="['/profile/driver']">Driver Profile</button>
       <button mat-raised-button color="primary" [routerLink]="['/profile/admin']">Admin Profile</button>
       <button mat-raised-button color="primary" [routerLink]="['/login']">Log in</button>
-      <button mat-raised-button color="primary" [routerLink]="['/reset-password']">Reset password</button>
     </div>
     <div class="button-container">
       <button type="button" class="logout" aria-label="Log out of your account" (click)="logout()">Log out</button>

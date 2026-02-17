@@ -15,6 +15,13 @@ public class LoginRequestedDTO {
         this.user = user;
     }
 
+    public LoginRequestedDTO(String token, int expiresIn, AccountLoginDTO user, String role) {
+        this.token = token;
+        this.expiresIn = expiresIn;
+        this.user = user;
+        this.user.setRole(role);
+    }
+
     public String getToken() {
         return token;
     }

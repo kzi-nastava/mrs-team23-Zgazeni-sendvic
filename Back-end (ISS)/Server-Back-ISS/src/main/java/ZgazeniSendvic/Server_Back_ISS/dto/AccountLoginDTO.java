@@ -1,6 +1,8 @@
 package ZgazeniSendvic.Server_Back_ISS.dto;
 
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +14,12 @@ public class AccountLoginDTO {
     private String firstName;
     private String lastName;
     private String pictUrl;
+    @Getter
+    @Setter
+    private String role;
 
-    // For writing ratings and such, the backend could always, based on ID, find the information required.
-    // Since that's the case, the client needn't at all times know stuff such ass address/phoneNum
+
+
 
     public AccountLoginDTO() {
     }

@@ -1,6 +1,8 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
+import ZgazeniSendvic.Server_Back_ISS.exception.AccountNotFoundException;
 import ZgazeniSendvic.Server_Back_ISS.exception.InvalidRideTokenException;
+import ZgazeniSendvic.Server_Back_ISS.exception.RideNotFoundException;
 import ZgazeniSendvic.Server_Back_ISS.exception.RideTokenExpiredException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -10,6 +12,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -134,6 +137,85 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(status).body(body);
     }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleAccountNotFound(
+            AccountNotFoundException e,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.NOT_FOUND; // 404
+
+        Map<String, String> body = Map.of(
+                "timestamp", Instant.now().toString(),
+                "status", String.valueOf(status.value()),
+                "error", status.getReasonPhrase(), // "Not Found"
+                "message", e.getMessage(),
+                "path", request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(body);
+    }
+
+    @ExceptionHandler(RideNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleAccountNotFound(
+            RideNotFoundException e,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.NOT_FOUND; // 404
+
+        Map<String, String> body = Map.of(
+                "timestamp", Instant.now().toString(),
+                "status", String.valueOf(status.value()),
+                "error", status.getReasonPhrase(), // "Not Found"
+                "message", e.getMessage(),
+                "path", request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(body);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgument(
+            IllegalArgumentException e,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.BAD_REQUEST; // 400
+
+        Map<String, String> body = Map.of(
+                "timestamp", Instant.now().toString(),
+                "status", String.valueOf(status.value()),
+                "error", status.getReasonPhrase(), // "Bad Request"
+                "message", e.getMessage(),
+                "path", request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(body);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, String>> handleRuntimeException(
+            RuntimeException e,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+        Map<String, String> body = Map.of(
+                "timestamp", Instant.now().toString(),
+                "status", String.valueOf(status.value()),
+                "error", status.getReasonPhrase(),
+                "message", e.getMessage(),
+                "path", request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(body);
+    }
+
+        @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+        public ResponseEntity<String> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Invalid Type for parameter '" + ex.getName() + "': expected " + ex.getRequiredType().getSimpleName());
+        }
 
 
 

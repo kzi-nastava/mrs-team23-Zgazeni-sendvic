@@ -33,14 +33,13 @@ public class PictureController {
    @Autowired
    JwtUtils tokenUtils;
 
-   //WHAT IF ACCOUNT NOT FOUND?
-    // Will be handled later, once secure handling is actually implemented
+
 
     @PostMapping("/register/profile")
     public ResponseEntity<PictureResponse> uploadMyProfilePicture(
             @RequestParam("file") MultipartFile file,
             @RequestParam("pictureToken") String pictureToken
-    ) {
+    ) throws Exception{
         try{
         String email = tokenUtils.getUsernameFromToken(pictureToken);
         if (email == null) {
@@ -64,7 +63,7 @@ public class PictureController {
     @GetMapping("/retrieve/profile")
     public ResponseEntity<Resource> getProfilePictureForTest(
             @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
+    ) throws Exception{
         //returns 404 if TOKEN INVALID
         if(userDetails == null) {
             return ResponseEntity.notFound().build();

@@ -25,10 +25,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 """)
     List<Driver> findAvailableDrivers();
 
-    //Find all admin accounts
-    @Query("""
-    SELECT a FROM Admin a
-""")
+    @Query("SELECT a FROM Admin a")
     List<Admin> findAllAdmins();
 
 }
