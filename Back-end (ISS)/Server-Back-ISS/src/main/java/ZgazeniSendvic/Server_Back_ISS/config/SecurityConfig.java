@@ -109,15 +109,30 @@ public class SecurityConfig {
 
                         .anyRequest().permitAll() // for testing
                 )
+                .sessionManagement(session -> { // do not use cookies
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                })
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .authenticationProvider(authenticationProvider());
 
         return http.build();
     }
 
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        // Authentication(filters ,security context etc) is completely ignored for the following:
+        return (web) -> web.ignoring()
+                .requestMatchers(HttpMethod.POST, "/auth/login","/api/auth/login", "/api/auth/register")
+
+
+                // Allowing access to static resources
+                .requestMatchers(HttpMethod.GET, "/", "/webjars/*", "/*.html", "/favicon.ico",
+                        "/*/*.html", "/*/*.css", "/*/*.js");
+
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration conf)
