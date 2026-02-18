@@ -62,7 +62,7 @@ export class Map implements AfterViewInit, OnDestroy {
     this.initializeMap();
 
     setTimeout(() => {
-      this.mapInstance.invalidateSize();
+      this.mapInstance?.invalidateSize();
     }, 0);
   }
 
