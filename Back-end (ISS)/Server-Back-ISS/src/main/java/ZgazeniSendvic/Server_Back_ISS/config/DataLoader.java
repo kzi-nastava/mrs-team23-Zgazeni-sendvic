@@ -145,7 +145,7 @@ public class DataLoader {
             ride1Locations.add(new Location(20.3971, 44.9199)); // Another location
             ride1.setLocations(ride1Locations);
 
-            ride1.setPrice(25.50);
+            ride1.setTotalPrice(25.50);
             ride1.setStartTime(LocalDateTime.now().plusHours(1));
             ride1.setEndTime(LocalDateTime.now().plusHours(2));
             ride1.setStatus(RideStatus.SCHEDULED);
@@ -168,7 +168,7 @@ public class DataLoader {
             ride2Locations.add(new Location(20.4500, 44.9000)); // Another location
             ride2.setLocations(ride2Locations);
 
-            ride2.setPrice(15.75);
+            ride2.setTotalPrice(15.75);
             ride2.setStartTime(LocalDateTime.now().plusHours(3));
             ride2.setEndTime(LocalDateTime.now().plusHours(4));
             ride2.setStatus(RideStatus.SCHEDULED);

@@ -167,7 +167,7 @@ class RideController {
         }
     }
 
-  @PutMapping(
+    @PutMapping(
             value = "ride-start",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE

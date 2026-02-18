@@ -1,7 +1,11 @@
 package ZgazeniSendvic.Server_Back_ISS.dto;
 
+import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Location;
+import ZgazeniSendvic.Server_Back_ISS.model.RequestStatus;
 import ZgazeniSendvic.Server_Back_ISS.model.VehicleType;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,6 +42,15 @@ public class CreateRideRequestDTO {
      * Estimated values calculated on frontend (or via map service)
      */
     private double estimatedDistanceKm;
+
+    @Getter @Setter
+    private double estimatedPrice;
+
+    @Getter @Setter
+    private Account creator;
+
+    @Getter @Setter
+    private RequestStatus requestStatus;
 
     /* ---------- GETTERS / SETTERS ---------- */
 

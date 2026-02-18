@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../service/auth.service';
 import { LoginRequest } from '../../models/auth.models';
 
 @Component({
@@ -51,23 +51,23 @@ export class LoginForm {
     this.loginError.set(null);  // Clear any previous errors
     const request: LoginRequest = this.form.value;
     this.authService.login(request).subscribe({
-      next: (response) => {
+      next: (response: { user: { role: any; }; token: any; }) => {
         console.log('Login successful', response);
         console.log('User role:', response.user?.role ?? '');
         // Token is already stored by auth service
         if (response?.token) {
           this.authService.fetchProfilePicture(response.token).subscribe({
-            next: (blob) => {
+            next: (blob: Blob) => {
               const objectUrl = URL.createObjectURL(blob);
               console.log('Profile picture URL:', objectUrl);
               this.authService.storeProfilePicture(blob);
             },
-            error: (error) => console.error('Profile picture fetch failed', error)
+            error: (error: any) => console.error('Profile picture fetch failed', error)
           });
         }
         this.router.navigate(['/']);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Login failed', error);
         this.loginError.set('Incorrect email or password');
       }

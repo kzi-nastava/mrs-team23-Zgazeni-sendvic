@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { RideTrackingWebSocketService } from '../service/ride-tracking-websocket.service';
 import { RideTrackingUpdate } from '../models/ride-tracking.models';
 import { Subscription } from 'rxjs';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-ride-tracking',

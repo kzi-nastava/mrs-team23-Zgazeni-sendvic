@@ -6,6 +6,7 @@ import ZgazeniSendvic.Server_Back_ISS.model.Driver;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,13 +18,10 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     boolean existsByEmail(String email);
 
-    @Query("""
-    SELECT d FROM Driver d
-    WHERE d.active = true
-      AND d.busy = false
-      AND d.workedMinutesLast24h < 480
-""")
-    List<Driver> findAvailableDrivers();
+    @Query("SELECT a FROM Account a WHERE TYPE(a) = Driver AND a.active = true")
+    List<Driver> findAllActiveDrivers();
+
+    List<Account> findByEmailIn(Collection<String> emails);
 
     @Query("SELECT a FROM Admin a")
     List<Admin> findAllAdmins();

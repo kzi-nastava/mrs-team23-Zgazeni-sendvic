@@ -185,7 +185,7 @@ public class RideControllerStopRideIntegrationTest {
                 returnNewLocation(location1),
                 returnNewLocation(location2)
         )));
-        activeRide.setPrice(25.50);
+        activeRide.setTotalPrice(25.50);
         activeRide.setStartTime(LocalDateTime.now().minusMinutes(30));
         activeRide.setStatus(RideStatus.ACTIVE);
         activeRide.setPanic(false);
@@ -204,7 +204,7 @@ public class RideControllerStopRideIntegrationTest {
                 returnNewLocation(location1),
                 returnNewLocation(location3)
         )));
-        scheduledRide.setPrice(30.00);
+        scheduledRide.setTotalPrice(30.00);
         scheduledRide.setStartTime(LocalDateTime.now().plusHours(1));
         scheduledRide.setStatus(RideStatus.SCHEDULED);
         scheduledRide.setPanic(false);
@@ -221,7 +221,7 @@ public class RideControllerStopRideIntegrationTest {
                 returnNewLocation(location2),
                 returnNewLocation(location3)
         )));
-        finishedRide.setPrice(40.00);
+        finishedRide.setTotalPrice(40.00);
         finishedRide.setStartTime(LocalDateTime.now().minusHours(2));
         finishedRide.setEndTime(LocalDateTime.now().minusHours(1));
         finishedRide.setStatus(RideStatus.FINISHED);
@@ -238,7 +238,7 @@ public class RideControllerStopRideIntegrationTest {
                 returnNewLocation(location1),
                 returnNewLocation(location3)
         )));
-        cancelledRide.setPrice(20.00);
+        cancelledRide.setTotalPrice(20.00);
         cancelledRide.setStartTime(LocalDateTime.now().plusHours(2));
         cancelledRide.setStatus(RideStatus.CANCELED);
         cancelledRide.setPanic(false);
@@ -289,7 +289,7 @@ public class RideControllerStopRideIntegrationTest {
         assertThat(updatedRide.get().getStatus()).isEqualTo(RideStatus.FINISHED);
         assertThat(updatedRide.get().getEndTime()).isNotNull();
         assertThat(updatedRide.get().getEndTime()).isEqualTo(stopTime);
-        assertThat(updatedRide.get().getPrice()).isEqualTo(mockRouteResult.getPrice());
+        assertThat(updatedRide.get().getTotalPrice()).isEqualTo(mockRouteResult.getPrice());
         assertThat(updatedRide.get().getLocations()).hasSize(3);
     }
 
@@ -419,7 +419,7 @@ public class RideControllerStopRideIntegrationTest {
         assertThat(unchangedRide).isPresent();
         assertThat(unchangedRide.get().getStatus()).isEqualTo(RideStatus.ACTIVE);
         assertThat(unchangedRide.get().getEndTime()).isNull();
-        assertThat(unchangedRide.get().getPrice()).isEqualTo(25.50);
+        assertThat(unchangedRide.get().getTotalPrice()).isEqualTo(25.50);
     }
 
     @Test
@@ -760,7 +760,7 @@ public class RideControllerStopRideIntegrationTest {
     @DisplayName("Should update price based on routing service calculation")
     void testStopRide_PriceUpdate() throws Exception {
         // Arrange
-        double originalPrice = activeRide.getPrice();
+        double originalPrice = activeRide.getTotalPrice();
         RideStopDTO stopRequest = new RideStopDTO();
         stopRequest.setPassedLocations(List.of(
                 returnNewLocation(location1),
@@ -780,8 +780,8 @@ public class RideControllerStopRideIntegrationTest {
         // Assert - Check price is updated in database
         Optional<Ride> updatedRide = rideRepository.findById(activeRide.getId());
         assertThat(updatedRide).isPresent();
-        assertThat(updatedRide.get().getPrice()).isEqualTo(mockRouteResult.getPrice());
-        assertThat(updatedRide.get().getPrice()).isNotEqualTo(originalPrice);
+        assertThat(updatedRide.get().getTotalPrice()).isEqualTo(mockRouteResult.getPrice());
+        assertThat(updatedRide.get().getTotalPrice()).isNotEqualTo(originalPrice);
     }
 
     @Test
@@ -797,7 +797,7 @@ public class RideControllerStopRideIntegrationTest {
                 returnNewLocation(location2),
                 returnNewLocation(location3)
         )));
-        anotherActiveRide.setPrice(35.00);
+        anotherActiveRide.setTotalPrice(35.00);
         anotherActiveRide.setStartTime(LocalDateTime.now().minusMinutes(15));
         anotherActiveRide.setStatus(RideStatus.ACTIVE);
         anotherActiveRide.setPanic(false);
@@ -840,7 +840,7 @@ public class RideControllerStopRideIntegrationTest {
         ));
         stopRequest.setCurrentTime(LocalDateTime.now());
 
-        double originalPrice = activeRide.getPrice();
+        double originalPrice = activeRide.getTotalPrice();
         RideStatus originalStatus = activeRide.getStatus();
         LocalDateTime originalStartTime = activeRide.getStartTime();
 
@@ -856,7 +856,7 @@ public class RideControllerStopRideIntegrationTest {
         Optional<Ride> unchangedRide = rideRepository.findById(activeRide.getId());
         assertThat(unchangedRide).isPresent();
         assertThat(unchangedRide.get().getStatus()).isEqualTo(originalStatus);
-        assertThat(unchangedRide.get().getPrice()).isEqualTo(originalPrice);
+        assertThat(unchangedRide.get().getTotalPrice()).isEqualTo(originalPrice);
         assertThat(unchangedRide.get().getStartTime()).isEqualTo(originalStartTime);
         assertThat(unchangedRide.get().getEndTime()).isNull();
         assertThat(unchangedRide.get().getLocations()).hasSize(2); // Original size

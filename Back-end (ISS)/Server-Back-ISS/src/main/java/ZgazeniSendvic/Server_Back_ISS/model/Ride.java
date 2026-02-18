@@ -38,8 +38,7 @@ public class Ride {
     private List<Location> locations;
 
     @Getter @Setter
-    private double price;
-
+    private LocalDateTime scheduledTime;
     @Getter @Setter
     private LocalDateTime startTime;
     @Getter @Setter
@@ -125,6 +124,9 @@ public class Ride {
         }
     }
 
+    @Getter @Setter
+    private double totalPrice;
+
     public Ride(Long id, Driver driver, Account creator, List<Account> passengers, List<Location> locations,
                 double price, LocalDateTime startTime, LocalDateTime endTime, RideStatus status, boolean panic) {
         this.id = id;
@@ -132,7 +134,7 @@ public class Ride {
         this.creator = creator;
         this.passengers = passengers;
         this.locations = locations;
-        this.price = price;
+        this.totalPrice = price;
         this.startTime = startTime;
         this.endTime = endTime;
         this.durationMinutes = calculateDuration();
@@ -140,9 +142,7 @@ public class Ride {
         this.panic = panic;
     }
 
-    public Ride() {
-        this.id = 1L;
-    }
+    public Ride() {}
 
     public boolean isCanceled() {
         return status == RideStatus.CANCELED;

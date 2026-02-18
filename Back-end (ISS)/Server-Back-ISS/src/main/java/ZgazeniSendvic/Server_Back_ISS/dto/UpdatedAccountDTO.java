@@ -1,7 +1,6 @@
 package ZgazeniSendvic.Server_Back_ISS.dto;
 
 public class UpdatedAccountDTO {
-    private Long id;
     private String email;
     private String password;
     private String name;
@@ -11,14 +10,6 @@ public class UpdatedAccountDTO {
     private String imgString;
 
     public UpdatedAccountDTO() { super(); }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getEmail() {
         return email;

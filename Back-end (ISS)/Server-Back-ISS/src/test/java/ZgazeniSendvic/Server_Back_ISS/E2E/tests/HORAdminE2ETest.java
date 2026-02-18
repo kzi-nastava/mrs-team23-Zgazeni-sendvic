@@ -180,7 +180,7 @@ public class HORAdminE2ETest {
                 returnNewLocation(location1),
                 returnNewLocation(location2)
         )));
-        activeRide.setPrice(25.50);
+        activeRide.setTotalPrice(25.50);
         activeRide.setStartTime(LocalDateTime.now().minusMinutes(30));
         activeRide.setStatus(RideStatus.ACTIVE);
         activeRide.setPanic(false);
@@ -199,7 +199,7 @@ public class HORAdminE2ETest {
                 returnNewLocation(location1),
                 returnNewLocation(location2)
         )));
-        OtherRide.setPrice(9999999);
+        OtherRide.setTotalPrice(9999999);
         OtherRide.setStartTime(LocalDateTime.now().minusMinutes(30));
         OtherRide.setStatus(RideStatus.ACTIVE);
         OtherRide.setPanic(false);
@@ -219,7 +219,7 @@ public class HORAdminE2ETest {
                 returnNewLocation(location1),
                 returnNewLocation(location3)
         )));
-        scheduledRide.setPrice(30.00);
+        scheduledRide.setTotalPrice(30.00);
         scheduledRide.setStartTime(LocalDateTime.now().plusHours(1));
         scheduledRide.setStatus(RideStatus.SCHEDULED);
         scheduledRide.setPanic(false);
@@ -237,7 +237,7 @@ public class HORAdminE2ETest {
                 returnNewLocation(location2),
                 returnNewLocation(location3)
         )));
-        finishedRide.setPrice(40.00);
+        finishedRide.setTotalPrice(40.00);
         finishedRide.setStartTime(LocalDateTime.now().minusHours(2));
         finishedRide.setEndTime(LocalDateTime.now().minusHours(1));
         finishedRide.setStatus(RideStatus.FINISHED);
@@ -254,7 +254,7 @@ public class HORAdminE2ETest {
                 returnNewLocation(location1),
                 returnNewLocation(location3)
         )));
-        cancelledRide.setPrice(20.00);
+        cancelledRide.setTotalPrice(20.00);
         cancelledRide.setStartTime(LocalDateTime.now().plusHours(2));
         cancelledRide.setStatus(RideStatus.CANCELED);
         cancelledRide.setPanic(false);
@@ -361,8 +361,8 @@ public class HORAdminE2ETest {
             Ride ride = ridesPage.getContent().get(i);
             String displayedPrice = rideHistoryPage.getPriceFromRow(i);
             System.out.println("Displayed price at row " + i + ": " + displayedPrice);
-            Assertions.assertTrue(displayedPrice.contains(String.format("%.2f", ride.getPrice())),
-                    "Expected price " + ride.getPrice() + " at row " + i);
+            Assertions.assertTrue(displayedPrice.contains(String.format("%.2f", ride.getTotalPrice())),
+                    "Expected price " + ride.getTotalPrice() + " at row " + i);
         }
     }
 

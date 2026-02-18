@@ -27,6 +27,14 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     """)
     Integer getWorkedMinutesLast24h(Long driverId, LocalDateTime since);
 
+    @Query("""
+    SELECT r FROM Ride r
+    WHERE r.driver = :driver
+    AND r.status = 'ACTIVE'
+""")
+    Ride findActiveRideByDriver(@Param("driver") Driver driver);
+
+    List<Ride> findByStatus(RideStatus status);
     List<Ride> findByDriverAndStatus(Driver driver, RideStatus status);
 
 

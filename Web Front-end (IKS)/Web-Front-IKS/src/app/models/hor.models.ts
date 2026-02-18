@@ -1,4 +1,4 @@
-import { Location } from '../model/route';
+import { Location } from '../models/route';
 
 export enum RideStatus {
   SCHEDULED = 'SCHEDULED',

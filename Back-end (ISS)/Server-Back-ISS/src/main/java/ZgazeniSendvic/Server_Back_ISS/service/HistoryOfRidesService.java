@@ -66,7 +66,7 @@ public class HistoryOfRidesService {
             if (r.getStatus().equals(RideStatus.FINISHED) && r.getDriver().getId() != null && r.getDriver().getId().equals(userId)) {
                 String dep = r.getStartTime() == null ? null : r.getStartTime().toString();
                 String arr = r.getEndTime() == null ? null : r.getEndTime().toString();
-                double price =  r.getPrice();
+                double price =  r.getTotalPrice();
                 Location origin = null;
                 Location dest = null;
 //                if (r.getLocations().get(0) == null) {
@@ -148,7 +148,7 @@ public class HistoryOfRidesService {
 
             dto.setBeginning(r.getStartTime());
             dto.setEnding(r.getEndTime());
-            dto.setPrice(r.getPrice());
+            dto.setPrice(r.getTotalPrice());
             dto.setStatus(r.getStatus());
             dto.setCreationTime(r.getCreationDate());
 

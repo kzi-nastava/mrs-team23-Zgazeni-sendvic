@@ -8,7 +8,7 @@ import { FormGroup } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule, Router } from '@angular/router';
 import { AbstractControl, ValidationErrors } from '@angular/forms';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../service/auth.service';
 import { RegisterRequest } from '../../models/auth.models';
 
 

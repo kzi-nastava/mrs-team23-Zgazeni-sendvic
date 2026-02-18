@@ -72,7 +72,7 @@ class RideServiceImplEndRideTest {
     void endRide_marksRideFinished_andEmailsPassengers() {
         Ride ride = new Ride();
         ride.setId(1L);
-        ride.setPrice(10.0);
+        ride.setTotalPrice(10.0);
         ride.setStatus(RideStatus.ACTIVE);
 
         Account passenger1 = new Account();
@@ -86,7 +86,7 @@ class RideServiceImplEndRideTest {
         RideEndDTO dto = new RideEndDTO(1L, 25.0);
         rideService.endRide(dto);
 
-        assertEquals(25.0, ride.getPrice());
+        assertEquals(25.0, ride.getTotalPrice());
         assertEquals(RideStatus.FINISHED, ride.getStatus());
         verify(allRides).save(ride);
         verify(allRides).flush();

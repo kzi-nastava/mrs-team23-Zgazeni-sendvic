@@ -4,7 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { RideTracking } from './ride-tracking';
 import { RideTrackingWebSocketService } from '../service/ride-tracking-websocket.service';
 import { RideTrackingUpdate } from '../models/ride-tracking.models';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../service/auth.service';
 import { of } from 'rxjs';
 
 describe('RideTracking', () => {

@@ -9,6 +9,9 @@ public class GetAccountDTO {
     private String address;
     private String phoneNumber;
     private String imgString;
+    private String role;
+    // Driver-only
+    private Integer totalDrivingHours;
 
     public GetAccountDTO() { super(); }
 
@@ -74,5 +77,21 @@ public class GetAccountDTO {
 
     public void setImgString(String imgString) {
         this.imgString = imgString;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public Integer getTotalDrivingHours() {
+        return totalDrivingHours;
+    }
+
+    public void setTotalDrivingHours(Integer totalDrivingHours) {
+        this.totalDrivingHours = totalDrivingHours;
     }
 }
