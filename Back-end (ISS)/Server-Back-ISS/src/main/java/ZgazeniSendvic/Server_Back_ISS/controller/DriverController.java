@@ -108,10 +108,11 @@ public class DriverController {
     @PreAuthorize("hasRole('DRIVER')")
     @PutMapping(
             value = "/deactivate",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<?> requestDriverDeactivation() {
-        driverService.deactivateDriverIfRequested();
+    public ResponseEntity<?> requestDriverDeactivation(@RequestBody Boolean availability) {
+        driverService.deactivateDriverIfRequested(availability);
         return ResponseEntity.ok("Deactivation request processed");
     }
 }

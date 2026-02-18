@@ -239,7 +239,7 @@ public class DriverServiceImpl implements IDriverService {
         accountRepository.save(driver);
     }
 
-    public void deactivateDriverIfRequested(){
+    public void deactivateDriverIfRequested(boolean availability){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth instanceof AnonymousAuthenticationToken) {
             return;
@@ -254,6 +254,15 @@ public class DriverServiceImpl implements IDriverService {
         if (!(account instanceof Driver driver)) {
             return;
         }
+
+        if (availability) {
+            driver.setAvailable(true);
+            driver.setAwaitingDeactivation(false);
+            accountRepository.save(driver);
+            return;
+        }
+
+        //otherwise turning it off
 
         if (driver.getDriving()) {
             driver.setAwaitingDeactivation(true);
