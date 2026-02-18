@@ -4,64 +4,79 @@ import ZgazeniSendvic.Server_Back_ISS.dto.CreateRideRequestDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.*;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRequestRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
-@Transactional
+@RequiredArgsConstructor
 public class RideRequestServiceImpl implements IRideRequestService {
 
     @Autowired
     RideRequestRepository rideRequestRepository;
     @Autowired
-    AccountRepository accountRepository;
+    AccountServiceImpl accountService;
+    @Autowired
+    PricingService pricingService;
+    @Autowired
+    DriverAssignmentService driverAssignmentService;
 
-    public RideRequestServiceImpl(
-            RideRequestRepository rideRequestRepository,
-            AccountRepository accountRepository
-    ) {
-        this.rideRequestRepository = rideRequestRepository;
-        this.accountRepository = accountRepository;
-    }
+    public RideRequest createRideRequest(CreateRideRequestDTO dto) {
 
-    @Override
-    public void create(CreateRideRequestDTO dto, Long creatorId) {
-
-        Account creator = accountRepository.findById(creatorId)
-                .orElseThrow(() -> new IllegalArgumentException("Creator not found"));
-
-        RideRequest request = new RideRequest();
-
-        request.setCreator(creator);
-        request.setLocations(dto.getLocations());
-        request.setVehicleType(dto.getVehicleType());
-        request.setBabiesAllowed(dto.isBabiesAllowed());
-        request.setPetsAllowed(dto.isPetsAllowed());
-        request.setScheduledTime(dto.getScheduledTime());
-        request.setEstimatedDistanceKm(dto.getEstimatedDistanceKm());
-
-        // invited passengers by email
-        List<Account> invited = new ArrayList<>();
-        if (dto.getInvitedPassengerEmails() != null) {
-            for (String email : dto.getInvitedPassengerEmails()) {
-                accountRepository.findByEmail(email)
-                        .ifPresent(invited::add);
-            }
+        Account creator = accountService.getCurrentAccount();
+        if (creator == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
         }
-        request.setInvitedPassengers(invited);
 
-        // price calculation (as per spec)
-        double basePrice = dto.getVehicleType().getBasePrice();
-        double price = basePrice + dto.getEstimatedDistanceKm() * 120;
-        request.setEstimatedPrice(price);
+        // basic validation
+        if (dto.getLocations() == null || dto.getLocations().size() < 2) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least start and destination are required");
+        }
 
-        request.setStatus(RequestStatus.PENDING);
+        // 5 hour scheduling rule
+        if (dto.getScheduledTime() != null &&
+                dto.getScheduledTime().isAfter(LocalDateTime.now().plusHours(5))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Ride can only be scheduled up to 5 hours in advance.");
+        }
 
-        rideRequestRepository.save(request);
+        RideRequest rr = new RideRequest();
+        rr.setCreator(creator);
+        rr.setLocations(dto.getLocations());
+        rr.setVehicleType(dto.getVehicleType());
+        rr.setBabiesAllowed(dto.isBabiesAllowed());
+        rr.setPetsAllowed(dto.isPetsAllowed());
+        rr.setScheduledTime(dto.getScheduledTime());
+        List<Account> invited = accountService.resolveAccountsByEmails(
+                dto.getInvitedPassengerEmails(),
+                creator
+        );
+        rr.setInvitedPassengers(invited);
+
+        double price = pricingService.calculatePrice(
+                dto.getVehicleType(),
+                dto.getEstimatedDistanceKm()
+        );
+
+        rr.setEstimatedDistanceKm(dto.getEstimatedDistanceKm());
+        rr.setEstimatedPrice(price);
+        rr.setStatus(RequestStatus.PENDING);
+
+        RideRequest saved = rideRequestRepository.save(rr);
+
+        driverAssignmentService.tryAssignDriver(saved.getId());
+
+        return saved;
     }
 }
 

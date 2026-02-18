@@ -6,6 +6,7 @@ import ZgazeniSendvic.Server_Back_ISS.model.Ride;
 import ZgazeniSendvic.Server_Back_ISS.model.RideStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,5 +24,12 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     """)
     Integer getWorkedMinutesLast24h(Long driverId, LocalDateTime since);
 
-    List<Ride> findByDriverAndStatus(Driver driver, RideStatus status);
+    @Query("""
+    SELECT r FROM Ride r
+    WHERE r.driver = :driver
+    AND r.status = 'ACTIVE'
+""")
+    Ride findActiveRideByDriver(@Param("driver") Driver driver);
+
+    List<Ride> findByStatus(RideStatus status);
 }

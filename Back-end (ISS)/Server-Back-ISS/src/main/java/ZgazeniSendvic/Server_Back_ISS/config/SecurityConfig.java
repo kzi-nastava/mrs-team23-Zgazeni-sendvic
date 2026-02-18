@@ -92,6 +92,7 @@ public class SecurityConfig {
 
                         // authenticated endpoints
                         .requestMatchers("/api/account/me", "/api/account/me/change-request").authenticated()
+                        .requestMatchers("/api/riderequest/**").authenticated()
 
                         // everything else
                         .anyRequest().permitAll()

@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Primary;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Primary
 @Service
@@ -292,16 +293,61 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         return findAccount(userDetails.getId()); // uses existing findAccount(Long id)
     }
 
-    public Integer calculateDrivingHours(Long id) {
-        return 300;
-    }
-
     public Account findByEmail(String email) {
         Optional<Account> account = allAccounts.findByEmail(email);
         if(account.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with given email was not found");
         }
         return account.get();
+    }
+
+    public List<Account> resolveAccountsByEmails(List<String> emails, Account creator) {
+        if (emails == null || emails.isEmpty()) return List.of();
+
+        List<String> normalized = emails.stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .map(String::toLowerCase)
+                .distinct()
+                .filter(e -> creator == null || !e.equalsIgnoreCase(creator.getEmail()))
+                .toList();
+
+        if (normalized.isEmpty()) return List.of();
+
+        // Fetch all accounts in one DB call
+        List<Account> accounts = allAccounts.findByEmailIn(normalized);
+
+        // Strict: fail if any missing
+        if (accounts.size() != normalized.size()) {
+            Set<String> found = accounts.stream()
+                    .map(a -> a.getEmail().toLowerCase())
+                    .collect(Collectors.toSet());
+
+            List<String> missing = normalized.stream()
+                    .filter(e -> !found.contains(e))
+                    .toList();
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Some invited passengers were not found: " + String.join(", ", missing)
+            );
+        }
+
+        // Optional: require confirmed
+        List<Account> notConfirmed = accounts.stream()
+                .filter(a -> !a.isConfirmed())
+                .toList();
+
+        if (!notConfirmed.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Some invited passengers are not confirmed: " +
+                            notConfirmed.stream().map(Account::getEmail).collect(Collectors.joining(", "))
+            );
+        }
+
+        return accounts;
     }
 }
 

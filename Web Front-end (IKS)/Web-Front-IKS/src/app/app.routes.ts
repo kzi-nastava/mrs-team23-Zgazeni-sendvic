@@ -12,6 +12,7 @@ import { RouteEstimationPanel } from './route-estimation-panel/route-estimation-
 import { ProfileCard } from './profiles/profile-card/profile-card';
 import { ProfileEdit } from './profiles/profile-edit/profile-edit';
 import { DriverAcceptEdit } from './profiles/driver-accept-edit/driver-accept-edit';
+import { RideOrder } from './ride-order/ride-order';
 
 
 export const routes: Routes = [
@@ -21,6 +22,7 @@ export const routes: Routes = [
   { path: 'approve', component: DriverAcceptEdit},
   { path: 'hor-driver', component: HorDriver },
   { path: 'future-rides', component: FutureRides },
+  { path: 'ride-order', component: RideOrder },
   { path: 'ride-tracking', component: RideTracking },
   { path: 'register', component: Registration },
   { path: 'login', component: Login },

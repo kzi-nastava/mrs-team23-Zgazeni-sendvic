@@ -54,4 +54,7 @@ public class RideRequest {
     @Getter @Setter
     @Enumerated(EnumType.STRING)
     private RequestStatus status;
+
+    @Getter @Setter
+    private String rejectionReason;
 }

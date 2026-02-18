@@ -27,7 +27,7 @@ public class HistoryOfRidesService {
             if (r.getStatus().equals(RideStatus.FINISHED) && r.getDriver().getId() != null && r.getDriver().getId().equals(userId)) {
                 String dep = r.getStartTime() == null ? null : fmt.format(r.getStartTime());
                 String arr = r.getEndTime() == null ? null : fmt.format(r.getEndTime());
-                double price =  r.getPrice();
+                double price =  r.getTotalPrice();
                 PastRideDTO p = new PastRideDTO(r.getId(), r.getLocations().get(0),
                         r.getLocations().get(r.getLocations().size() - 1), dep, arr,
                         r.isPanic(), String.valueOf(r.isCanceled()), price);

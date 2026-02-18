@@ -19,10 +19,8 @@ public class RideRequestController {
 
     @PostMapping("/create")
     public ResponseEntity<Void> requestRide(
-            @RequestBody CreateRideRequestDTO dto,
-            @AuthenticationPrincipal CustomUserDetails user) {
-
-        rideRequestService.create(dto, user.getId());
+            @RequestBody CreateRideRequestDTO dto) {
+        rideRequestService.createRideRequest(dto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }
