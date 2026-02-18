@@ -23,7 +23,8 @@ public class DataLoader {
     @Bean
     public CommandLineRunner loadData(AccountRepository accountRepository,
                                       VehicleRepository vehicleRepository,
-                                      RideRepository rideRepository) {
+                                      RideRepository rideRepository,
+                                      VehiclePositionsRepository vehiclePositionsRepository) {
         return args -> {
             // Check if data already exists to avoid duplication
             if (accountRepository.count() > 0) {
@@ -178,6 +179,43 @@ public class DataLoader {
 
             // Driver 2 has no rides (already created above)
             System.out.println("Driver 2 has no assigned rides (as intended)");
+
+            // ============ CREATE VEHICLE POSITIONS ============
+            VehiclePosition vehiclePos1 = new VehiclePosition(
+                    vehicle1.getId().toString(),
+                    44.8176,
+                    20.4489,
+                    "ACTIVE"
+            );
+            vehiclePos1 = vehiclePositionsRepository.save(vehiclePos1);
+            System.out.println("Created Vehicle Position 1 (Driver 1's vehicle)");
+
+            VehiclePosition vehiclePos2 = new VehiclePosition(
+                    vehicle1.getId().toString(),
+                    44.9199,
+                    20.3971,
+                    "ACTIVE"
+            );
+            vehiclePos2 = vehiclePositionsRepository.save(vehiclePos2);
+            System.out.println("Created Vehicle Position 2 (Driver 1's vehicle)");
+
+            VehiclePosition vehiclePos3 = new VehiclePosition(
+                    vehicle2.getId().toString(),
+                    44.8797,
+                    20.3995,
+                    "ACTIVE"
+            );
+            vehiclePos3 = vehiclePositionsRepository.save(vehiclePos3);
+            System.out.println("Created Vehicle Position 3 (Driver 2's vehicle)");
+
+            VehiclePosition vehiclePos4 = new VehiclePosition(
+                    vehicle2.getId().toString(),
+                    44.8152,
+                    20.4090,
+                    "IDLE"
+            );
+            vehiclePos4 = vehiclePositionsRepository.save(vehiclePos4);
+            System.out.println("Created Vehicle Position 4 (Driver 2's vehicle)");
 
             System.out.println("✓ Database population completed successfully!");
         };

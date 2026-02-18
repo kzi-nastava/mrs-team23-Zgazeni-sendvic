@@ -79,7 +79,7 @@ public class Ride {
 
 
     @Getter @Setter
-    private boolean panic;
+    private Boolean panic = false;
 
     @PrePersist
     public void prePersist() {

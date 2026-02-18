@@ -2,24 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Client, StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { BehaviorSubject, Observable } from 'rxjs';
-
-export interface RideTrackingUpdate {
-  rideId: number;
-  vehicleId: number;
-  currentLatitude: number;
-  currentLongitude: number;
-  status: 'ACTIVE' | 'SCHEDULED' | 'FINISHED' | 'CANCELED';
-  price: number;
-  startTime: string;
-  estimatedEndTime: string;
-  timeLeft: string;
-  route: { latitude: number; longitude: number }[];
-  driver: {
-    id: number;
-    name: string;
-    phoneNumber: string;
-  };
-}
+import { RideTrackingUpdate } from '../models/ride-tracking.models';
 
 @Injectable({
   providedIn: 'root'
@@ -82,7 +65,19 @@ export class RideTrackingWebSocketService implements OnDestroy {
       `/user/${userId}/queue/ride-tracking`,
       (message) => {
         try {
-          const rideUpdate: RideTrackingUpdate = JSON.parse(message.body);
+          const data = JSON.parse(message.body);
+          
+          // Handle both single ride object and array of rides
+          let rideUpdate: RideTrackingUpdate | null = null;
+          
+          if (Array.isArray(data)) {
+            // If backend sends array of rides, prioritize: ACTIVE > SCHEDULED > FINISHED
+            rideUpdate = this.selectPrioritizedRide(data);
+          } else {
+            // If backend sends single ride object
+            rideUpdate = data as RideTrackingUpdate;
+          }
+          
           console.log('Ride update received:', rideUpdate);
           this.rideUpdates$.next(rideUpdate);
         } catch (error) {
@@ -97,6 +92,33 @@ export class RideTrackingWebSocketService implements OnDestroy {
     });
 
     console.log(`Subscribed to ride tracking for user ${userId}`);
+  }
+
+  /**
+   * Selects the highest priority ride from an array
+   * Priority: ACTIVE > SCHEDULED > FINISHED
+   */
+  private selectPrioritizedRide(rides: RideTrackingUpdate[]): RideTrackingUpdate | null {
+    // Look for ACTIVE ride first
+    const activeRide = rides.find(r => r.status === 'ACTIVE');
+    if (activeRide) {
+      return activeRide;
+    }
+
+    // Fall back to SCHEDULED ride
+    const scheduledRide = rides.find(r => r.status === 'SCHEDULED');
+    if (scheduledRide) {
+      return scheduledRide;
+    }
+
+    // Fall back to FINISHED ride (for rating)
+    const finishedRide = rides.find(r => r.status === 'FINISHED');
+    if (finishedRide) {
+      return finishedRide;
+    }
+
+    // Return first ride if none of the above
+    return rides.length > 0 ? rides[0] : null;
   }
 
   getRideUpdates(): Observable<RideTrackingUpdate | null> {
