@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Injectable, OnDestroy, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { PanicNotificationDTO, PageResponse } from '../models/panic.models';
@@ -16,7 +16,7 @@ export interface PanicNotificationsQuery {
 }
 
 @Injectable({ providedIn: 'root' })
-export class PanicNotificationsService implements OnDestroy {
+export class PanicNotificationsService {
   private apiUrl = 'http://localhost:8080/api/panic-notifications';
   private wsUrl = 'http://localhost:8080/ws';
   
@@ -31,6 +31,9 @@ export class PanicNotificationsService implements OnDestroy {
   private snackBar = inject(MatSnackBar);
   private audioContext?: AudioContext;
   private notificationsInitialized = false;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 10;
+  private reconnectDelay = 5000;
 
   constructor(
     private http: HttpClient,
@@ -77,29 +80,32 @@ export class PanicNotificationsService implements OnDestroy {
 
     this.stompClient = new Client({
       webSocketFactory: () => socket,
-      reconnectDelay: 5000,
+      reconnectDelay: this.reconnectDelay,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
 
       onConnect: () => {
-        console.log('Connected to Panic Notifications WebSocket');
+        console.log('✅ Connected to Panic Notifications WebSocket');
+        this.reconnectAttempts = 0; // Reset on successful connection
         this.connectionStatus$.next(true);
         this.subscribeToPanicTopics();
       },
 
       onStompError: (frame) => {
-        console.error('STOMP error:', frame);
+        console.error('❌ STOMP error:', frame);
         this.connectionStatus$.next(false);
       },
 
       onWebSocketClose: () => {
-        console.log('WebSocket connection closed');
+        console.log('⚠️ WebSocket connection closed - will attempt to reconnect...');
         this.connectionStatus$.next(false);
+        this.attemptReconnect();
       },
 
       onDisconnect: () => {
-        console.log('Disconnected from WebSocket');
+        console.log('⚠️ Disconnected from WebSocket - will attempt to reconnect...');
         this.connectionStatus$.next(false);
+        this.attemptReconnect();
       }
     });
 
@@ -275,7 +281,26 @@ export class PanicNotificationsService implements OnDestroy {
     }
   }
 
+  private attemptReconnect(): void {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error('❌ Max reconnection attempts reached. WebSocket will stop trying to reconnect.');
+      return;
+    }
+
+    this.reconnectAttempts++;
+    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
+    console.log(`🔄 Reconnecting... (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms`);
+
+    setTimeout(() => {
+      if (this.stompClient && !this.stompClient.connected) {
+        console.log('🔄 Attempting to reconnect to WebSocket...');
+        this.stompClient.activate();
+      }
+    }, delay);
+  }
+
   disconnectFromWebSocket(): void {
+    console.log('🛑 Manually disconnecting WebSocket (logout)');
     if (this.panicSubscription) {
       this.panicSubscription.unsubscribe();
       this.panicSubscription = null;
@@ -292,10 +317,7 @@ export class PanicNotificationsService implements OnDestroy {
     }
 
     this.connectionStatus$.next(false);
+    this.reconnectAttempts = 0;
     console.log('Disconnected from Panic Notifications WebSocket');
-  }
-
-  ngOnDestroy(): void {
-    this.disconnectFromWebSocket();
   }
 }
