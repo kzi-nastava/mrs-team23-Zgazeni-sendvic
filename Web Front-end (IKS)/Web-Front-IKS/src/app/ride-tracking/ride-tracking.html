@@ -22,9 +22,13 @@
     </div>
     
     <div class="sidebar-actions">
+        @if (isDriver()) {
         <button class="sidebar-buttons" (click)="stopRide()">End Ride</button>
+        }
+        @if (!isDriver()) {
         <button class="sidebar-buttons" (click)="openNote()">Note</button>
         <button class="sidebar-buttons" (click)="openRate()">Rate</button>
+        }
       </div>
     </div>
   </aside>

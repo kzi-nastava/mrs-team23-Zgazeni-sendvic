@@ -10,6 +10,7 @@ import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.PanicNotificationRepository;
 import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import ZgazeniSendvic.Server_Back_ISS.security.jwt.JwtUtils;
+import ZgazeniSendvic.Server_Back_ISS.websocket.RideTrackingWebSocketService;
 import jakarta.transaction.Transactional;
 import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
 import org.jspecify.annotations.NonNull;
@@ -44,6 +45,8 @@ public class RideServiceImpl implements IRideService {
     PanicNotificationRepository panicNotificationRepository;
     @Autowired
     JwtUtils jwtUtils;
+    @Autowired
+    RideTrackingWebSocketService rideTrackingWebSocketService;
 
     @Override
     public Collection<Ride> getAll() {
@@ -396,6 +399,8 @@ public class RideServiceImpl implements IRideService {
         allRides.save(ride);
         allRides.flush();
 
+        sendFinalRideUpdate(ride);
+
         List<Account> passengers = ride.getPassengers();
         if (passengers != null && !passengers.isEmpty()) {
             for (Account passenger : passengers) {
@@ -410,6 +415,24 @@ public class RideServiceImpl implements IRideService {
                     System.err.println("Failed to send ride-ended email to " + passenger.getEmail() + ": " + ex.getMessage());
                 }
             }
+        }
+    }
+
+    private void sendFinalRideUpdate(Ride ride) {
+        try {
+            if (ride.getPassengers() != null) {
+                for (Account passenger : ride.getPassengers()) {
+                    rideTrackingWebSocketService.sendRideUpdateToUser(passenger.getId(), ride.getId());
+                }
+            }
+            if (ride.getCreator() != null) {
+                rideTrackingWebSocketService.sendRideUpdateToUser(ride.getCreator().getId(), ride.getId());
+            }
+            if (ride.getDriver() != null) {
+                rideTrackingWebSocketService.sendRideUpdateToUser(ride.getDriver().getId(), ride.getId());
+            }
+        } catch (Exception ex) {
+            System.err.println("Failed to send final ride update via WebSocket for ride " + ride.getId() + ": " + ex.getMessage());
         }
     }
 

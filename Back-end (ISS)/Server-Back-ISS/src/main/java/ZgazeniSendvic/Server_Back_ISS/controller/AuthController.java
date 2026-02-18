@@ -91,7 +91,7 @@ class AuthController {
 
     @PostMapping(path = "forgot-password", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> sendResetEmail(@RequestBody PasswordResetRequestDTO request) throws Exception {
+    public ResponseEntity<String> sendResetEmail(@Valid @RequestBody PasswordResetRequestDTO request) throws Exception {
         //So I need to receive the mail, and based on it check wether in database if so send email
         //if not, do nothing, do not reveal anything, sounds relatively simple tbh
         accountService.forgotPassword(request.getEmail());
@@ -101,7 +101,7 @@ class AuthController {
 
     @PostMapping(path = "reset-password", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> confirmPasswordReset(@RequestBody PasswordResetConfirmedRequestDTO request)
+    public ResponseEntity<String> confirmPasswordReset(@Valid @RequestBody PasswordResetConfirmedRequestDTO request)
             throws Exception {
         //would change the password etc.;
 
@@ -113,7 +113,7 @@ class AuthController {
 
     @PostMapping(path = "confirm-account", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> confirmAccount(@RequestBody AccountConfirmationDTO request)
+    public ResponseEntity<String> confirmAccount(@Valid @RequestBody AccountConfirmationDTO request)
             throws Exception {
         //would change the password etc.;
 
@@ -124,15 +124,14 @@ class AuthController {
     }
 
 
-    @PostMapping(path = "/logout", consumes = MediaType.APPLICATION_JSON_VALUE,
+    @PostMapping(path = "/logout",
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> logOut(@RequestBody logOutDTO request)
+    public ResponseEntity<String> logOut()
             throws Exception {
 
 
-        if(driverService.isAvailableDriver(request.getEmail())) {
-            return new ResponseEntity<String>("Driver must be unavailable", HttpStatus.FORBIDDEN);
-        }
+        driverService.ThrowIfNotAllowedToLogOut();
+
 
         return new ResponseEntity<String>("Log Out successful", HttpStatus.OK);
 

@@ -11,9 +11,13 @@ import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.VehicleRepository;
 
 import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
+import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -209,10 +213,57 @@ public class DriverServiceImpl implements IDriverService {
 
     }
 
-    public boolean isAvailableDriver(String email){
-        Optional<Account> found = accountRepository.findByEmail(email);
-        //only returns true if isPresent and is Driver and is Available
-        return (found.isPresent() && found.get().getRole().equals("DRIVER") && (((Driver) found.get()).isAvailable()));
+    public void ThrowIfNotAllowedToLogOut(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth instanceof AnonymousAuthenticationToken) {
+            return;
+        }
+
+        Object principal = auth.getPrincipal();
+        if (!(principal instanceof CustomUserDetails userDetails)) {
+            return;
+        }
+
+        Account account = userDetails.getAccount();
+        if (!(account instanceof Driver driver)) {
+            return;
+        }
+
+        if (driver.getDriving()) {
+            throw new IllegalStateException("Driver is currently driving. Marked as awaiting deactivation");
+        }
+
+        //Driver logged out
+        driver.setAvailable(false);
+        driver.setAwaitingDeactivation(false);
+        accountRepository.save(driver);
+    }
+
+    public void deactivateDriverIfRequested(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth instanceof AnonymousAuthenticationToken) {
+            return;
+        }
+
+        Object principal = auth.getPrincipal();
+        if (!(principal instanceof CustomUserDetails userDetails)) {
+            return;
+        }
+
+        Account account = userDetails.getAccount();
+        if (!(account instanceof Driver driver)) {
+            return;
+        }
+
+        if (driver.getDriving()) {
+            driver.setAwaitingDeactivation(true);
+            accountRepository.save(driver);
+            return;
+        }
+
+        driver.setAvailable(false);
+        driver.setAwaitingDeactivation(false);
+        accountRepository.save(driver);
     }
 
 

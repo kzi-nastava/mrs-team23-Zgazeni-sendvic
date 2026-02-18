@@ -58,7 +58,7 @@ public class Account {
     @Column(columnDefinition = "TEXT")
     private String imgString;
     @Getter @Setter
-    private boolean isConfirmed = false;
+    private Boolean isConfirmed = false;
 
     public Account() {
         super();
@@ -114,6 +114,14 @@ public class Account {
 
     public String getImgString() { return imgString; }
     public void setImgString(String imgString) { this.imgString = imgString; }
+
+    public boolean isConfirmed() {
+        return isConfirmed != null && isConfirmed;
+    }
+
+    public void setConfirmed(boolean confirmed) {
+        this.isConfirmed = confirmed;
+    }
 
     public String getRole() {
         return this.getClass().getSimpleName().toUpperCase();

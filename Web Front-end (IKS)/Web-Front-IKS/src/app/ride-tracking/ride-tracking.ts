@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Map as MapComponent, RouteMetrics } from '../map/map';
 import { MatButtonModule } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
-import { RideTrackingWebSocketService, RideTrackingUpdate } from '../service/ride-tracking-websocket.service';
+import { RideTrackingWebSocketService } from '../service/ride-tracking-websocket.service';
+import { RideTrackingUpdate } from '../models/ride-tracking.models';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
@@ -21,6 +22,8 @@ export class RideTracking implements OnInit, OnDestroy {
   private rideSubscription?: Subscription;
   private connectionSubscription?: Subscription;
   private userId: number | null = null;
+  private userRole: string | null = null;
+  private previousRideStatus: string | null = null;
 
   startingPoint = 'Bulevar oslobođenja 46, Novi Sad';
   destination = 'Trg slobode 1, Novi Sad';
@@ -46,6 +49,7 @@ export class RideTracking implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.userId = this.authService.getCurrentUserId();
+    this.userRole = this.authService.getRole();
     if (!this.userId) {
       console.error('No logged in user found for ride tracking');
       return;
@@ -53,9 +57,20 @@ export class RideTracking implements OnInit, OnDestroy {
 
     this.rideSubscription = this.rideTrackingService.getRideUpdates()
       .subscribe(rideUpdate => {
-        this.currentRide = rideUpdate;
         if (rideUpdate) {
-          this.updateMapView(rideUpdate);
+          const displayRide = this.selectRideToDisplay(rideUpdate);
+          
+          if (displayRide && this.previousRideStatus !== 'FINISHED' && 
+              displayRide.status === 'FINISHED' && 
+              this.userRole !== 'DRIVER') {
+            this.openRate();
+          }
+          this.previousRideStatus = displayRide?.status ?? null;
+          
+          this.currentRide = displayRide;
+          if (displayRide) {
+            this.updateMapView(displayRide);
+          }
         }
       });
 
@@ -173,8 +188,23 @@ export class RideTracking implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Error stopping ride:', err);
       }
-    });
-    this.openRate();
+    }); 
+  }
+
+  isDriver(): boolean {
+    return this.userRole === 'DRIVER';
+  }
+
+  private selectRideToDisplay(rideUpdate: RideTrackingUpdate): RideTrackingUpdate | null {
+    if (rideUpdate.status === 'CANCELED') {
+      return null;
+    }
+
+    if (['ACTIVE', 'SCHEDULED', 'FINISHED'].includes(rideUpdate.status)) {
+      return rideUpdate;
+    }
+
+    return null;
   }
 
   openNote(): void {
