@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -104,6 +105,13 @@ public class DriverController {
 
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
+    @PutMapping(
+            value = "/deactivate",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<?> requestDriverDeactivation() {
+        driverService.deactivateDriverIfRequested();
+        return ResponseEntity.ok("Deactivation request processed");
+    }
 }
-
-
