@@ -260,6 +260,7 @@ export class RideTracking implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error sending rating:', err);
+        this.closeRateForm();
       }
     });
     
