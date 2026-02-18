@@ -54,6 +54,9 @@ public class SecurityConfig {
     JwtAuthenticationFilter jwtFilter;
 
     @Autowired
+    RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+
+    @Autowired
     AccountRepository accountRepository;
 
 
@@ -107,7 +110,7 @@ public class SecurityConfig {
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                        .authenticationEntryPoint(restAuthenticationEntryPoint)
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider());

@@ -1,11 +1,14 @@
 package ZgazeniSendvic.Server_Back_ISS.security.jwt;
 
 import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetailsService;
+import ZgazeniSendvic.Server_Back_ISS.security.auth.RestAuthenticationEntryPoint;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,11 +24,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     JwtUtils jwtUtil;
     @Autowired
     CustomUserDetailsService userDetailsService;
+    @Autowired
+    RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
     public JwtAuthenticationFilter(JwtUtils jwtUtil,
-                                   CustomUserDetailsService userDetailsService) {
+                                   CustomUserDetailsService userDetailsService,
+                                   RestAuthenticationEntryPoint restAuthenticationEntryPoint) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
+        this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
     }
 
     @Override
@@ -42,7 +49,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        String email = jwtUtil.getUsernameFromToken(token);
+        String email;
+        try {
+            email = jwtUtil.getUsernameFromToken(token);
+        } catch (ExpiredJwtException ex) {
+            restAuthenticationEntryPoint.commence(
+                    request,
+                    response,
+                    new BadCredentialsException("JWT expired", ex)
+            );
+            return;
+        } catch (Exception ex) {
+            restAuthenticationEntryPoint.commence(
+                    request,
+                    response,
+                    new BadCredentialsException("JWT invalid", ex)
+            );
+            return;
+        }
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
@@ -61,4 +85,3 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
-
