@@ -73,7 +73,6 @@ export class PanicNotifications implements OnInit, OnDestroy {
   private panicSubscription?: Subscription;
   private resolvedSubscription?: Subscription;
   private connectionSubscription?: Subscription;
-  private audioContext?: AudioContext;
 
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
@@ -100,14 +99,11 @@ export class PanicNotifications implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Request notification permission for admins
+    // Just load the panic notifications for the table
     const userRole = this.authService.getRole();
     if (userRole === 'ADMIN') {
-      if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission();
-      }
-      // WebSocket is already connected from login, just subscribe to streams
       this.setupSubscriptions();
+      this.fetchPanics();
     }
   }
 
@@ -120,20 +116,22 @@ export class PanicNotifications implements OnInit, OnDestroy {
   }
 
   private setupSubscriptions(): void {
-    // Subscribe to new panic notifications
+    // Subscribe to new panic notifications to update the table
     this.panicSubscription = this.panicService.getPanicNotificationsStream().subscribe({
       next: (panic) => {
-        this.handleNewPanicNotification(panic);
+        // Refresh the table to show the new panic
+        this.fetchPanics();
       },
       error: (err) => {
         console.error('Error receiving panic notification:', err);
       }
     });
 
-    // Subscribe to panic resolved notifications
+    // Subscribe to panic resolved notifications to update the table
     this.resolvedSubscription = this.panicService.getPanicResolvedNotificationsStream().subscribe({
       next: (panic) => {
-        this.handlePanicResolvedNotification(panic);
+        // Refresh the table to update the status
+        this.fetchPanics();
       },
       error: (err) => {
         console.error('Error receiving panic resolved notification:', err);
@@ -153,111 +151,7 @@ export class PanicNotifications implements OnInit, OnDestroy {
     });
   }
 
-  private handleNewPanicNotification(panic: PanicNotificationDTO): void {
-    // Show browser notification
-    this.showBrowserNotification(
-      'PANIC ALERT!',
-      `Panic from ${panic.callerName} (ID: ${panic.callerId}) - Ride #${panic.rideId}`,
-      'urgent'
-    );
 
-    // Play urgent audio
-    this.playNotificationSound('urgent');
-
-    // Show snackbar
-    this.snackBar.open(
-      `🚨 NEW PANIC: ${panic.callerName} - Ride #${panic.rideId}`,
-      'View',
-      { 
-        duration: 10000,
-        panelClass: ['panic-snackbar']
-      }
-    );
-
-    // Refresh the table to show the new panic
-    this.fetchPanics();
-  }
-
-  private handlePanicResolvedNotification(panic: PanicNotificationDTO): void {
-    // Show browser notification
-    this.showBrowserNotification(
-      'Panic Resolved',
-      `Panic #${panic.id} from ${panic.callerName} has been resolved`,
-      'resolved'
-    );
-
-    // Play resolved audio
-    this.playNotificationSound('resolved');
-
-    // Show snackbar
-    this.snackBar.open(
-      `✓ Panic #${panic.id} resolved - ${panic.callerName}`,
-      'OK',
-      { 
-        duration: 5000,
-        panelClass: ['resolved-snackbar']
-      }
-    );
-
-    // Refresh the table to update the status
-    this.fetchPanics();
-  }
-
-  private showBrowserNotification(title: string, body: string, type: 'urgent' | 'resolved'): void {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      const notification = new Notification(title, {
-        body: body,
-        icon: type === 'urgent' ? '/assets/panic-icon.png' : '/assets/check-icon.png',
-        badge: '/assets/panic-icon.png',
-        tag: 'panic-notification',
-        requireInteraction: type === 'urgent', // Keep urgent notifications visible
-        silent: false
-      });
-
-      notification.onclick = () => {
-        window.focus();
-        notification.close();
-      };
-    }
-  }
-
-  private playNotificationSound(type: 'urgent' | 'resolved'): void {
-    // Create audio context if not exists
-    if (!this.audioContext) {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-
-    const ctx = this.audioContext;
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-
-    if (type === 'urgent') {
-      // Urgent alarm sound: alternating high-pitched beeps
-      oscillator.frequency.setValueAtTime(880, ctx.currentTime); // A5 note
-      oscillator.frequency.setValueAtTime(1046, ctx.currentTime + 0.15); // C6 note
-      oscillator.frequency.setValueAtTime(880, ctx.currentTime + 0.3);
-      oscillator.frequency.setValueAtTime(1046, ctx.currentTime + 0.45);
-      
-      gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
-      
-      oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + 0.6);
-    } else {
-      // Resolved sound: pleasant two-tone chime
-      oscillator.frequency.setValueAtTime(523, ctx.currentTime); // C5 note
-      oscillator.frequency.setValueAtTime(659, ctx.currentTime + 0.15); // E5 note
-      
-      gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-      
-      oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + 0.4);
-    }
-  }
 
   applyFilters(): void {
     this.pageIndex = 0;
