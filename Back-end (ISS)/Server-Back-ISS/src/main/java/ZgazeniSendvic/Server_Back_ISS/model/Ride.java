@@ -58,24 +58,38 @@ public class Ride {
     private Account canceler;
     // Sortable fields - hidden from JSON
     @Getter
+    @Setter
     @Column(name = "start_latitude")
     @JsonIgnore
     private Double startLatitude;
 
     @Getter
+    @Setter
     @Column(name = "start_longitude")
     @JsonIgnore
     private Double startLongitude;
 
     @Getter
+    @Setter
     @Column(name = "end_latitude")
     @JsonIgnore
     private Double endLatitude;
 
     @Getter
+    @Setter
     @Column(name = "end_longitude")
     @JsonIgnore
     private Double endLongitude;
+
+    @Getter
+    @Setter
+    @Column(name = "current_latitude")
+    private Double currentLatitude;
+
+    @Getter
+    @Setter
+    @Column(name = "current_longitude")
+    private Double currentLongitude;
 
 
     @Getter @Setter
