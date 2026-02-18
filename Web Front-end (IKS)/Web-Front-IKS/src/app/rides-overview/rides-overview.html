@@ -1,0 +1,30 @@
+<div class="rides-overview">
+  <h1 class="rides-title">Active and Scheduled Rides</h1>
+  <div class="overview-list">
+    <ul>
+      @for (ride of rides; track ride.trackId) {
+        <li>
+          <div class="ride-entry">
+            <span class="ride-driver">{{ ride.driverLabel }}</span>
+            <span class="ride-date">{{ ride.date }}</span>
+            <span class="ride-time-start">{{ ride.timeStart }}</span>
+            <span class="ride-time-end">{{ ride.timeEnd }}</span>
+            <span class="ride-origin">{{ ride.originAddress }}</span>
+            <span class="ride-destination">{{ ride.destinationAddress }}</span>
+            <span class="ride-price">{{ ride.price }}</span>
+            <span class="ride-status">{{ ride.status }}</span>
+          </div>
+        </li>
+      }
+      @if (rides.length === 0 && !loading && !error) {
+        <p class="overview-state">No active or scheduled rides found.</p>
+      }
+    </ul>
+    @if (loading) {
+      <p class="overview-state">Loading rides...</p>
+    }
+    @if (error) {
+      <p class="overview-state error">{{ error }}</p>
+    }
+  </div>
+</div>

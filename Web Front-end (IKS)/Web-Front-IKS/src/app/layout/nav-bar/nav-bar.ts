@@ -27,4 +27,16 @@ export class NavBar {
   isAdmin(): boolean {
     return this.authService.getRole() === 'ADMIN';
   }
+
+  isDriver(): boolean {
+    return this.authService.getRole() === 'DRIVER';
+  }
+
+  isUser(): boolean {
+    return this.authService.getRole() === 'USER';
+  }
+
+  isLoggedIn(): boolean {
+    return this.authService.isAuthenticated();
+  }
 }
