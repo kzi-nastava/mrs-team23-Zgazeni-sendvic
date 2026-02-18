@@ -1,6 +1,4 @@
-import { Location } from '../model/route';
-
-
+import { Location } from '../models/route';
 
 export interface RouteEstimationRequest {
     locations: Location[];
