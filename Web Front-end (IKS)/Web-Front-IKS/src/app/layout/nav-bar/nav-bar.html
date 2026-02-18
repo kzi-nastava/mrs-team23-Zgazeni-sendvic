@@ -4,15 +4,18 @@
   </div>
 
   <div class="right">
-    <div class="button-container1">      @if (isHomePage()) {
-        <button mat-raised-button color="primary" [routerLink]="['/ride-order']">Order Ride</button>
-      <button mat-raised-button color="accent" (click)="panelService.togglePanel()">Estimate Route</button>
-      }      @if (isAdmin()) {
+    <div class="button-container1">      
+      @if (isHomePage()) {  
+        <button mat-raised-button color="accent" (click)="panelService.togglePanel()">Estimate Route</button>
+      }
+      @if (isAdmin()) {
         <button mat-raised-button color="warn" [routerLink]="['/panic-notifications']">
           <mat-icon>warning</mat-icon>
           Panic Notifications
         </button>
-      }      <button mat-raised-button color="primary" [routerLink]="['/ride-tracking']">Ride Tracking</button>
+      }
+      <button mat-raised-button color="primary" [routerLink]="['/ride-order']">Order Ride</button>
+      <button mat-raised-button color="primary" [routerLink]="['/ride-tracking']">Ride Tracking</button>
       <button mat-raised-button color="primary" [routerLink]="['/hor-driver']">HOR Driver</button>
       <button mat-raised-button color="primary" [routerLink]="['/future-rides']">Future Rides</button>
       <button mat-raised-button color="primary" [routerLink]="['/login']">Log in</button>

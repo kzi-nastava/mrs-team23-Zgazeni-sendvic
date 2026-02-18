@@ -97,7 +97,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/account/me", "/api/account/me/change-request").authenticated()
                         .requestMatchers("/api/riderequest/**").authenticated()
                         .requestMatchers("/api/ride-tracking/stop/**").authenticated()
-                        .requestMatchers("/api/ride-PANIC/**").authenticated()
+                        .requestMatchers("/api/ride-PANIC/***").authenticated()
                         .requestMatchers("/api/HOR/admin/**").authenticated()
                         .requestMatchers("/api/HOR/admin/detailed/**").authenticated()
                         .requestMatchers("/api/HOR/user").authenticated()
