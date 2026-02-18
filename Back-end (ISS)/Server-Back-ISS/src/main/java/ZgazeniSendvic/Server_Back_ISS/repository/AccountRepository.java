@@ -26,7 +26,4 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     @Query("SELECT a FROM Admin a")
     List<Admin> findAllAdmins();
 
-    @Query("SELECT a FROM Admin a")
-    List<Admin> findAllAdmins();
-
 }
