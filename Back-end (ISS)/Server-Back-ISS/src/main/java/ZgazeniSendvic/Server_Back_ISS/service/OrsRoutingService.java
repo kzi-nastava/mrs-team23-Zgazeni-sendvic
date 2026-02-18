@@ -1,7 +1,9 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.OrsRouteResponse;
+import ZgazeniSendvic.Server_Back_ISS.dto.OrsRouteResponseGeo;
 import ZgazeniSendvic.Server_Back_ISS.dto.OrsRouteResult;
+import ZgazeniSendvic.Server_Back_ISS.model.Location;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,25 +36,36 @@ public class OrsRoutingService {
         if (waypoints == null || waypoints.size() < 2) {
             throw new IllegalArgumentException("At least 2 coordinates are required");
         }
-
+        validateCoordinates(waypoints);
         Map<String, Object> request = Map.of(
                 "coordinates", waypoints
         );
 
 
-        OrsRouteResponse response = orsWebClient.post() // Decide to send a POST
+            OrsRouteResponseGeo response = orsWebClient.post() // Decide to send a POST
                 .bodyValue(request) // Set the request as body
                 .retrieve() // Actually send it, expecting a result
-                .bodyToMono(OrsRouteResponse.class) // Transfer the JSON body into the ORSRouteResponse which mirrors it
+                .bodyToMono(OrsRouteResponseGeo.class) // Transfer the JSON body into the ORSRouteResponse which mirrors it
                 .block(); // Wait for answer, i.e. make it sync
 
-        OrsRouteResponse.Route route = response.getRoutes().get(0);
+            OrsRouteResponseGeo.Feature feature = response.getFeatures().get(0);
 
+            return new OrsRouteResult(
+                    feature.getProperties().getSummary().getDistance(),
+                    feature.getProperties().getSummary().getDuration(),
+                    feature.getGeometry().getCoordinates(),
+                    feature.getGeometry().getType()
+            );
+
+            /*
+        OrsRouteResponse.Route route = response.getRoutes().get(0);
         return new OrsRouteResult(
                 route.getSummary().getDistance(),
                 route.getSummary().getDuration(),
                 route.getGeometry()
         );
+
+             */
 
         } catch (WebClientResponseException e) {
             // ORS responded with an error status (4xx, 5xx)
@@ -64,6 +77,30 @@ public class OrsRoutingService {
 
         return null;
     }
+
+    public OrsRouteResult getFastestRouteWithLocations(List<Location> locations){
+        List<List<Double>> waypoints = new ArrayList<>();
+        for(Location location : locations){
+
+            if(location.getLatitude() == null || location.getLongitude() == null){
+                throw new IllegalArgumentException("Every location must have both latitude and longitude");
+            }
+
+            List<Double> coordinationSet = new ArrayList<>();
+            coordinationSet.add(location.getLongitude());
+            coordinationSet.add(location.getLatitude());
+
+            waypoints.add(coordinationSet);
+
+
+        }
+
+        return getFastestRouteWithPath(waypoints);
+
+    }
+
+
+
 
     public List<Double> addressToCordinates(String address) {
         try {
@@ -130,13 +167,29 @@ public class OrsRoutingService {
         return getFastestRouteAddresses(addresses);
     }
 
+
+    public void validateCoordinates(List<List<Double>> waypoints){
+        if(waypoints == null || waypoints.size() < 2){
+            throw new IllegalArgumentException("At least 2 coordinates are required");
+        }
+
+        for(List<Double> coordinationSet : waypoints){
+            if(coordinationSet.size() != 2){
+                throw new IllegalArgumentException("Each coordinate set must have exactly 2 values (lon, lat)");
+            }
+        }
+    }
+
+    public void validateCoordinatesLocations(List<Location> locations){
+        if(locations == null || locations.size() < 2){
+            throw new IllegalArgumentException("At least 2 coordinates are required");
+        }
+
+        for(Location location : locations){
+            if(location.getLatitude() == null || location.getLongitude() == null){
+                throw new IllegalArgumentException("Every location must have both latitude and longitude");
+            }
+        }
+    }
+
 }
-
-
-
-
-
-
-
-
-

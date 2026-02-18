@@ -11,8 +11,10 @@ import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
@@ -26,6 +28,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -41,6 +44,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.util.Arrays;
 
+@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
 @Configuration // Marks as config, makes all @Beans auto execute
 // @EnableWebSecurity(debug = true) // Enables web security
 @EnableMethodSecurity // Enables @PreAuthorize, @Secured etc.
@@ -78,7 +82,6 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> {})
@@ -93,15 +96,28 @@ public class SecurityConfig {
                         // authenticated endpoints
                         .requestMatchers("/api/account/me", "/api/account/me/change-request").authenticated()
                         .requestMatchers("/api/riderequest/**").authenticated()
+                        .requestMatchers("/api/ride-tracking/stop/**").authenticated()
+                        .requestMatchers("/api/ride-PANIC/**").authenticated()
+                        .requestMatchers("/api/HOR/admin/**").authenticated()
+                        .requestMatchers("/api/HOR/admin/detailed/**").authenticated()
+                        .requestMatchers("/api/HOR/user").authenticated()
+                        .requestMatchers("/api/HOR/user/detailed/**").authenticated()
+                        .requestMatchers("/api/panic-notifications/resolve/**").authenticated()
+                        .requestMatchers("/api/panic-notifications/retrieve").authenticated()
+                        .requestMatchers("/api/auth/logout").authenticated()
+                        .requestMatchers("/api/driver/deactivate").authenticated()
 
-                        // everything else
-                        .anyRequest().permitAll()
+                        .anyRequest().permitAll() // for testing
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration conf)
@@ -113,6 +129,19 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         PasswordEncoder encoder = new BCryptPasswordEncoder();
         return encoder;
+    }
+
+    // CORS configuration to allow local frontend during development
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     //CORS config file needed, otherwise reqeusts from port 4200 wont owrk

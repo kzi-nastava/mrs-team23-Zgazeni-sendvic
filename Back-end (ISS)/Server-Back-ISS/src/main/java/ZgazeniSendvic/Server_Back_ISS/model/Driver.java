@@ -12,23 +12,24 @@ public class Driver extends Account {
     @OneToOne
     @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;
-    @Getter
-    boolean available;
-    boolean driving;
     @Getter @Setter
-    boolean awaitingDeactivation; // would be better to keep this in a seperate table perhaps
+    Boolean available = false;
+    @Getter @Setter
+    Boolean driving = false;
+    @Getter @Setter
+    Boolean awaitingDeactivation = false; // would be better to keep this in a seperate table perhaps
 
     @Getter @Setter
     private Location location;
 
     @Getter @Setter
-    private boolean active;
+    private Boolean active = false;
 
     @Getter @Setter
-    private boolean busy;
+    private Boolean busy = false;
 
     @Getter @Setter
-    private int workedMinutesLast24h;
+    private Integer workedMinutesLast24h = 0;
 
     @Getter @Setter
     @Column(unique = true)
@@ -45,15 +46,19 @@ public class Driver extends Account {
 
     //------------Status changes
 
-    public void setAvailable(boolean available) {
+    public void setAvailable(Boolean available) {
         this.available = available;
         //should awaiting be turned of regardgless? shouldnt ever occur that it should, but just in case
         awaitingDeactivation = false;
     }
 
-    void setDriving(boolean driving) {
-        if(!driving){
-            if(awaitingDeactivation){
+    public boolean isAvailable() {
+        return available != null && available;
+    }
+
+    void setDriving(Boolean driving) {
+        if(driving != null && !driving){
+            if(awaitingDeactivation != null && awaitingDeactivation){
                 available = false;
                 awaitingDeactivation = false;
             }
@@ -61,8 +66,13 @@ public class Driver extends Account {
         this.driving = driving;
     }
 
-    public boolean getDriving() {
+    public Boolean getDriving() {
         return driving;
     }
+
+    public boolean isActive() {
+        return active != null && active;
+    }
+
 }
 

@@ -1,0 +1,142 @@
+<div class="detail-dialog-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Ride Details</h2>
+    <button mat-icon-button (click)="onCloseClick()" class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
+    <mat-tab-group>
+      <!-- Map Tab -->
+      <mat-tab label="Route Map">
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">map</mat-icon>
+          <span>Route Map</span>
+        </ng-template>
+        <div class="map-container">
+          <app-map></app-map>
+        </div>
+      </mat-tab>
+
+      <!-- Driver Information Tab -->
+      <mat-tab label="Driver">
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">person</mat-icon>
+          <span>Driver</span>
+        </ng-template>
+        <mat-card class="info-card" *ngIf="rideDetails.driver">
+          <mat-card-content>
+            <div class="person-info">
+              <div class="avatar driver-avatar">
+                <mat-icon>directions_car</mat-icon>
+              </div>
+              <div class="info">
+                <h3>{{ rideDetails.driver.firstName }} {{ rideDetails.driver.lastName }}</h3>
+                <p class="email">{{ rideDetails.driver.email }}</p>
+              </div>
+            </div>
+
+            <mat-divider class="section-divider"></mat-divider>
+
+            <div class="ratings-summary" *ngIf="rideDetails.rideDriverRatings && rideDetails.rideDriverRatings.length > 0">
+              <h4>Driver Performance</h4>
+              <div class="rating-row">
+                <span class="rating-label">Driver Rating:</span>
+                <div class="stars">
+                  <mat-icon *ngFor="let star of getRatingStars(getAverageDriverRating())" [class.filled]="star !== 'star_outline'">{{ star }}</mat-icon>
+                </div>
+                <span class="rating-value">{{ getAverageDriverRating() | number:'1.1-1' }}/5</span>
+              </div>
+              <div class="rating-row">
+                <span class="rating-label">Vehicle Rating:</span>
+                <div class="stars">
+                  <mat-icon *ngFor="let star of getRatingStars(getAverageVehicleRating())" [class.filled]="star !== 'star_outline'">{{ star }}</mat-icon>
+                </div>
+                <span class="rating-value">{{ getAverageVehicleRating() | number:'1.1-1' }}/5</span>
+              </div>
+            </div>
+            <div *ngIf="!rideDetails.rideDriverRatings || rideDetails.rideDriverRatings.length === 0" class="no-data">
+              <mat-icon>info</mat-icon>
+              <span>No ratings available</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+
+      <!-- Issues Tab -->
+      <mat-tab label="Issues">
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">warning</mat-icon>
+          <span>Issues ({{ rideDetails.rideNotes.length || 0 }})</span>
+        </ng-template>
+        <div class="notes-list">
+          <mat-card *ngIf="rideDetails.rideNotes && rideDetails.rideNotes.length > 0; else noNotes" class="notes-card">
+            <mat-list>
+              <mat-list-item *ngFor="let note of rideDetails.rideNotes; let last = last" class="note-item">
+                <mat-icon matListItemIcon class="warning-icon">flag</mat-icon>
+                <div matListItemTitle>User ID: {{ note.userId }}</div>
+                <div matListItemLine class="note-text">{{ note.note }}</div>
+                <div matListItemLine class="note-id">Note ID: {{ note.noteId }}</div>
+                <mat-divider *ngIf="!last" matListItemMeta></mat-divider>
+              </mat-list-item>
+            </mat-list>
+          </mat-card>
+          <ng-template #noNotes>
+            <div class="no-data">
+              <mat-icon>check_circle</mat-icon>
+              <span>No inconsistencies reported</span>
+            </div>
+          </ng-template>
+        </div>
+      </mat-tab>
+
+      <!-- Ratings Tab -->
+      <mat-tab label="Ratings">
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">star</mat-icon>
+          <span>Ratings ({{ rideDetails.rideDriverRatings.length || 0 }})</span>
+        </ng-template>
+        <div class="ratings-list">
+          <mat-card *ngIf="rideDetails.rideDriverRatings && rideDetails.rideDriverRatings.length > 0; else noRatings" class="ratings-card">
+            <mat-list>
+              <mat-list-item *ngFor="let rating of rideDetails.rideDriverRatings; let last = last" class="rating-item">
+                <mat-icon matListItemIcon>person</mat-icon>
+                <div matListItemTitle>User {{ rating.userId }}</div>
+                <div matListItemLine>
+                  <span class="rating-badge driver-rating" matTooltip="Driver Rating">
+                    <mat-icon>person</mat-icon>
+                    {{ rating.driverRating }}/5
+                  </span>
+                  <span class="rating-badge vehicle-rating" matTooltip="Vehicle Rating">
+                    <mat-icon>directions_car</mat-icon>
+                    {{ rating.vehicleRating }}/5
+                  </span>
+                </div>
+                <div matListItemLine class="comment-text" *ngIf="rating.comment">{{ rating.comment }}</div>
+                <mat-divider *ngIf="!last" matListItemMeta></mat-divider>
+              </mat-list-item>
+            </mat-list>
+          </mat-card>
+          <ng-template #noRatings>
+            <div class="no-data">
+              <mat-icon>star_outline</mat-icon>
+              <span>No ratings available</span>
+            </div>
+          </ng-template>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="dialog-actions">
+    <button mat-raised-button color="primary" (click)="onReorderClick()">
+      <mat-icon>repeat</mat-icon>
+      Reorder Route
+    </button>
+    <button mat-stroked-button (click)="onCloseClick()">
+      <mat-icon>close</mat-icon>
+      Close
+    </button>
+  </mat-dialog-actions>
+</div>

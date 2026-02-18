@@ -7,6 +7,7 @@ import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
 import ZgazeniSendvic.Server_Back_ISS.service.DriverServiceImpl;
 //import ZgazeniSendvic.Server_Back_ISS.util.TokenUtils;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,6 +19,9 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.token.TokenService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @CrossOrigin (origins="*")
@@ -39,20 +43,24 @@ class AuthController {
 
     @PostMapping(path = "register", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> register(@RequestBody RegisterRequestDTO body) throws Exception{
+    public ResponseEntity<Map<String, String>> register(@Valid @RequestBody RegisterRequestDTO body) throws Exception{
 
 
             LoginRequestedDTO loginDTO = accountService.registerAccount(body);
+            String  pictureToken = tokenUtils.generateToken(accountService.findAccountByEmail(body.getEmail()));
 
 
-        return new ResponseEntity<String>("Account created", HttpStatus.CREATED);
+        Map<String, String> response = new HashMap<>();
+        response.put("pictureToken", pictureToken);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
 
     }
 
     @PostMapping(path = "login", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<LoginRequestedDTO> login(@RequestBody LoginRequestDTO request) throws Exception {
+    public ResponseEntity<LoginRequestedDTO> login(@Valid @RequestBody LoginRequestDTO request) throws Exception {
 
         UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(
                 request.getEmail(), request.getPassword());
@@ -76,14 +84,14 @@ class AuthController {
 
         //all checks passed
         driverService.ActivateIfDriver(request.getEmail());
-        LoginRequestedDTO loginDTO = new LoginRequestedDTO(jwt, expiresIn, new AccountLoginDTO(account));
+        LoginRequestedDTO loginDTO = new LoginRequestedDTO(jwt, expiresIn, new AccountLoginDTO(account), account.getRole());
 
         return new ResponseEntity<LoginRequestedDTO>(loginDTO, HttpStatus.CREATED);
     }
 
     @PostMapping(path = "forgot-password", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> sendResetEmail(@RequestBody PasswordResetRequestDTO request) throws Exception {
+    public ResponseEntity<String> sendResetEmail(@Valid @RequestBody PasswordResetRequestDTO request) throws Exception {
         //So I need to receive the mail, and based on it check wether in database if so send email
         //if not, do nothing, do not reveal anything, sounds relatively simple tbh
         accountService.forgotPassword(request.getEmail());
@@ -93,7 +101,7 @@ class AuthController {
 
     @PostMapping(path = "reset-password", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> confirmPasswordReset(@RequestBody PasswordResetConfirmedRequestDTO request)
+    public ResponseEntity<String> confirmPasswordReset(@Valid @RequestBody PasswordResetConfirmedRequestDTO request)
             throws Exception {
         //would change the password etc.;
 
@@ -105,7 +113,7 @@ class AuthController {
 
     @PostMapping(path = "confirm-account", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> confirmAccount(@RequestBody AccountConfirmationDTO request)
+    public ResponseEntity<String> confirmAccount(@Valid @RequestBody AccountConfirmationDTO request)
             throws Exception {
         //would change the password etc.;
 
@@ -116,15 +124,14 @@ class AuthController {
     }
 
 
-    @PostMapping(path = "/logout", consumes = MediaType.APPLICATION_JSON_VALUE,
+    @PostMapping(path = "/logout",
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> logOut(@RequestBody logOutDTO request)
+    public ResponseEntity<String> logOut()
             throws Exception {
 
 
-        if(driverService.isAvailableDriver(request.getEmail())) {
-            return new ResponseEntity<String>("Driver must be unavailable", HttpStatus.FORBIDDEN);
-        }
+        driverService.ThrowIfNotAllowedToLogOut();
+
 
         return new ResponseEntity<String>("Log Out successful", HttpStatus.OK);
 

@@ -9,6 +9,25 @@ import {
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
 
+export interface VehiclePosition {
+  latitude: number;
+  longitude: number;
+  vehicleId?: number;
+  status?: string;
+}
+
+interface RideMapUpdate {
+  current: L.LatLngTuple;
+  destination?: L.LatLngTuple;
+  route?: L.LatLngTuple[];
+}
+
+export interface RouteMetrics {
+  distanceMeters: number;
+  durationSeconds?: number;
+}
+
+
 @Component({
   selector: 'app-map',
   standalone: true,
@@ -19,6 +38,7 @@ export class Map implements AfterViewInit, OnDestroy {
 
   // MODE CONTROL
   @Input() showMultipleVehicles: boolean = false;
+  @Output() routeMetrics = new EventEmitter<RouteMetrics>();
 
   // ROUTE INPUTS (used when showMultipleVehicles = false)
   @Input() pickup?: L.LatLngTuple;
@@ -28,6 +48,15 @@ export class Map implements AfterViewInit, OnDestroy {
 
   private mapInstance!: L.Map;
   private routingControl: any;
+  private vehicleLayer: L.LayerGroup | null = null;
+  private rideLayer: L.LayerGroup | null = null;
+  private vehicleMarker: L.Marker | null = null;
+  private destinationMarker: L.Marker | null = null;
+  private routeLine: L.Polyline | null = null;
+  private pendingVehicleMarkers: VehiclePosition[] | null = null;
+  private pendingRideUpdate: RideMapUpdate | null = null;
+
+  constructor() {}
 
   ngAfterViewInit(): void {
     this.initializeMap();
@@ -67,57 +96,162 @@ export class Map implements AfterViewInit, OnDestroy {
       maxZoom: 19
     }).addTo(this.mapInstance);
 
-    if (this.showMultipleVehicles) {
-      this.renderFleet();
-    } else if (this.pickup && this.destination) {
-      this.drawRoute(this.pickup, this.destination);
+    this.vehicleLayer = L.layerGroup().addTo(this.mapInstance);
+    this.rideLayer = L.layerGroup().addTo(this.mapInstance);
+
+    if (this.pendingVehicleMarkers) {
+      this.setVehicleMarkersInternal(this.pendingVehicleMarkers);
+      this.pendingVehicleMarkers = null;
+    }
+
+    if (this.pendingRideUpdate) {
+      this.updateRideLocationInternal(this.pendingRideUpdate);
+      this.pendingRideUpdate = null;
     }
   }
 
-  // ---------------------------
-  // FLEET MODE (Home Page)
-  // ---------------------------
-  private renderFleet(): void {
-    const vehicleMarkers: { coords: L.LatLngTuple; popup: string }[] = [
-      { coords: [45.245, 19.816], popup: 'Vehicle 1<br>Available' },
-      { coords: [45.230, 19.829], popup: 'Vehicle 2<br>Available' },
-      { coords: [45.238, 19.811], popup: 'Vehicle 3<br>Not Available' }
-    ];
+  setVehicleMarkers(vehicles: VehiclePosition[]): void {
+    if (!this.mapInstance || !this.vehicleLayer) {
+      this.pendingVehicleMarkers = vehicles;
+      return;
+    }
 
-    vehicleMarkers.forEach(vehicle => {
-      L.marker(vehicle.coords)
-        .addTo(this.mapInstance)
-        .bindPopup(vehicle.popup);
+    this.setVehicleMarkersInternal(vehicles);
+  }
+
+  updateRideLocation(
+    current: L.LatLngTuple,
+    destination?: L.LatLngTuple,
+    route?: L.LatLngTuple[]
+  ): void {
+    const update: RideMapUpdate = { current, destination, route };
+
+    if (!this.mapInstance || !this.rideLayer) {
+      this.pendingRideUpdate = update;
+      return;
+    }
+
+    this.updateRideLocationInternal(update);
+  }
+
+  fitToBounds(points: L.LatLngTuple[]): void {
+    if (!this.mapInstance || points.length === 0) {
+      return;
+    }
+
+    const bounds = L.latLngBounds(points);
+    this.mapInstance.fitBounds(bounds, { padding: [50, 50] });
+  }
+
+  private setVehicleMarkersInternal(vehicles: VehiclePosition[]): void {
+    if (!this.vehicleLayer) {
+      return;
+    }
+
+    this.vehicleLayer.clearLayers();
+
+    vehicles.forEach((vehicle) => {
+      const coords: L.LatLngTuple = [vehicle.latitude, vehicle.longitude];
+      const popupParts: string[] = [];
+
+      if (vehicle.vehicleId !== undefined) {
+        popupParts.push(`Vehicle ${vehicle.vehicleId}`);
+      }
+
+      if (vehicle.status) {
+        popupParts.push(`Status: ${vehicle.status}`);
+      }
+
+      const popupText = popupParts.join('<br>');
+      const marker = L.marker(coords);
+
+      if (popupText) {
+        marker.bindPopup(popupText);
+      }
+
+      marker.addTo(this.vehicleLayer!);
     });
   }
 
-  // ---------------------------
-  // ROUTE MODE (Ride Tracking)
-  // ---------------------------
-  private drawRoute(start: L.LatLngTuple, end: L.LatLngTuple): void {
+  private updateRideLocationInternal(update: RideMapUpdate): void {
+    if (!this.rideLayer) {
+      return;
+    }
 
-    this.routingControl = (L as any).Routing.control({
-      waypoints: [
-        L.latLng(start[0], start[1]),
-        L.latLng(end[0], end[1])
-      ],
-      routeWhileDragging: false,
-      addWaypoints: false,
-      draggableWaypoints: false,
-      show: false,
-      lineOptions: {
-        styles: [{ color: '#1976d2', weight: 5 }]
+    if (!this.vehicleMarker) {
+      this.vehicleMarker = L.marker(update.current)
+        .addTo(this.rideLayer)
+        .bindPopup('Vehicle');
+    } else {
+      this.vehicleMarker.setLatLng(update.current);
+    }
+
+    if (update.destination) {
+      if (!this.destinationMarker) {
+        this.destinationMarker = L.marker(update.destination)
+          .addTo(this.rideLayer)
+          .bindPopup('Destination');
+      } else {
+        this.destinationMarker.setLatLng(update.destination);
       }
-    }).addTo(this.mapInstance);
 
-    // Optional: Extract distance & duration
-    this.routingControl.on('routesfound', (e: any) => {
-      const route = e.routes[0];
-      const distanceKm = route.summary.totalDistance / 1000;
-      const durationMin = route.summary.totalTime / 60;
+      const routing = (L as any).Routing;
+      if (routing && this.mapInstance) {
+        if (!this.routingControl) {
+          this.routingControl = routing.control({
+            waypoints: [
+              L.latLng(update.current[0], update.current[1]),
+              L.latLng(update.destination[0], update.destination[1]),
+            ],
+            lineOptions: {
+              styles: [{ color: '#1976d2', weight: 4 }],
+              extendToWaypoints: true,
+            },
+            addWaypoints: false,
+            draggableWaypoints: false,
+            fitSelectedRoutes: false,
+            show: false,
+            createMarker: () => null,
+          }).addTo(this.mapInstance);
 
-      console.log('Distance (km):', distanceKm);
-      console.log('Duration (min):', durationMin);
-    });
+          this.routingControl.on('routesfound', (event: any) => {
+            const route = event?.routes?.[0];
+            if (route?.summary?.totalDistance) {
+              this.routeMetrics.emit({
+                distanceMeters: route.summary.totalDistance,
+                durationSeconds: route.summary.totalTime,
+              });
+            }
+          });
+        } else {
+          this.routingControl.setWaypoints([
+            L.latLng(update.current[0], update.current[1]),
+            L.latLng(update.destination[0], update.destination[1]),
+          ]);
+        }
+
+        if (this.routeLine) {
+          this.rideLayer.removeLayer(this.routeLine);
+          this.routeLine = null;
+        }
+      }
+    } else if (this.routingControl && this.mapInstance) {
+      this.mapInstance.removeControl(this.routingControl);
+      this.routingControl = null;
+    }
+
+    if (!this.routingControl && update.route && update.route.length > 1) {
+      if (!this.routeLine) {
+        this.routeLine = L.polyline(update.route, { color: '#1976d2' })
+          .addTo(this.rideLayer);
+      } else {
+        this.routeLine.setLatLngs(update.route);
+      }
+    } else if (!update.route || update.route.length <= 1) {
+      if (this.routeLine) {
+        this.rideLayer.removeLayer(this.routeLine);
+        this.routeLine = null;
+      }
+    }
   }
 }

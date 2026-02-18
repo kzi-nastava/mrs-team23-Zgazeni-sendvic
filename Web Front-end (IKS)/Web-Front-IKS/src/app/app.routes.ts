@@ -13,7 +13,11 @@ import { ProfileCard } from './profiles/profile-card/profile-card';
 import { ProfileEdit } from './profiles/profile-edit/profile-edit';
 import { DriverAcceptEdit } from './profiles/driver-accept-edit/driver-accept-edit';
 import { RideOrder } from './ride-order/ride-order';
-
+import { HORAdmin } from './hor-admin/hor-admin';
+import {HORUser} from "./hor-user/hor-user";
+import { DetailedHorAdmin } from './hor-admin/detailed-hor-admin/detailed-hor-admin';
+import { DetailedHorUser } from './hor-user/detailed-hor-user/detailed-hor-user';
+import { PanicNotifications } from './panic-notifications/panic-notifications';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -30,5 +34,10 @@ export const routes: Routes = [
   { path: 'reset-password', component: ResetPassword },
   { path: 'api/auth/confirm-account', component: ConfirmAccount },
   { path: 'route-estimation', component: RouteEstimationPanel },
+  {path: 'hor-admin', component: HORAdmin},
+  {path: 'hor-admin/detailed/:id', component: DetailedHorAdmin},
+  {path: 'hor-user', component: HORUser},
+  {path: 'hor-user/detailed/:id', component: DetailedHorUser},
+  {path: 'panic-notifications', component: PanicNotifications},
   { path: '**', redirectTo: '' },
 ];

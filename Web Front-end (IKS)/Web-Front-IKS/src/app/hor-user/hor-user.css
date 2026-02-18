@@ -1,0 +1,150 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap');
+
+:host {
+	--ink: #151515;
+	--muted: #6b6b6b;
+	--edge: #e8e4da;
+	--accent: #f26a3d;
+	--accent-2: #2d8d9f;
+	--surface: #ffffff;
+	display: block;
+	color: var(--ink);
+	font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+}
+
+.page {
+	min-height: 100vh;
+	padding: 48px 20px 64px;
+	background:
+		radial-gradient(circle at 20% 20%, rgba(242, 106, 61, 0.15), transparent 40%),
+		radial-gradient(circle at 80% 10%, rgba(45, 141, 159, 0.2), transparent 35%),
+		linear-gradient(160deg, #fdf7e9 0%, #f2f8fb 60%, #f6f2e8 100%);
+}
+
+.card {
+	max-width: 1480px;
+	margin: 0 auto;
+	background: var(--surface);
+	border-radius: 22px;
+	border: 1px solid var(--edge);
+	padding: 28px 28px 18px;
+	box-shadow: 0 18px 40px rgba(13, 20, 33, 0.08);
+	animation: liftIn 0.5s ease;
+}
+
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 24px;
+	margin-bottom: 18px;
+}
+
+.title {
+	font-size: 30px;
+	font-weight: 700;
+	margin: 0 0 6px;
+	letter-spacing: 0.2px;
+}
+
+.subtitle {
+	margin: 0;
+	color: var(--muted);
+	font-size: 15px;
+}
+
+.filters {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 16px;
+	align-items: end;
+	margin: 18px 0 22px;
+	padding: 16px;
+	border-radius: 16px;
+	background: linear-gradient(135deg, rgba(242, 106, 61, 0.06), rgba(45, 141, 159, 0.06));
+	border: 1px solid rgba(15, 15, 15, 0.06);
+}
+
+.filter-actions {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	justify-self: start;
+	align-self: center;
+}
+
+.table-wrap {
+	border: 1px solid var(--edge);
+	border-radius: 16px;
+	overflow: auto;
+}
+
+.rides-table {
+	width: 100%;
+	min-width: 800px;
+}
+
+.route {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	align-items: center;
+}
+
+.route span {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.arrow {
+	font-size: 18px;
+	opacity: 0.5;
+	line-height: 1;
+}
+
+.state {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 4px 6px;
+	color: var(--muted);
+	font-size: 14px;
+}
+
+.state.error {
+	color: #b00020;
+}
+
+mat-paginator {
+	margin-top: 8px;
+}
+
+@keyframes liftIn {
+	from {
+		opacity: 0;
+		transform: translateY(16px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (max-width: 720px) {
+	.card {
+		padding: 22px 18px 14px;
+	}
+
+	.title {
+		font-size: 24px;
+	}
+
+	.filters {
+		grid-template-columns: 1fr;
+	}
+
+	.filter-actions {
+		justify-content: flex-start;
+	}
+}

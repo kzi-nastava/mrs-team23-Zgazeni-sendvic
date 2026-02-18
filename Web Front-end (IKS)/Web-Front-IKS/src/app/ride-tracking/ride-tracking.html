@@ -1,5 +1,5 @@
 <div class="ride-tracking-container">
-  <app-map [showMultipleVehicles]="false"></app-map>
+  <app-map [showMultipleVehicles]="false" (routeMetrics)="onRouteMetrics($event)"></app-map>
   
   <aside class="ride-sidebar">
     <div class="sidebar-content">
@@ -22,9 +22,13 @@
     </div>
     
     <div class="sidebar-actions">
+        @if (isDriver()) {
         <button class="sidebar-buttons" (click)="stopRide()">End Ride</button>
+        }
+        @if (!isDriver()) {
         <button class="sidebar-buttons" (click)="openNote()">Note</button>
         <button class="sidebar-buttons" (click)="openRate()">Rate</button>
+        }
       </div>
     </div>
   </aside>

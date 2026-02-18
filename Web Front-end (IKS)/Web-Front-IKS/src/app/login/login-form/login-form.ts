@@ -53,7 +53,18 @@ export class LoginForm {
     this.authService.login(request).subscribe({
       next: (response) => {
         console.log('Login successful', response);
+        console.log('User role:', response.user?.role ?? '');
         // Token is already stored by auth service
+        if (response?.token) {
+          this.authService.fetchProfilePicture(response.token).subscribe({
+            next: (blob) => {
+              const objectUrl = URL.createObjectURL(blob);
+              console.log('Profile picture URL:', objectUrl);
+              this.authService.storeProfilePicture(blob);
+            },
+            error: (error) => console.error('Profile picture fetch failed', error)
+          });
+        }
         this.router.navigate(['/']);
       },
       error: (error) => {

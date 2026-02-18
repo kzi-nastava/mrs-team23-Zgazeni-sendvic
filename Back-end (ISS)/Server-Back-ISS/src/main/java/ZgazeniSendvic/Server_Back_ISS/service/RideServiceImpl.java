@@ -1,27 +1,29 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
+import ZgazeniSendvic.Server_Back_ISS.exception.RideNotFoundException;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.model.*;
-import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
+import ZgazeniSendvic.Server_Back_ISS.repository.PanicNotificationRepository;
+import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
+import ZgazeniSendvic.Server_Back_ISS.security.jwt.JwtUtils;
+import ZgazeniSendvic.Server_Back_ISS.websocket.RideTrackingWebSocketService;
 import jakarta.transaction.Transactional;
 import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -39,6 +41,12 @@ public class RideServiceImpl implements IRideService {
     private EmailService emailService;
     @Autowired
     OrsRoutingService orsRoutingService;
+    @Autowired
+    PanicNotificationRepository panicNotificationRepository;
+    @Autowired
+    JwtUtils jwtUtils;
+    @Autowired
+    RideTrackingWebSocketService rideTrackingWebSocketService;
 
     @Override
     public Collection<Ride> getAll() {
@@ -72,23 +80,14 @@ public class RideServiceImpl implements IRideService {
     public DriveCancelledDTO updateCancel(Long rideID, DriveCancelDTO rideDTO) {
         Optional<Ride> found = allRides.findById(rideID);
         if(found.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride cant be cancelled, was not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
         }
 
-        //here would be check for reason,
-
-        //this is if it canceled
-        //NEEDS CHECK
         Ride ride = found.get();
-         if(!canCancelRide(ride, rideDTO)){
-            DriveCancelledDTO cancelled = new DriveCancelledDTO();
-            cancelled.setCancelled(false);
-            return cancelled;
-        }
-
-
+        canCancelRide(ride, rideDTO); //will throw if can't otherwise goes through
 
         ride.setStatus(RideStatus.CANCELED);
+        setCanceler(ride);
         allRides.save(ride);
         allRides.flush();
 
@@ -97,8 +96,7 @@ public class RideServiceImpl implements IRideService {
         cancelled.setCancelled(true);
         cancelled.setRideID(rideID);
         cancelled.setReason(rideDTO.getReason());
-        cancelled.setRequesterName(rideDTO.getRequesterID());
-        cancelled.setTime((new Date()).toString());
+        cancelled.setTime(LocalDateTime.now());
 
         return cancelled;
 
@@ -121,82 +119,100 @@ public class RideServiceImpl implements IRideService {
         return allRides.save(ride);
     }
 
-    public boolean canCancelRide(Ride ride, DriveCancelDTO rideDTO){
-        //assuming both users and non users can cancel, I check, if driver cancelled immediately pass
-        //otherwise compare dates, for 10 minute difference
-        //now where could Driver role be? in securityContext for sure, as he would def be logged in?
-
-        //hmm lets say through email then, if the token is present, well if auth is present at all
-        //email will be there, so one can assume that I can always send the email of the authenticated user (1)
-        //and if it is an unauthenticated user? how is an unauthenticated user connected to a ride he ordered?
-        //
-
-        /*
-
-        emails are unique and tied to accounts and JWT tokens I use. if the user/driver is currently logged in then
-        auth is present and the token for sure contains an email based on which I can pull out the user with the email
-        from the database and check if present on ride as driver or passenger. if as passenger, do time check, if as
-        rider let it be done. if nothing then disallow same as if time check fails. Now the only concern remaining is
-        how this would be done with an unauthenticated user, as I know not how he would be connected to a ride in the
-        first place. of course though he would have some form of unique Id he had given us, hmmmm
-         */
-
-        // Get principal returns userDetails, I set that up in tokenfilter as principal
+    //Sets canceler if there is one
+    public void setCanceler(Ride ride){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        //Interestingly, when security is on, but the request is unauthenticated, getPrincipal returns anonymousUser
-        if(auth instanceof AnonymousAuthenticationToken){
-            if(false){ //In the future, un. user gets a token perhaps Objects.equals(ride.getSHAToken(), rideDTO.getRideToken())
-                //return compareDates(ride.getStartTime(), rideDTO.getTime(), 10);
-                throw new AccessDeniedException("Unauthenticated No token");
+        if (auth instanceof AnonymousAuthenticationToken) {
+            ride.setCanceler(null);
+            return;
+        }
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        Account canceler = userDetails.getAccount();
+        ride.setCanceler(canceler);
+    }
 
+    public void canCancelRide(Ride ride, DriveCancelDTO rideDTO) {
+        //If not scheduled, then it is at least active, already canceled etc., so it can't be canceled
+
+        //for testing purposes, make a token and print it out
+        //String testingToken = jwtUtils.generateRideToken(ride);
+        //System.out.println("Generated ride token for testing: " + testingToken);
+
+        if (ride.getStatus() != RideStatus.SCHEDULED) {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Ride is not scheduled");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        //If not logged in
+        if (auth instanceof AnonymousAuthenticationToken) {
+            validateAndCancelAsAnonymous(ride, rideDTO, now);
+            return;
             }
-            throw new AccessDeniedException("Unauthenticated user didn't have right token");
-        }
 
-        //else
-        UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        String email  = userDetails.getUsername();
-        if(ride.getDriver().getEmail().equals(email)){
-            //assuming proper reason
-            //could also use token, though unneccessary
-            return true;
-        }
+        //else if logged in
+        try{
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        Account requester = userDetails.getAccount();
 
-        if(ride.isThisPassenger(email)){
-            //maybe also token comparison
-            return isSameOrBefore(ride.getStartTime(), rideDTO.getTime(), ZoneId.systemDefault());
+        //check if it is the driver of the ride
+        if(Objects.equals(ride.getDriver().getId(), requester.getId())){
+            //if it is, allow unless no reason
+            if(rideDTO.getReason() == null || rideDTO.getReason().isBlank()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Reason for cancellation must be provided by the driver");
+            }
+            return;
 
         }
+        //now check if passenger, if it is compare dates using the the 10 min func
+            boolean isPassenger = false;
+            for(Account passenger : ride.getPassengers()){
+                if(Objects.equals(passenger.getId(), requester.getId())){
+                    isPassenger = true;
+                    break;
+                }
+            }
+            if(isPassenger){
+                if(isAtLeastTenMinutesBeforeRide(ride, now)){
+                    return;
+                }
+                else{
+                    throw new AccessDeniedException("Too late to cancel");
+                }
+            }
+            throw new AccessDeniedException("Not passenger or Driver");
 
-        System.out.println("This shouldn't happen");
-        return false;
+            //JUST NULLPOINTER
+        }catch ( NullPointerException ex){
+            //shouldn't really occur, but if it does, token somewhere failed, send access denied
+            throw new AccessDeniedException("Failed Authentication");
+        }
+    }
+
+    private void validateAndCancelAsAnonymous(Ride ride, DriveCancelDTO rideDTO, LocalDateTime now) {
+        String token = rideDTO.getRideToken();
+        jwtUtils.validateRideToken(token);
+
+        Long rideIdFromToken = jwtUtils.getRideIdFromToken(token);
+        if (!Objects.equals(rideIdFromToken, ride.getId())) {
+            throw new AccessDeniedException("Invalid ride token for this ride");
+        }
+
+        if (!isAtLeastTenMinutesBeforeRide(ride, now)) {
+            throw new AccessDeniedException("Too late to cancel for unauthenticated user");
+        }
+    }
+
+    private boolean isAtLeastTenMinutesBeforeRide(Ride ride, LocalDateTime timeOfRequest) {
+        LocalDateTime rideStartTime = ride.getStartTime();
+        if (rideStartTime == null) {
+            throw new IllegalStateException("Ride start time is not set");
+        }
+        return timeOfRequest.isBefore(rideStartTime.minusMinutes(10));
 
     }
-    private boolean compareDates(Date date1, Date date2, long minuteDifference, boolean allDate){
-        //if diff is 10 minute or less, its cant be cancelled
-        long diffMillis = date1.getTime() - date2.getTime();
-        long tenMinutesMillis = minuteDifference * 60 * 1000;
-        if (diffMillis < tenMinutesMillis) {
-            System.out.println("Less than 10 minutes apart");
-            return false;
-        }
-        return true;
 
-    }
 
-    public static boolean isSameOrBefore(
-            LocalDateTime localDateTime,
-            Date date,
-            ZoneId zoneId
-    ) {
-        LocalDate refDate = localDateTime.toLocalDate();
-
-        LocalDate dateAsLocal = date.toInstant()
-                .atZone(zoneId)
-                .toLocalDate();
-
-        return !dateAsLocal.isAfter(refDate);
-    }
 
     public void DummyRideInit(){
 
@@ -254,21 +270,18 @@ public class RideServiceImpl implements IRideService {
         Optional<Ride> found = allRides.findById(rideID);
         if (found.isEmpty()) {
             String value = "Ride was not found";
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, value);
+            throw new RideNotFoundException(value);
         }
+        //validation for possible nulls
+        orsRoutingService.validateCoordinatesLocations(stopReq.getPassedLocations());
+
+
+        Ride ride = getRideActiveAndDriver(found);
 
         ArrayList<Location> passedLocations = new ArrayList<Location>(stopReq.getPassedLocations());
-
-        Ride ride = found.get();
         ride.changeLocations(passedLocations);
         ride.setEndTime(stopReq.getCurrentTime());
-        //allRides.save(ride);
-        //allRides.flush();
 
-        //Now, I could recalculate based on allPassed, though if only the final dest was returned I couldnt do that
-        //In the specification it says only the final Dest is passed, though then the change of midpoints would be
-        //impossible, so I would just calc based on Starting-ending, though the way I did it I get access
-        //to all destinations passed. For now I'll just assume my way is good, and use passedLocs.
         List<List<Double>> coordinates = new ArrayList<>();
 
         for (Location loc : passedLocations) {
@@ -279,13 +292,38 @@ public class RideServiceImpl implements IRideService {
         }
         OrsRouteResult result = orsRoutingService.getFastestRouteWithPath(coordinates);
         ride.setTotalPrice(result.getPrice());
+        ride.setStatus(RideStatus.FINISHED);
+        ride.setEndTime(stopReq.getCurrentTime());
         allRides.save(ride);
         allRides.flush();
 
+        //should I call end ride here too?
+
         RideStoppedDTO stopped = new RideStoppedDTO(rideID, ride.getTotalPrice(),  ride.getLocations());
         return stopped;
+    }
+
+    private static @NonNull Ride getRideActiveAndDriver(Optional<Ride> found) {
+        Ride ride = found.get();
+        //ride should be active, so that check ought to exist as well
+        if(ride.getStatus() != RideStatus.ACTIVE){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ride is not active");
+        }
+
+        //finally, the one who ordered the stoppage should be THE DRIVER, which also means AUTHENTICATED
+        //so I check if the authenticated user is the driver OF THE RIDE ITSELF, if not, throw
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
 
+
+        //assert auth != null;
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        //assert userDetails != null;
+        Account driver = userDetails.getAccount();
+        if(!Objects.equals(ride.getDriver().getId(), driver.getId())){
+            throw new AccessDeniedException("Only the driver can stop the ride");
+        }
+        return ride;
     }
 
     public void endRide(RideEndDTO rideEndDTO) {
@@ -305,6 +343,8 @@ public class RideServiceImpl implements IRideService {
         allRides.save(ride);
         allRides.flush();
 
+        sendFinalRideUpdate(ride);
+
         List<Account> passengers = ride.getPassengers();
         if (passengers != null && !passengers.isEmpty()) {
             for (Account passenger : passengers) {
@@ -322,6 +362,24 @@ public class RideServiceImpl implements IRideService {
         }
     }
 
+    private void sendFinalRideUpdate(Ride ride) {
+        try {
+            if (ride.getPassengers() != null) {
+                for (Account passenger : ride.getPassengers()) {
+                    rideTrackingWebSocketService.sendRideUpdateToUser(passenger.getId(), ride.getId());
+                }
+            }
+            if (ride.getCreator() != null) {
+                rideTrackingWebSocketService.sendRideUpdateToUser(ride.getCreator().getId(), ride.getId());
+            }
+            if (ride.getDriver() != null) {
+                rideTrackingWebSocketService.sendRideUpdateToUser(ride.getDriver().getId(), ride.getId());
+            }
+        } catch (Exception ex) {
+            System.err.println("Failed to send final ride update via WebSocket for ride " + ride.getId() + ": " + ex.getMessage());
+        }
+    }
+
     @Override
     public Ride delete(Long rideId) {
         return null;
@@ -332,31 +390,5 @@ public class RideServiceImpl implements IRideService {
 
     }
 
-    @Transactional
-    public void PanicRide(Long rideID, String email) {
 
-        Optional<Ride> foundRide = allRides.findById(rideID);
-        Optional<Account> foundAccount = allAccounts.findByEmail(email);
-        if(foundRide.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
-        }
-
-        if(foundAccount.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found");
-        }
-
-        Ride ride = (Ride) foundRide.get();
-        Account account = (Account) foundAccount.get();
-
-        if(ride.getDriver() != account){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This individual is not the rider");
-        }
-
-        ride.setPanic(true);
-        allRides.save(ride);
-        allRides.flush();
-
-
-
-    }
 }

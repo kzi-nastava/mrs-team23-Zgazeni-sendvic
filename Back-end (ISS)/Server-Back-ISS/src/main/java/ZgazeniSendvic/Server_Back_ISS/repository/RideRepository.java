@@ -1,11 +1,14 @@
 package ZgazeniSendvic.Server_Back_ISS.repository;
 
 
+import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Driver;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
 import ZgazeniSendvic.Server_Back_ISS.model.RideStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
@@ -32,4 +35,25 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     Ride findActiveRideByDriver(@Param("driver") Driver driver);
 
     List<Ride> findByStatus(RideStatus status);
+    List<Ride> findByDriverAndStatus(Driver driver, RideStatus status);
+
+
+
+
+    //for HOR
+
+    @Query("""
+    SELECT r FROM Ride r 
+    LEFT JOIN r.passengers p 
+    WHERE (r.driver = :account OR r.creator = :account OR p = :account)
+      AND (CAST(:fromDate AS timestamp) IS NULL OR r.creationDate >= :fromDate)
+      AND (CAST(:toDate AS timestamp) IS NULL OR r.creationDate <= :toDate)
+    """)
+    Page<Ride> findByAccountAndDateRange(
+            @Param("account") Account account,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            Pageable pageable
+    );
+
 }

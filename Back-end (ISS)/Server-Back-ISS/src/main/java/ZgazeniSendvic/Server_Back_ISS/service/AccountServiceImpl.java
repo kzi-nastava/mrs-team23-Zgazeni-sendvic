@@ -3,6 +3,7 @@ package ZgazeniSendvic.Server_Back_ISS.service;
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.*;
 //import ZgazeniSendvic.Server_Back_ISS.model.EmailDetails; WRONG IMPORT
+import ZgazeniSendvic.Server_Back_ISS.model.User;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 
 import ZgazeniSendvic.Server_Back_ISS.repository.ProfileChangeRequestRepository;
@@ -95,7 +96,16 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
             throw new IllegalStateException("Email already in use");
         }
 
-        Account account = new Account(requestDTO);
+        //should be changed to user
+        Account account = new User();
+        account.setEmail(requestDTO.getEmail());
+        account.setPassword(requestDTO.getPassword());
+        account.setName(requestDTO.getFirstName());
+        account.setLastName(requestDTO.getLastName());
+        account.setPhoneNumber(requestDTO.getPhoneNum());
+        account.setAddress(requestDTO.getAddress());
+
+
         insert(account);
         sendConfirmationLink(account.getEmail(),account);
 
@@ -188,7 +198,6 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         }
     }
 
-
     @Override
     public Account delete(Long accountId) {
         return null;
@@ -231,7 +240,7 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         EmailDetails emailDetails = new EmailDetails();
         emailDetails.setRecipient(email); // sender is automatically set
         emailDetails.setSubject("Reset your DriveBy password");
-        emailDetails.setMsgBody("http://localhost:8080/api/auth/reset-password?token=" + rawToken);
+        emailDetails.setMsgBody("http://localhost:4200/reset-password?token=" + rawToken);
         emailService.sendSimpleMail(emailDetails);
 
     }
