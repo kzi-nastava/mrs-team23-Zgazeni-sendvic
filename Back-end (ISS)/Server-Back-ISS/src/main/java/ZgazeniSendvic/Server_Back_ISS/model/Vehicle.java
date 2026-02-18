@@ -27,11 +27,11 @@ public class Vehicle {
     private String registration;
 
     private int numOfSeats;
-    private boolean babiesAllowed;
-    private boolean petsAllowed;
+    private Boolean babiesAllowed = false;
+    private Boolean petsAllowed = false;
     @Getter
     @Setter
-    private boolean panicMark = false;
+    private Boolean panicMark = false;
 
     public Vehicle() { }
 
@@ -40,8 +40,8 @@ public class Vehicle {
             String registration,
             VehicleType type,
             int numOfSeats,
-            boolean babiesAllowed,
-            boolean petsAllowed
+            Boolean babiesAllowed,
+            Boolean petsAllowed
     ) {
         this.model = model;
         this.registration = registration;
@@ -67,9 +67,9 @@ public class Vehicle {
     public int getNumOfSeats() { return numOfSeats; }
     public void setNumOfSeats(int numOfSeats) { this.numOfSeats = numOfSeats; }
 
-    public boolean isBabiesAllowed() { return babiesAllowed; }
-    public void setBabiesAllowed(boolean babiesAllowed) { this.babiesAllowed = babiesAllowed; }
+    public boolean isBabiesAllowed() { return babiesAllowed != null && babiesAllowed; }
+    public void setBabiesAllowed(Boolean babiesAllowed) { this.babiesAllowed = babiesAllowed; }
 
-    public boolean isPetsAllowed() { return petsAllowed; }
-    public void setPetsAllowed(boolean petsAllowed) { this.petsAllowed = petsAllowed; }
+    public boolean isPetsAllowed() { return petsAllowed != null && petsAllowed; }
+    public void setPetsAllowed(Boolean petsAllowed) { this.petsAllowed = petsAllowed; }
 }
