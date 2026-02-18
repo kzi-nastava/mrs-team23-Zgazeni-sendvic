@@ -19,6 +19,7 @@ public class DriverController {
     @Autowired
     IDriverService driverService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -62,7 +63,7 @@ public class DriverController {
         }
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(
             value = "/vehicle",
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -105,7 +106,6 @@ public class DriverController {
 
     }
 
-    @PreAuthorize("hasRole('DRIVER')")
     @PutMapping(
             value = "/deactivate",
             produces = MediaType.APPLICATION_JSON_VALUE

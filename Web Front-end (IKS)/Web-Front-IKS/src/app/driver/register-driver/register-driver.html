@@ -55,7 +55,12 @@
       </div>
 
       <div class="bottom-section">
-        <button mat-raised-button color="primary" (click)="submit()">
+        <button
+          mat-raised-button
+          color="primary"
+          type="button"
+          data-testid="create-driver-btn"
+          (click)="submit()">
           Create driver
         </button>
       </div>

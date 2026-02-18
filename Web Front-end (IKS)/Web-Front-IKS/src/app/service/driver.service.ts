@@ -6,7 +6,11 @@ export class DriverService {
   constructor(private http: HttpClient) {}
 
   createDriver(data: any) {
-    return this.http.post('/api/admin/drivers', data);
+    return this.http.post('/api/driver', data);
+  }
+
+  createVehicle(data: any) {
+    return this.http.post('/api/driver/vehicle', data);
   }
 
   getRideDecisionInfo(token: string) {

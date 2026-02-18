@@ -4,33 +4,58 @@
 
     <form [formGroup]="form" (ngSubmit)="submit()" class="form-container">
 
+      <!-- LEFT COLUMN -->
       <div class="left">
-        <input placeholder="Vehicle model" formControlName="model">
+        <mat-form-field appearance="fill" class="full">
+          <mat-label>Vehicle model</mat-label>
+          <input matInput formControlName="model" />
+          <mat-error *ngIf="form.get('model')?.touched && form.get('model')?.invalid">
+            Model is required.
+          </mat-error>
+        </mat-form-field>
 
-        <select formControlName="vehicleType">
-          <option value="STANDARD">Standard</option>
-          <option value="LUXURY">Luxury</option>
-          <option value="VAN">Van</option>
-        </select>
+        <mat-form-field appearance="fill" class="full">
+          <mat-label>Vehicle type</mat-label>
+          <mat-select formControlName="vehicleType">
+            <mat-option value="STANDARD">Standard</mat-option>
+            <mat-option value="LUXURY">Luxury</mat-option>
+            <mat-option value="VAN">Van</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-        <input placeholder="License plate" formControlName="licensePlate">
-        <input type="number" placeholder="Number of seats" formControlName="seats">
+        <mat-form-field appearance="fill" class="full">
+          <mat-label>License plate</mat-label>
+          <input matInput formControlName="licensePlate" />
+          <mat-error *ngIf="form.get('licensePlate')?.touched && form.get('licensePlate')?.invalid">
+            License plate is required.
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="full">
+          <mat-label>Number of seats</mat-label>
+          <input matInput type="number" formControlName="seats" />
+          <mat-error *ngIf="form.get('seats')?.touched && form.get('seats')?.invalid">
+            Seats must be between 1 and 12.
+          </mat-error>
+        </mat-form-field>
       </div>
 
+      <!-- RIGHT COLUMN -->
       <div class="right">
-        <label>
-          <input type="checkbox" formControlName="babyTransport">
+        <mat-checkbox formControlName="babyTransport">
           Baby transport allowed
-        </label>
+        </mat-checkbox>
 
-        <label>
-          <input type="checkbox" formControlName="petTransport">
+        <mat-checkbox formControlName="petTransport">
           Pet transport allowed
-        </label>
+        </mat-checkbox>
 
-        <button mat-raised-button type="submit">
-          Register vehicle
+        <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+          {{ loading ? 'Registering...' : 'Register vehicle' }}
         </button>
+
+        <p *ngIf="message" class="success">{{ message }}</p>
+        <p *ngIf="error" class="error">{{ error }}</p>
       </div>
     </form>
 

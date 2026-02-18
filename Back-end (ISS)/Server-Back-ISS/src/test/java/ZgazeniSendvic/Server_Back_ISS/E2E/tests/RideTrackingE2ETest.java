@@ -146,7 +146,7 @@ public class RideTrackingE2ETest {
         ride.setEndTime(LocalDateTime.now());
         ride.setStatus(RideStatus.FINISHED);
         ride.setCanceler(null);
-        ride.setPrice(500.0);
+        ride.setTotalPrice(500.0);
         ride.setPanic(false);
         ride.setCreationDate(LocalDateTime.now().minusHours(1));
         ride.setStartLatitude(startLocation.getLatitude());

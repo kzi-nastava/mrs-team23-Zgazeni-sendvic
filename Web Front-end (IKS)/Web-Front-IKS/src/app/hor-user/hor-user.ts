@@ -21,6 +21,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { HorService } from '../service/hor.service';
 import { ARideRequestedUserDTO, URideDetailsRequestedDTO } from '../models/hor.models';
 import { DetailedHorUser } from './detailed-hor-user/detailed-hor-user';
+import { RouteService } from '../service/route.service';
+import { RouteDTO } from '../models/route.dto';
 
 @Component({
   selector: 'app-hor-user',
@@ -51,8 +53,10 @@ export class HORUser {
     'route',
     'beginning',
     'ending',
+    'favorite',
     'details'
   ];
+
 
   rides: ARideRequestedUserDTO[] = [];
   totalElements = 0;
@@ -85,7 +89,8 @@ export class HORUser {
     private horService: HorService,
     private cdr: ChangeDetectorRef,
     private http: HttpClient,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private routeService: RouteService
   ) {
     this.fetchRides();
   }
@@ -189,6 +194,7 @@ export class HORUser {
         next: page => {
           const content = page.content ?? [];
           this.rides = content;
+          this.refreshFavoritesIndexAndMarkRides();
           this.totalElements = page.totalElements ?? 0;
           this.pageIndex = page.number ?? this.pageIndex;
           this.pageSize = page.size ?? this.pageSize;
@@ -243,5 +249,68 @@ export class HORUser {
     });
 
     return key;
+  }
+
+  private favoritesIndex = new Map<string, number>(); // key = "lat,lng|lat,lng" => routeId
+
+  private buildKeyFromRide(ride: ARideRequestedUserDTO): string | null {
+    const locs = ride.destinations ?? [];
+    if (locs.length < 2) return null;
+    const start = locs[0];
+    const end = locs[locs.length - 1];
+    if (start.latitude == null || start.longitude == null || end.latitude == null || end.longitude == null) return null;
+    return `${start.latitude.toFixed(6)},${start.longitude.toFixed(6)}|${end.latitude.toFixed(6)},${end.longitude.toFixed(6)}`;
+  }
+
+  private buildKeyFromRoute(r: RouteDTO): string {
+    return `${r.start.latitude.toFixed(6)},${r.start.longitude.toFixed(6)}|${r.destination.latitude.toFixed(6)},${r.destination.longitude.toFixed(6)}`;
+  }
+
+  private refreshFavoritesIndexAndMarkRides(): void {
+    // Load favorites and mark rides that match (start+end match is “good enough” for MVP)
+    this.routeService.getFavorites().subscribe({
+      next: (favorites) => {
+        this.favoritesIndex.clear();
+        for (const f of favorites) {
+          this.favoritesIndex.set(this.buildKeyFromRoute(f), f.id);
+        }
+
+        for (const r of this.rides as any[]) {
+          const k = this.buildKeyFromRide(r);
+          r._favoriteRouteId = (k && this.favoritesIndex.get(k)) ? this.favoritesIndex.get(k) : null;
+        }
+
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        // ignore, keep UI usable
+      }
+    });
+  }
+
+  toggleFavorite(ride: any): void {
+    if (!ride?.rideID) return;
+
+    // if already favorited => remove
+    if (ride._favoriteRouteId) {
+      const routeId = ride._favoriteRouteId as number;
+      this.routeService.removeFavorite(routeId).subscribe({
+        next: () => {
+          ride._favoriteRouteId = null;
+          this.cdr.markForCheck();
+        },
+        error: () => alert('Failed to remove favorite.')
+      });
+      return;
+    }
+
+    // else add from ride
+    this.routeService.addFavoriteFromRide(ride.rideID).subscribe({
+      next: (created) => {
+        ride._favoriteRouteId = created.id;
+        this.cdr.markForCheck();
+      },
+      error: () => alert('Failed to add favorite.')
+    });
   }
 }

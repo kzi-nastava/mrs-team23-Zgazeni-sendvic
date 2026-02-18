@@ -126,5 +126,9 @@ public class Account {
     public String getRole() {
         return this.getClass().getSimpleName().toUpperCase();
     }
+
+    public void setId(long l) {
+        this.id = l;
+    }
 }
 
