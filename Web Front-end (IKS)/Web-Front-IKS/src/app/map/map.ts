@@ -46,7 +46,7 @@ export class Map implements AfterViewInit, OnDestroy {
 
   @Output() mapClicked = new EventEmitter<{ lat: number; lng: number }>();
 
-  private mapInstance!: L.Map;
+  private mapInstance: L.Map | null = null;
   private routingControl: any;
   private vehicleLayer: L.LayerGroup | null = null;
   private rideLayer: L.LayerGroup | null = null;
