@@ -182,4 +182,7 @@ public class Ride {
         return false;
     }
 
+    public void setPrice(double v) {
+        this.totalPrice = v;
+    }
 }

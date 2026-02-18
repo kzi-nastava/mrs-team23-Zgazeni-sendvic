@@ -1,0 +1,53 @@
+.rides-overview{
+  font-family: Arial, sans-serif;
+  background-color: #607BAD;
+  height: calc(100vh - 82px);
+  margin: 0;
+  padding: 0;
+}
+
+.rides-title{
+  text-align: center;
+  color: rgb(196, 246, 81);
+  padding: 20px;
+  margin: 0;
+}
+
+.overview-list{
+  width: 85%;
+  margin: 0 auto;
+  border-collapse: collapse;
+}
+
+li {
+  list-style-type: none;
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #AFC2EB;
+  border-radius: 8px;
+}
+
+span {
+  font-weight: bold;
+  padding: 0px 6px;
+}
+
+.ride-entry {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 0;
+  gap: 8px;
+}
+
+.overview-state {
+  text-align: center;
+  color: #0b1f33;
+  font-weight: 600;
+  margin: 16px 0 0;
+}
+
+.overview-state.error {
+  color: #5b0e0e;
+}
