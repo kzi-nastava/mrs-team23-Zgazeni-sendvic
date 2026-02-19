@@ -133,7 +133,7 @@ class AuthController {
         driverService.ThrowIfNotAllowedToLogOut();
 
 
-        return new ResponseEntity<String>("Log Out successful", HttpStatus.OK);
+        return ResponseEntity.ok("Log Out successful");
 
     }
 

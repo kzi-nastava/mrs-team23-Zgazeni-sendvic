@@ -177,6 +177,7 @@ public class DriverServiceImpl implements IDriverService {
             if(found.get().getRole().equals("DRIVER")){ // first fix
                 Driver driver = (Driver) found.get();
                 driver.setAvailable(true);
+                accountRepository.save(driver);
         }
             }
                 } catch(Exception e){
@@ -231,8 +232,8 @@ public class DriverServiceImpl implements IDriverService {
             return;
         }
 
-        if (driver.getDriving()) {
-            throw new IllegalStateException("Driver is currently driving. Marked as awaiting deactivation");
+        if (driver.getAvailable()) {
+            throw new IllegalStateException("Driver is currently available, and can't log out.");
         }
 
         //Driver logged out
@@ -241,7 +242,7 @@ public class DriverServiceImpl implements IDriverService {
         accountRepository.save(driver);
     }
 
-    public void deactivateDriverIfRequested(){
+    public void deactivateDriverIfRequested(boolean status){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth instanceof AnonymousAuthenticationToken) {
             return;
@@ -257,10 +258,18 @@ public class DriverServiceImpl implements IDriverService {
             return;
         }
 
+        //means he wants to be available
+        if(status){
+            driver.setAvailable(true);
+            driver.setAwaitingDeactivation(false);
+            accountRepository.save(driver);
+            return;
+        }
+
         if (driver.getDriving()) {
             driver.setAwaitingDeactivation(true);
             accountRepository.save(driver);
-            return;
+            throw new IllegalStateException("Driver is currently driving. Marked as awaiting deactivation");
         }
 
         driver.setAvailable(false);

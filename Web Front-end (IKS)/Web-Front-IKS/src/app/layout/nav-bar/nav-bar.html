@@ -30,6 +30,12 @@
       <button mat-raised-button color="primary" [routerLink]="['/login']">Log in</button>
     </div>
     <div class="button-container">
+      @if (isDriver()) {
+        <div class="driver-status">
+          <span class="driver-status-dot" [class.driver-status-dot--active]="getDriverActive()" [class.driver-status-dot--inactive]="!getDriverActive()" [title]="getDriverStatusText()"></span>
+          <button type="button" class="driver-toggle" (click)="toggleDriverStatus()">{{ getDriverToggleLabel() }}</button>
+        </div>
+      }
       <button type="button" class="logout" aria-label="Log out of your account" (click)="logout()">Log out</button>
     </div>
     <a [routerLink]="['/profile']" class="profile-link" aria-label="Go to your profile page">
