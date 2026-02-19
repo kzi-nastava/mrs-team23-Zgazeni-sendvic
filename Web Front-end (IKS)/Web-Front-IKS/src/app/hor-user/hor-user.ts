@@ -133,11 +133,13 @@ export class HORUser {
         console.log('Ride Details:', details);
         // Add route information from the ride data
         const detailsWithRoute: URideDetailsRequestedDTO & {
+          rideID: number;
           arrivingPoint?: { latitude: number; longitude: number };
           endingPoint?: { latitude: number; longitude: number };
           destinations?: { latitude: number; longitude: number }[];
         } = {
           ...details,
+          rideID: ride.rideID,
           arrivingPoint: ride.destinations?.[0],
           endingPoint: ride.destinations?.[ride.destinations.length - 1],
           destinations: ride.destinations?.slice(1, -1)
@@ -151,6 +153,7 @@ export class HORUser {
   }
 
   private openDetailedView(details: URideDetailsRequestedDTO & {
+    rideID: number;
     arrivingPoint?: { latitude: number; longitude: number };
     endingPoint?: { latitude: number; longitude: number };
     destinations?: { latitude: number; longitude: number }[];

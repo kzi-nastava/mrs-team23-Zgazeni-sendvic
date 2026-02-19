@@ -75,6 +75,14 @@ export class NavBar {
     return this.authService.getRole() === 'USER';
   }
 
+  navigateToHOR(): void {
+    if (this.isAdmin()) {
+      this.router.navigate(['/hor-admin']);
+    } else if (this.isUser()) {
+      this.router.navigate(['/hor-user']);
+    }
+  }
+
   isLoggedIn(): boolean {
     return this.authService.isAuthenticated();
   }

@@ -21,6 +21,9 @@
       @if (isDriver()) {
         <button mat-raised-button color="primary" [routerLink]="['/hor-driver']">HOR Driver</button>
       }
+      @if (isAdmin() || isUser()) {
+        <button mat-raised-button color="primary" (click)="navigateToHOR()">HOR</button>
+      }
       @if (isAdmin()) {
         <button mat-raised-button color="primary" [routerLink]="['/rides-overview']">Rides Overview</button>
       }
