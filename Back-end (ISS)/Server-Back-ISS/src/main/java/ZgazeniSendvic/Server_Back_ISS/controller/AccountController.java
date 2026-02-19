@@ -27,6 +27,7 @@ public class AccountController {
     @Autowired
     ChangeRequestService changeRequestService;
 
+    @PreAuthorize("hasAnyRole('DRIVER','ACCOUNT','USER')")
     @GetMapping(value = "/me")
     public ResponseEntity<GetAccountDTO> getMyAccount(Principal principal) {
 
@@ -54,6 +55,7 @@ public class AccountController {
         return ResponseEntity.ok(dto);
     }
 
+    @PreAuthorize("hasAnyRole('DRIVER','ACCOUNT','USER')")
     @PutMapping(value = "/me/change-request",
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
@@ -62,6 +64,7 @@ public class AccountController {
         return ResponseEntity.ok("Account updated: " + updated);
     }
 
+    @PreAuthorize("hasRole('ACCOUNT')")
     @PutMapping("/approve-driver-changes/{id}")
     public ResponseEntity<String> approveDriverChange(@PathVariable Long id) {
 
@@ -97,5 +100,19 @@ public class AccountController {
         return ResponseEntity.ok("Changes approved.");
     }
 
+    @PreAuthorize("hasRole('ACCOUNT')")
+    @PutMapping("/ban/{id}")
+    public ResponseEntity<String> ban(@PathVariable Long id) {
+        Account current = accountService.getCurrentAccount();
+        if (!(current instanceof Admin)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Not authorized.");
+        }
+
+        Account banned = accountService.findAccount(id);
+        banned.setIsBanned(true);
+        accountService.update(banned);
+        return ResponseEntity.ok("Account banned.");
+    }
 }
 

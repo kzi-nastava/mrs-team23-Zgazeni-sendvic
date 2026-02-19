@@ -59,6 +59,8 @@ public class Account {
     private String imgString;
     @Getter @Setter
     private Boolean isConfirmed = false;
+    @Getter @Setter
+    private Boolean isBanned = false;
 
     public Account() {
         super();

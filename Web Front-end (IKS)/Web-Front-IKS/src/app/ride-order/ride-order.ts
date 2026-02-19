@@ -67,7 +67,7 @@ export class RideOrder implements OnInit {
 
   private newLocationGroup(address = '', lat = 0, lng = 0) {
     return this.fb.group({
-      address: [address, Validators.required],
+      address: [address],
       latitude: [lat, Validators.required],
       longitude: [lng, Validators.required]
     });
@@ -86,27 +86,29 @@ export class RideOrder implements OnInit {
   private applyFavoriteRoute(route: RouteDTO) {
     const locs = [route.start, ...(route.midPoints ?? []), route.destination];
 
-    // clear & rebuild
     while (this.locations.length) this.locations.removeAt(0);
-    for (const l of locs) {
+
+    locs.forEach((l, idx) => {
+      const label =
+        idx === 0 ? 'Favorite pickup' :
+        idx === locs.length - 1 ? 'Favorite destination' :
+        `Favorite stop ${idx}`;
+
       this.locations.push(this.newLocationGroup(
-        '',
+        label,
         l.latitude,
         l.longitude
       ));
-    }
+    });
 
-    // set map endpoints
     this.pickupCoords = [route.start.latitude, route.start.longitude];
     this.destinationCoords = [route.destination.latitude, route.destination.longitude];
-
-    // treat as already “clicked”
     this.clickCount = 2;
 
-    // quick estimate from straight-line segments (good enough for pricing)
     const stops = locs.map(x => ({ lat: x.latitude, lng: x.longitude }));
     this.setEstimatedDistanceFromStops(stops);
   }
+
 
   handleMapClick(event: { lat: number; lng: number }) {
     // If user already used favorite route, start over on click (optional but intuitive)

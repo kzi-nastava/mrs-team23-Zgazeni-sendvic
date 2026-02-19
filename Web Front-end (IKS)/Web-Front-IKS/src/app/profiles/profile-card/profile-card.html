@@ -44,6 +44,14 @@
     <button class="hor-action-btn" [routerLink]="getRouteLink()" *ngIf="variant">
       <p>History of rides</p>
     </button>
+
+    <button
+      class="hor-action-btn"
+      *ngIf="variant === 'user'"
+      [routerLink]="'/favorite-routes'">
+      <p>Favorite routes</p>
+    </button>
+
     <button *ngIf="adminButton" class="admin-action-btn" (click)="onAdminButtonClick()">
       {{ adminButton.label }}
     </button>

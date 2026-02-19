@@ -18,6 +18,7 @@ import {HORUser} from "./hor-user/hor-user";
 import { DetailedHorAdmin } from './hor-admin/detailed-hor-admin/detailed-hor-admin';
 import { DetailedHorUser } from './hor-user/detailed-hor-user/detailed-hor-user';
 import { PanicNotifications } from './panic-notifications/panic-notifications';
+import { FavoriteRoutes } from './favorite-routes/favorite-routes';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -27,6 +28,7 @@ export const routes: Routes = [
   { path: 'hor-driver', component: HorDriver },
   { path: 'future-rides', component: FutureRides },
   { path: 'ride-order', component: RideOrder },
+  { path: 'favorite-routes', component: FavoriteRoutes },
   { path: 'ride-tracking', component: RideTracking },
   { path: 'register', component: Registration },
   { path: 'login', component: Login },

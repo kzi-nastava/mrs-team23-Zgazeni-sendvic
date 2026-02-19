@@ -8,6 +8,7 @@ import ZgazeniSendvic.Server_Back_ISS.model.Route;
 import ZgazeniSendvic.Server_Back_ISS.repository.RouteRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository; // if you have it
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,9 +20,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RouteServiceImpl implements IRouteService {
 
-    private final RouteRepository routeRepository;
-    private final AccountServiceImpl accountService;
-    private final RideRepository rideRepository; // or RideService if you prefer
+    @Autowired
+    RouteRepository routeRepository;
+    @Autowired
+    AccountServiceImpl accountService;
+    @Autowired
+    RideRepository rideRepository; // or RideService if you prefer
 
     @Override
     public List<RouteDTO> getMyFavoriteRoutes() {
