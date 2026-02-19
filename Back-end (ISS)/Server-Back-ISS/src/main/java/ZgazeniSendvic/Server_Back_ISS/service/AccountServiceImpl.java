@@ -1,21 +1,26 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
+
+import static ZgazeniSendvic.Server_Back_ISS.repository.spec.AccountSpecs.*;
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
-import ZgazeniSendvic.Server_Back_ISS.model.Account;
-import ZgazeniSendvic.Server_Back_ISS.model.Driver;
-import ZgazeniSendvic.Server_Back_ISS.model.AccountConfirmationToken;
+import ZgazeniSendvic.Server_Back_ISS.model.*;
 //import ZgazeniSendvic.Server_Back_ISS.model.EmailDetails; WRONG IMPORT
 import ZgazeniSendvic.Server_Back_ISS.model.User;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
 
+import ZgazeniSendvic.Server_Back_ISS.repository.ProfileChangeRequestRepository;
 import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,6 +31,7 @@ import org.springframework.context.annotation.Primary;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Primary
 @Service
@@ -42,6 +48,9 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
 
     @Autowired
     PasswordResetTokenRepositoryService resetTokenService;
+
+    @Autowired
+    ProfileChangeRequestRepository changeRequestRepository;
 
 
     private static final Pattern EMAIL_PATTERN =
@@ -114,7 +123,7 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         EmailDetails emailDetails = new EmailDetails();
         emailDetails.setRecipient(email); // sender is automatically set
         emailDetails.setSubject("Confirm your DriveBy account");
-        emailDetails.setMsgBody("http://localhost:4200/api/auth/confirm-account?token=" + rawToken);
+        emailDetails.setMsgBody("http://localhost:8080/api/auth/confirm-account?token=" + rawToken);
         emailService.sendSimpleMail(emailDetails);
 
     }
@@ -142,37 +151,55 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         return allAccounts.save(account);
     }
 
-    public Account updateAccount(Long id, UpdateAccountDTO dto) {
+    public Account updateAccount(UpdateAccountDTO dto) {
 
-        Account account = findAccount(id);
-        if (account == null) {
-            throw new IllegalArgumentException("Account not found");
-        }
+        // fetch the logged-in user from JWT
+        Account account = getCurrentAccount();
 
-        if (dto.getEmail() != null) {
-            if (!EMAIL_PATTERN.matcher(dto.getEmail()).matches()) {
-                throw new IllegalArgumentException("Invalid email format");
-            }
-            account.setEmail(dto.getEmail());
-        }
+        if (account instanceof Driver) {
 
-        if (dto.getPhoneNumber() != null) {
-            if (!PHONE_PATTERN.matcher(dto.getPhoneNumber()).matches()) {
-                throw new IllegalArgumentException("Invalid phone number format");
-            }
+            ProfileChangeRequest request = new ProfileChangeRequest();
+            request.setAccountId(account.getId());
+            request.setNewName(dto.getName());
+            request.setNewLastName(dto.getLastName());
+            request.setNewAddress(dto.getAddress());
+            request.setNewPhoneNumber(dto.getPhoneNumber());
+            request.setNewImgString(dto.getImgString());
+            request.setStatus(RequestStatus.PENDING);
+
+            ProfileChangeRequest savedRequest = changeRequestRepository.save(request);
+
+            String approveLink = "http://localhost:4200/approve?id=" + savedRequest.getId();
+
+            String message =
+                    "Driver requested profile changes.\n\n" +
+                            "Driver: " + account.getEmail() + "\n" +
+                            "Name: " + dto.getName() + "\n" +
+                            "Last Name: " + dto.getLastName() + "\n" +
+                            "Address: " + dto.getAddress() + "\n" +
+                            "Phone: " + dto.getPhoneNumber() + "\n\n" +
+                            "Approve changes here:\n" +
+                            approveLink;
+
+            EmailDetails details = new EmailDetails();
+            details.setRecipient("admin@email.com"); // better than hardcoded personal mail
+            details.setSubject("Driver requested changes");
+            details.setMsgBody(message);
+
+            emailService.sendSimpleMail(details);
+
+            return account; // return unchanged account
+
+        } else {
+            // Immediate update for USER and ADMIN
+            account.setName(dto.getName());
+            account.setLastName(dto.getLastName());
+            account.setAddress(dto.getAddress());
             account.setPhoneNumber(dto.getPhoneNumber());
+            account.setImgString(dto.getImgString());
+
+            return allAccounts.save(account);
         }
-
-        if (dto.getPassword() != null) {
-            account.setPassword(dto.getPassword()); // hash later
-        }
-
-        account.setName(dto.getName());
-        account.setLastName(dto.getLastName());
-        account.setAddress(dto.getAddress());
-        account.setImgString(dto.getImgString());
-
-        return allAccounts.save(account);
     }
 
     @Override
@@ -268,5 +295,81 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         resetTokenService.markAsUsed(rawToken);
 
     }
+
+    public Account getCurrentAccount() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No authenticated user");
+        }
+
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        return findAccount(userDetails.getId()); // uses existing findAccount(Long id)
     }
+
+    public Account findByEmail(String email) {
+        Optional<Account> account = allAccounts.findByEmail(email);
+        if(account.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with given email was not found");
+        }
+        return account.get();
+    }
+
+    public List<Account> resolveAccountsByEmails(List<String> emails, Account creator) {
+        if (emails == null || emails.isEmpty()) return List.of();
+
+        List<String> normalized = emails.stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .map(String::toLowerCase)
+                .distinct()
+                .filter(e -> creator == null || !e.equalsIgnoreCase(creator.getEmail()))
+                .toList();
+
+        if (normalized.isEmpty()) return List.of();
+
+        // Fetch all accounts in one DB call
+        List<Account> accounts = allAccounts.findByEmailIn(normalized);
+
+        // Strict: fail if any missing
+        if (accounts.size() != normalized.size()) {
+            Set<String> found = accounts.stream()
+                    .map(a -> a.getEmail().toLowerCase())
+                    .collect(Collectors.toSet());
+
+            List<String> missing = normalized.stream()
+                    .filter(e -> !found.contains(e))
+                    .toList();
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Some invited passengers were not found: " + String.join(", ", missing)
+            );
+        }
+
+        // Optional: require confirmed
+        List<Account> notConfirmed = accounts.stream()
+                .filter(a -> !a.isConfirmed())
+                .toList();
+
+        if (!notConfirmed.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Some invited passengers are not confirmed: " +
+                            notConfirmed.stream().map(Account::getEmail).collect(Collectors.joining(", "))
+            );
+        }
+
+        return accounts;
+    }
+
+    @Override
+    public Page<Account> getAllPaged(String q, String type, Boolean confirmed, Pageable pageable) {
+        Specification<Account> spec = Specification.where(search(q))
+                .and(type(type))
+                .and(confirmed(confirmed));
+
+        return allAccounts.findAll(spec, pageable);
+    }
+}
 

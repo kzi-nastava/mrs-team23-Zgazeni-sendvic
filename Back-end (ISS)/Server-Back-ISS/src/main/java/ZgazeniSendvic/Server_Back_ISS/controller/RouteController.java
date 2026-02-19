@@ -1,70 +1,72 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
-import ZgazeniSendvic.Server_Back_ISS.dto.GetRouteDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.SaveRouteDTO;
-import ZgazeniSendvic.Server_Back_ISS.model.Location;
-import ZgazeniSendvic.Server_Back_ISS.model.Route;
-import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
-import ZgazeniSendvic.Server_Back_ISS.service.IAccountService;
+import ZgazeniSendvic.Server_Back_ISS.dto.RouteDTO;
 import ZgazeniSendvic.Server_Back_ISS.service.IRouteService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/route")
+@RequestMapping("/api/routes")
+@RequiredArgsConstructor
 public class RouteController {
 
-    @Autowired
-    IRouteService routeService;
-    @Autowired
-    AccountServiceImpl accountService;
+    private final IRouteService routeService;
 
-    @PostMapping(
-            value = "/favorite/save/{id}",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<GetRouteDTO> saveFavoriteRoute(@PathVariable("id") Long id,
-                                                         @RequestBody SaveRouteDTO dto) {
-
-        Route saved = routeService.saveRoute(dto);
-        saved.setOwner(accountService.findAccount(id));
-
-        GetRouteDTO response = mapToDTO(saved);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/favorites")
+    public ResponseEntity<List<RouteDTO>> myFavorites() {
+        return ResponseEntity.ok(routeService.getMyFavoriteRoutes());
     }
 
-    @GetMapping(
-            value = "/favorites/{id}",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<Collection<GetRouteDTO>> getFavoriteRoutes(
-            @PathVariable("id") Long id) {
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/favorites/paged")
+    public ResponseEntity<Page<RouteDTO>> myFavoritesPaged(
+            @RequestParam(required = false) Boolean hasMidpoints,
 
-        List<Route> routes = routeService.getFavoriteRoutes(id);
+            @RequestParam(required = false) Double startMinLat,
+            @RequestParam(required = false) Double startMaxLat,
+            @RequestParam(required = false) Double startMinLng,
+            @RequestParam(required = false) Double startMaxLng,
 
-        List<GetRouteDTO> result = routes.stream()
-                .map(this::mapToDTO)
-                .toList();
+            @RequestParam(required = false) Double destMinLat,
+            @RequestParam(required = false) Double destMaxLat,
+            @RequestParam(required = false) Double destMinLng,
+            @RequestParam(required = false) Double destMaxLng,
 
-        return ResponseEntity.ok(result);
+            @PageableDefault(size = 10) Pageable pageable
+    ) {
+        return ResponseEntity.ok(
+                routeService.getMyFavoriteRoutesPaged(
+                        hasMidpoints,
+                        startMinLat, startMaxLat,
+                        startMinLng, startMaxLng,
+                        destMinLat, destMaxLat,
+                        destMinLng, destMaxLng,
+                        pageable
+                )
+        );
     }
 
-    private GetRouteDTO mapToDTO(Route route) {
-        GetRouteDTO dto = new GetRouteDTO();
-        dto.setId(route.getId());
-        dto.setStart(route.getStart());
-        dto.setDestination(route.getDestination());
-        dto.setMidPoints(route.getMidPoints());
-        dto.setAccount(route.getOwner());
-        return dto;
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/favorites/from-ride/{rideId}")
+    public ResponseEntity<RouteDTO> favoriteFromRide(@PathVariable Long rideId) {
+        RouteDTO dto = routeService.saveRouteFromRide(rideId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/favorites/{routeId}")
+    public ResponseEntity<Void> deleteFavorite(@PathVariable Long routeId) {
+        routeService.deleteMyRoute(routeId);
+        return ResponseEntity.noContent().build();
     }
 }
+

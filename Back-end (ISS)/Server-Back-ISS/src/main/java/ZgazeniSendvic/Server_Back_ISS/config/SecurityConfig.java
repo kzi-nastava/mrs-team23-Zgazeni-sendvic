@@ -83,14 +83,20 @@ public class SecurityConfig {
     }
 
     @Bean
-    //Skeleton, should use @Preauthorize anyway, so most of this will be removed
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> {}) // Access from other sites (localhost:4200)
-                .csrf(csrf -> csrf.disable()) // JWT does this, so shutdown for now
-                //.exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(restAuthenticationEntryPoint))
-
+                .cors(cors -> {})
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
+                        // public endpoints
+                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+
+                        // authenticated endpoints
+                        .requestMatchers("/api/account/me", "/api/account/me/change-request").authenticated()
+                        .requestMatchers("/api/riderequest/**").authenticated()
                         .requestMatchers("/api/ride-tracking/stop/**").authenticated()
                         .requestMatchers("/api/ride-PANIC/***").authenticated()
                         .requestMatchers("/api/HOR/admin/**").authenticated()
@@ -102,8 +108,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/logout").authenticated()
                         .requestMatchers("/api/driver/deactivate").authenticated()
 
-                        .anyRequest().permitAll() //for testing purposes
-                ).sessionManagement(session -> { // do not use cookies
+                        .anyRequest().permitAll() // for testing
+                )
+                .sessionManagement(session -> { // do not use cookies
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
                 .exceptionHandling(ex -> ex
@@ -112,8 +119,6 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider());
 
-                // JWT before everything else, though not used as for now
-                //.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

@@ -3,7 +3,7 @@ import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../service/auth.service';
 import { RouteEstimationService } from '../../service/route.estimation.serivce';
 
 @Component({
@@ -26,5 +26,17 @@ export class NavBar {
 
   isAdmin(): boolean {
     return this.authService.getRole() === 'ADMIN';
+  }
+
+  isDriver(): boolean {
+    return this.authService.getRole() === 'DRIVER';
+  }
+
+  isUser(): boolean {
+    return this.authService.getRole() === 'USER';
+  }
+
+  isLoggedIn(): boolean {
+    return this.authService.isAuthenticated();
   }
 }

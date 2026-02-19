@@ -25,12 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -44,7 +39,6 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
 
-@Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
 public class HORAdminE2ETest {
@@ -88,20 +82,6 @@ public class HORAdminE2ETest {
             "endLatitude"
     );
 
-
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
-            .withDatabaseName("test_db")
-            .withUsername("test_user")
-            .withPassword("test_pass");
-
-    @DynamicPropertySource
-    static void registerDataSourceProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
 
 
     void setUpDB() {
@@ -200,7 +180,7 @@ public class HORAdminE2ETest {
                 returnNewLocation(location1),
                 returnNewLocation(location2)
         )));
-        activeRide.setPrice(25.50);
+        activeRide.setTotalPrice(25.50);
         activeRide.setStartTime(LocalDateTime.now().minusMinutes(30));
         activeRide.setStatus(RideStatus.ACTIVE);
         activeRide.setPanic(false);
@@ -219,7 +199,7 @@ public class HORAdminE2ETest {
                 returnNewLocation(location1),
                 returnNewLocation(location2)
         )));
-        OtherRide.setPrice(9999999);
+        OtherRide.setTotalPrice(9999999);
         OtherRide.setStartTime(LocalDateTime.now().minusMinutes(30));
         OtherRide.setStatus(RideStatus.ACTIVE);
         OtherRide.setPanic(false);
@@ -239,7 +219,7 @@ public class HORAdminE2ETest {
                 returnNewLocation(location1),
                 returnNewLocation(location3)
         )));
-        scheduledRide.setPrice(30.00);
+        scheduledRide.setTotalPrice(30.00);
         scheduledRide.setStartTime(LocalDateTime.now().plusHours(1));
         scheduledRide.setStatus(RideStatus.SCHEDULED);
         scheduledRide.setPanic(false);
@@ -257,7 +237,7 @@ public class HORAdminE2ETest {
                 returnNewLocation(location2),
                 returnNewLocation(location3)
         )));
-        finishedRide.setPrice(40.00);
+        finishedRide.setTotalPrice(40.00);
         finishedRide.setStartTime(LocalDateTime.now().minusHours(2));
         finishedRide.setEndTime(LocalDateTime.now().minusHours(1));
         finishedRide.setStatus(RideStatus.FINISHED);
@@ -274,7 +254,7 @@ public class HORAdminE2ETest {
                 returnNewLocation(location1),
                 returnNewLocation(location3)
         )));
-        cancelledRide.setPrice(20.00);
+        cancelledRide.setTotalPrice(20.00);
         cancelledRide.setStartTime(LocalDateTime.now().plusHours(2));
         cancelledRide.setStatus(RideStatus.CANCELED);
         cancelledRide.setPanic(false);
@@ -381,8 +361,8 @@ public class HORAdminE2ETest {
             Ride ride = ridesPage.getContent().get(i);
             String displayedPrice = rideHistoryPage.getPriceFromRow(i);
             System.out.println("Displayed price at row " + i + ": " + displayedPrice);
-            Assertions.assertTrue(displayedPrice.contains(String.format("%.2f", ride.getPrice())),
-                    "Expected price " + ride.getPrice() + " at row " + i);
+            Assertions.assertTrue(displayedPrice.contains(String.format("%.2f", ride.getTotalPrice())),
+                    "Expected price " + ride.getTotalPrice() + " at row " + i);
         }
     }
 

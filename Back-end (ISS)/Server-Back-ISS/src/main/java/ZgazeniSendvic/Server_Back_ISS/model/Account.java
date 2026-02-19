@@ -59,6 +59,8 @@ public class Account {
     private String imgString;
     @Getter @Setter
     private Boolean isConfirmed = false;
+    @Getter @Setter
+    private Boolean isBanned = false;
 
     public Account() {
         super();
@@ -125,6 +127,10 @@ public class Account {
 
     public String getRole() {
         return this.getClass().getSimpleName().toUpperCase();
+    }
+
+    public void setId(long l) {
+        this.id = l;
     }
 }
 

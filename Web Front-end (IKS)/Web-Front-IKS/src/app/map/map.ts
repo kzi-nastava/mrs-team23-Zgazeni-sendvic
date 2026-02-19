@@ -1,4 +1,11 @@
-import { Component, AfterViewInit, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  AfterViewInit,
+  OnDestroy,
+  Input,
+  Output,
+  EventEmitter
+} from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
 
@@ -23,20 +30,29 @@ export interface RouteMetrics {
 
 @Component({
   selector: 'app-map',
-  imports: [],
+  standalone: true,
   templateUrl: './map.html',
-  styleUrl: './map.css',
+  styleUrl: './map.css'
 })
-export class Map implements AfterViewInit {
+export class Map implements AfterViewInit, OnDestroy {
+
+  // MODE CONTROL
   @Input() showMultipleVehicles: boolean = false;
   @Output() routeMetrics = new EventEmitter<RouteMetrics>();
+
+  // ROUTE INPUTS (used when showMultipleVehicles = false)
+  @Input() pickup?: L.LatLngTuple;
+  @Input() destination?: L.LatLngTuple;
+
+  @Output() mapClicked = new EventEmitter<{ lat: number; lng: number }>();
+
   private mapInstance: L.Map | null = null;
+  private routingControl: any;
   private vehicleLayer: L.LayerGroup | null = null;
   private rideLayer: L.LayerGroup | null = null;
   private vehicleMarker: L.Marker | null = null;
   private destinationMarker: L.Marker | null = null;
   private routeLine: L.Polyline | null = null;
-  private routingControl: any = null;
   private pendingVehicleMarkers: VehiclePosition[] | null = null;
   private pendingRideUpdate: RideMapUpdate | null = null;
 
@@ -44,21 +60,40 @@ export class Map implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.initializeMap();
+
+    setTimeout(() => {
+      this.mapInstance?.invalidateSize();
+    }, 0);
   }
 
+  ngOnDestroy(): void {
+    if (this.mapInstance) {
+      this.mapInstance.remove();
+    }
+  }
+
+  // ---------------------------
+  // INITIALIZATION
+  // ---------------------------
   private initializeMap(): void {
     this.mapInstance = L.map('map', {
       center: [45.2396, 19.8227],
       zoom: 13,
-      zoomControl: false,
+      zoomControl: false
+    });
+
+    this.mapInstance.on('click', (e: L.LeafletMouseEvent) => {
+      this.mapClicked.emit({
+        lat: e.latlng.lat,
+        lng: e.latlng.lng
+      });
     });
 
     L.control.zoom({ position: 'topright' }).addTo(this.mapInstance);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
     }).addTo(this.mapInstance);
 
     this.vehicleLayer = L.layerGroup().addTo(this.mapInstance);

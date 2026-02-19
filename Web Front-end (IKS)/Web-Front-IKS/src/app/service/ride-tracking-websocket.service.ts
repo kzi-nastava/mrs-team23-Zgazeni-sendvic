@@ -36,7 +36,7 @@ export class RideTrackingWebSocketService implements OnDestroy {
         this.subscribeToRideTracking(userId);
       },
 
-      onStompError: (frame) => {
+      onStompError: (frame: any) => {
         console.error('STOMP error:', frame);
         this.connectionStatus$.next(false);
       },
@@ -63,7 +63,7 @@ export class RideTrackingWebSocketService implements OnDestroy {
 
     this.subscription = this.stompClient.subscribe(
       `/user/${userId}/queue/ride-tracking`,
-      (message) => {
+      (message: { body: string; }) => {
         try {
           const data = JSON.parse(message.body);
           

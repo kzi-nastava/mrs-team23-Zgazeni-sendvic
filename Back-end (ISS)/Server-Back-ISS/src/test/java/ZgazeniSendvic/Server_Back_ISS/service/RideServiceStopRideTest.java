@@ -109,7 +109,7 @@ public class RideServiceStopRideTest {
         locations.add(testLocation2);
         testRide.setLocations(locations);
 
-        testRide.setPrice(25.50);
+        testRide.setTotalPrice(25.50);
         testRide.setStartTime(LocalDateTime.now().minusHours(1));
         testRide.setStatus(RideStatus.ACTIVE);
         testRide.setPanic(false);
@@ -296,7 +296,7 @@ public class RideServiceStopRideTest {
         rideService.stopRide(rideId, stopRequest);
 
         // Assert
-        assertEquals(expectedPrice, testRide.getPrice());
+        assertEquals(expectedPrice, testRide.getTotalPrice());
         verify(orsRoutingService, times(1)).getFastestRouteWithPath(anyList());
     }
 

@@ -10,10 +10,16 @@ public class Location {
 
     public Location() {}
 
-    public Location(Double longitude, Double latitude) {
+    public Location(Double latitude, Double longitude) {
         super();
-        this.longitude = longitude;
         this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public Location(int lon, int lat) {
+        super();
+        this.latitude = Double.parseDouble(String.valueOf(lat));
+        this.longitude = Double.parseDouble(String.valueOf(lon));
     }
 
     public Double getLatitude() { return latitude; }

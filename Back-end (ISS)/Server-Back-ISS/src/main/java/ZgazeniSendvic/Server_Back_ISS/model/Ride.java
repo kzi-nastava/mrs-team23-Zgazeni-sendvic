@@ -38,8 +38,7 @@ public class Ride {
     private List<Location> locations;
 
     @Getter @Setter
-    private double price;
-
+    private LocalDateTime scheduledTime;
     @Getter @Setter
     private LocalDateTime startTime;
     @Getter @Setter
@@ -58,24 +57,38 @@ public class Ride {
     private Account canceler;
     // Sortable fields - hidden from JSON
     @Getter
+    @Setter
     @Column(name = "start_latitude")
     @JsonIgnore
     private Double startLatitude;
 
     @Getter
+    @Setter
     @Column(name = "start_longitude")
     @JsonIgnore
     private Double startLongitude;
 
     @Getter
+    @Setter
     @Column(name = "end_latitude")
     @JsonIgnore
     private Double endLatitude;
 
     @Getter
+    @Setter
     @Column(name = "end_longitude")
     @JsonIgnore
     private Double endLongitude;
+
+    @Getter
+    @Setter
+    @Column(name = "current_latitude")
+    private Double currentLatitude;
+
+    @Getter
+    @Setter
+    @Column(name = "current_longitude")
+    private Double currentLongitude;
 
 
     @Getter @Setter
@@ -111,6 +124,9 @@ public class Ride {
         }
     }
 
+    @Getter @Setter
+    private double totalPrice;
+
     public Ride(Long id, Driver driver, Account creator, List<Account> passengers, List<Location> locations,
                 double price, LocalDateTime startTime, LocalDateTime endTime, RideStatus status, boolean panic) {
         this.id = id;
@@ -118,7 +134,7 @@ public class Ride {
         this.creator = creator;
         this.passengers = passengers;
         this.locations = locations;
-        this.price = price;
+        this.totalPrice = price;
         this.startTime = startTime;
         this.endTime = endTime;
         this.durationMinutes = calculateDuration();
@@ -126,9 +142,7 @@ public class Ride {
         this.panic = panic;
     }
 
-    public Ride() {
-        this.id = 1L;
-    }
+    public Ride() {}
 
     public boolean isCanceled() {
         return status == RideStatus.CANCELED;
@@ -168,4 +182,7 @@ public class Ride {
         return false;
     }
 
+    public void setPrice(double v) {
+        this.totalPrice = v;
+    }
 }

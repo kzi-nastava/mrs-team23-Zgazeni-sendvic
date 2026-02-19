@@ -87,7 +87,7 @@ public class RideTrackingWebSocketService {
         RideTrackingUpdateDTO dto = new RideTrackingUpdateDTO();
         dto.setRideId(ride.getId());
         dto.setStatus(ride.getStatus().toString());
-        dto.setPrice(ride.getPrice());
+        dto.setPrice(ride.getTotalPrice());
         dto.setStartTime(ride.getStartTime());
         dto.setEstimatedEndTime(ride.getEndTime());
 

@@ -167,7 +167,8 @@ class RideController {
         }
     }
 
-  @PutMapping(
+    @PreAuthorize("hasRole('DRIVER')")
+    @PutMapping(
             value = "ride-start",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -230,6 +231,13 @@ class RideController {
         System.out.println("Fetching vehicle position with ID: " + id);
         VehiclePositionDTO dto = vehiclePositionsService.findById(id);
         return ResponseEntity.ok(dto);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(value = "rides-overview", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RidesOverviewDTO> getRidesOverview() {
+        RidesOverviewDTO ridesOverview = rideService.getRidesOverview();
+        return new ResponseEntity<>(ridesOverview, HttpStatus.OK);
     }
 
 }

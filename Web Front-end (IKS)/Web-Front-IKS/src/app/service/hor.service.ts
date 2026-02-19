@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from './auth.service';
 import { ARideRequestedDTO, PageResponse, ARideDetailsRequestedDTO, ARideRequestedUserDTO, URideDetailsRequestedDTO } from '../models/hor.models';
 
 export interface HorAdminQuery {

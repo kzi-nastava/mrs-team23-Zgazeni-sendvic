@@ -139,7 +139,7 @@ public class RideControllerStopRideEndpointTest {
         locations.add(testLocation2);
         testRide.setLocations(locations);
 
-        testRide.setPrice(25.50);
+        testRide.setTotalPrice(25.50);
         testRide.setStartTime(LocalDateTime.now().minusHours(1));
         testRide.setStatus(RideStatus.ACTIVE);
         testRide.setPanic(false);

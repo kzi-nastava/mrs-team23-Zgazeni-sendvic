@@ -44,15 +44,6 @@ public class Driver extends Account {
         this.vehicle = vehicle;
     }
 
-    public Vehicle getVehicle() {
-        return vehicle;
-    }
-
-    public void setVehicle(Vehicle vehicle) {
-        this.vehicle = vehicle;
-    }
-
-
     //------------Status changes
 
     public void setAvailable(Boolean available) {
@@ -83,5 +74,8 @@ public class Driver extends Account {
         return active != null && active;
     }
 
+    public boolean isBusy() {
+        return busy;
+    }
 }
 

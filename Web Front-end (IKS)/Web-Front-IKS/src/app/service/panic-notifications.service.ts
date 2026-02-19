@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from './auth.service';
 import { PanicNotificationDTO, PageResponse } from '../models/panic.models';
 import { Client, StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';

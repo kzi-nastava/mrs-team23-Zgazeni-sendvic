@@ -20,7 +20,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { PanicNotificationsService } from '../service/panic-notifications.service';
 import { PanicNotificationDTO } from '../models/panic.models';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-panic-notifications',

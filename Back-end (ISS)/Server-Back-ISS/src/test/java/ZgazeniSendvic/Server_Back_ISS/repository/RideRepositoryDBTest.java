@@ -35,7 +35,7 @@ class RideRepositoryDBTest {
         ride.setDriver(driver);
         ride.setCreator(creator);
         ride.setPassengers(new ArrayList<>());
-        ride.setPrice(100);
+        ride.setTotalPrice(100);
         ride.setStatus(RideStatus.ACTIVE);
         ride.setStartTime(LocalDateTime.now());
         ride.setPanic(false);
@@ -47,7 +47,7 @@ class RideRepositoryDBTest {
         Optional<Ride> found = rideRepository.findById(saved.getId());
 
         assertThat(found).isPresent();
-        assertThat(found.get().getPrice()).isEqualTo(100);
+        assertThat(found.get().getTotalPrice()).isEqualTo(100);
         assertThat(found.get().getDriver().getEmail()).isEqualTo("d@gmail.com");
         assertThat(found.get().getStatus()).isEqualTo(RideStatus.ACTIVE);
     }
@@ -55,7 +55,7 @@ class RideRepositoryDBTest {
     @Test
     void save_shouldUpdateRidePrice() {
         Ride ride = new Ride();
-        ride.setPrice(100);
+        ride.setTotalPrice(100);
         ride.setStatus(RideStatus.ACTIVE);
         ride.setPassengers(new ArrayList<>());
         ride.setPanic(false);
@@ -64,13 +64,13 @@ class RideRepositoryDBTest {
         entityManager.flush();
         Long rideId = saved.getId();
 
-        saved.setPrice(150);
+        saved.setTotalPrice(150);
         rideRepository.save(saved);
         entityManager.flush();
         entityManager.clear();
 
         Ride updated = rideRepository.findById(rideId).orElseThrow();
-        assertThat(updated.getPrice()).isEqualTo(150);
+        assertThat(updated.getTotalPrice()).isEqualTo(150);
     }
 
     @Test
@@ -91,7 +91,7 @@ class RideRepositoryDBTest {
 
         assertThat(scheduled).hasSize(2);
         assertThat(scheduled)
-            .extracting(Ride::getPrice)
+            .extracting(Ride::getTotalPrice)
             .containsExactlyInAnyOrder(50.0, 60.0);
     }
 
@@ -134,7 +134,7 @@ class RideRepositoryDBTest {
         Ride ride = new Ride();
         ride.setDriver(driver);
         ride.setPassengers(List.of(passenger1, passenger2));
-        ride.setPrice(80.0);
+        ride.setTotalPrice(80.0);
         ride.setStatus(RideStatus.SCHEDULED);
         ride.setPanic(false);
 
@@ -175,7 +175,7 @@ class RideRepositoryDBTest {
         Ride ride = new Ride();
         ride.setDriver(driver);
         ride.setStatus(status);
-        ride.setPrice(price);
+        ride.setTotalPrice(price);
         ride.setPassengers(new ArrayList<>());
         ride.setPanic(false);
         return ride;

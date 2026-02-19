@@ -63,79 +63,6 @@ public class RideServiceImpl implements IRideService {
         return found.get();
     }
 
-    public Ride createRide(RideRequest req) {
-
-        List<Driver> activeDrivers = allAccounts.findAvailableDrivers();
-
-        if (activeDrivers.isEmpty()) {
-            sendNoDriversEmail(req.getCreator());
-            throw new RuntimeException("No drivers available");
-        }
-
-        Driver selected = matcher.findBestDriver(
-                activeDrivers,
-                req.getLocations().get(0)
-        );
-
-        if (selected == null) {
-            sendNoDriversEmail(req.getCreator());
-            throw new RuntimeException("No suitable drivers");
-        }
-
-        Ride ride = new Ride();
-        ride.setDriver(selected);
-        ride.setCreator(req.getCreator());
-        ride.setPassengers(req.getInvitedPassengers());
-        ride.setLocations(req.getLocations());
-        ride.setPrice(req.getEstimatedPrice());
-        ride.setStatus(RideStatus.SCHEDULED);
-
-        rideRepo.save(ride);
-
-        sendRideAcceptedEmail(req.getCreator(), ride);
-        sendNewRideForDriverEmail(selected, ride);
-
-        return ride;
-    }
-
-    private void sendNoDriversEmail(Account user) {
-        EmailDetails details = new EmailDetails();
-        details.setRecipient(user.getEmail());
-        details.setSubject("Ride request failed");
-        details.setMsgBody(
-                "Unfortunately, there are currently no available drivers. " +
-                        "Please try again later."
-        );
-
-        emailService.sendSimpleMail(details);
-    }
-
-    private void sendRideAcceptedEmail(Account user, Ride ride) {
-        EmailDetails details = new EmailDetails();
-        details.setRecipient(user.getEmail());
-        details.setSubject("Your ride has been accepted");
-        details.setMsgBody(
-                "Your ride has been successfully scheduled.\n\n" +
-                        "Driver: " + ride.getDriver().getName() + "\n" +
-                        "Estimated price: " + ride.getPrice()
-        );
-
-        emailService.sendSimpleMail(details);
-    }
-
-    private void sendNewRideForDriverEmail(Driver driver, Ride ride) {
-        EmailDetails details = new EmailDetails();
-        details.setRecipient(driver.getEmail());
-        details.setSubject("New ride assigned");
-        details.setMsgBody(
-                "You have been assigned a new ride.\n\n" +
-                        "Pickup location: " + ride.getLocations().get(0) + "\n" +
-                        "Scheduled time: " + ride.getStartTime()
-        );
-
-        emailService.sendSimpleMail(details);
-    }
-
     @Override
     public Ride insert(Ride ride) {
         //Do not need to check if it exists already
@@ -173,6 +100,23 @@ public class RideServiceImpl implements IRideService {
 
         return cancelled;
 
+    }
+
+    @Override
+    public Ride convertToRide(RideRequest request, Driver driver) {
+
+        Ride ride = new Ride();
+
+        ride.setDriver(driver);
+        ride.setCreator(request.getCreator());
+        ride.setPassengers(request.getInvitedPassengers());
+        ride.setLocations(request.getLocations());
+        ride.setScheduledTime(request.getScheduledTime());
+        ride.setTotalPrice(request.getEstimatedPrice());
+        ride.setTotalPrice(request.getEstimatedPrice());
+        ride.setStatus(RideStatus.SCHEDULED);
+
+        return allRides.save(ride);
     }
 
     //Sets canceler if there is one
@@ -317,7 +261,7 @@ public class RideServiceImpl implements IRideService {
         }
 
         ride.setStatus(RideStatus.ACTIVE);
-        ride.setStartTime(LocalDateTime.now()); // optional but realistic
+        ride.setStartTime(LocalDateTime.now());
         allRides.save(ride);
     }
 
@@ -347,7 +291,7 @@ public class RideServiceImpl implements IRideService {
             ));
         }
         OrsRouteResult result = orsRoutingService.getFastestRouteWithPath(coordinates);
-        ride.setPrice(result.getPrice());
+        ride.setTotalPrice(result.getPrice());
         ride.setStatus(RideStatus.FINISHED);
         ride.setEndTime(stopReq.getCurrentTime());
         allRides.save(ride);
@@ -355,7 +299,7 @@ public class RideServiceImpl implements IRideService {
 
         //should I call end ride here too?
 
-        RideStoppedDTO stopped = new RideStoppedDTO(rideID, ride.getPrice(),  ride.getLocations());
+        RideStoppedDTO stopped = new RideStoppedDTO(rideID, ride.getTotalPrice(),  ride.getLocations());
         return stopped;
     }
 
@@ -392,7 +336,7 @@ public class RideServiceImpl implements IRideService {
         }
         Ride ride = found.get();
         if (rideEndDTO.getPrice() != null) {
-            ride.setPrice(rideEndDTO.getPrice());
+            ride.setTotalPrice(rideEndDTO.getPrice());
         }
         ride.setStatus(RideStatus.FINISHED);
 
@@ -409,7 +353,7 @@ public class RideServiceImpl implements IRideService {
                     EmailDetails details = new EmailDetails();
                     details.setRecipient(passenger.getEmail());
                     details.setSubject("Ride ended");
-                    details.setMsgBody("Your ride (ID: " + ride.getId() + ") has ended. Final price: " + ride.getPrice());
+                    details.setMsgBody("Your ride (ID: " + ride.getId() + ") has ended. Final price: " + ride.getTotalPrice());
                     emailService.sendSimpleMail(details);
                 } catch (Exception ex) {
                     System.err.println("Failed to send ride-ended email to " + passenger.getEmail() + ": " + ex.getMessage());
@@ -434,6 +378,48 @@ public class RideServiceImpl implements IRideService {
         } catch (Exception ex) {
             System.err.println("Failed to send final ride update via WebSocket for ride " + ride.getId() + ": " + ex.getMessage());
         }
+    }
+
+    public RidesOverviewDTO getRidesOverview() {
+        List<Ride> rides = allRides.findAll();
+        List<ActiveRideDTO> activeRidesList = new ArrayList<>();
+
+        for (Ride ride : rides) {
+            if (ride.getStatus() == RideStatus.SCHEDULED || ride.getStatus() == RideStatus.ACTIVE) {
+                ActiveRideDTO dto = new ActiveRideDTO();
+                dto.setId(ride.getId());
+
+                if (ride.getLocations() != null && !ride.getLocations().isEmpty()) {
+                    dto.setOrigin(ride.getLocations().get(0));
+                    if (ride.getLocations().size() > 1) {
+                        dto.setDestination(ride.getLocations().get(ride.getLocations().size() - 1));
+                    }
+                }
+
+                if (ride.getStartTime() != null) {
+                    dto.setDepartureTime(ride.getStartTime().toString());
+                }
+                if (ride.getEndTime() != null) {
+                    dto.setArrivalTime(ride.getEndTime().toString());
+                }
+
+                dto.setPanic(ride.isPanic());
+                dto.setStatus(ride.getStatus().toString());
+                dto.setPrice(ride.getTotalPrice());
+
+                if (ride.getDriver() != null && ride.getDriver().getEmail() != null) {
+                    dto.setDriverEmail(ride.getDriver().getEmail());
+                }
+
+                if (ride.getStartTime() != null) {
+                    dto.setDate(ride.getStartTime().toLocalDate().toString());
+                }
+
+                activeRidesList.add(dto);
+            }
+        }
+
+        return new RidesOverviewDTO(activeRidesList);
     }
 
     @Override

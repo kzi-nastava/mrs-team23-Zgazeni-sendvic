@@ -88,7 +88,7 @@ public class RideRepositoryDockerTest {
         ride.setCreator(creator);
         ride.setPassengers(new ArrayList<>());
         ride.setLocations(new ArrayList<>());
-        ride.setPrice(15.0);
+        ride.setTotalPrice(15.0);
         ride.setStartTime(LocalDateTime.now());
         ride.setEndTime(LocalDateTime.now().plusHours(1));
         ride.setStatus(RideStatus.ACTIVE);
@@ -100,7 +100,7 @@ public class RideRepositoryDockerTest {
 
         assertTrue(result.isPresent());
         assertEquals(savedRide.getId(), result.get().getId());
-        assertEquals(15.0, result.get().getPrice());
+        assertEquals(15.0, result.get().getTotalPrice());
         assertEquals(RideStatus.ACTIVE, result.get().getStatus());
     }
 
@@ -142,7 +142,7 @@ public class RideRepositoryDockerTest {
         ride.setCreator(creator);
         ride.setPassengers(new ArrayList<>());
         ride.setLocations(new ArrayList<>());
-        ride.setPrice(10.0);
+        ride.setTotalPrice(10.0);
         ride.setStartTime(LocalDateTime.now().minusMinutes(30));
         ride.setEndTime(LocalDateTime.now().minusMinutes(10));
         ride.setStatus(RideStatus.ACTIVE);
@@ -193,7 +193,7 @@ public class RideRepositoryDockerTest {
         ride.setCreator(creator);
         ride.setPassengers(new ArrayList<>());
         ride.setLocations(new ArrayList<>());
-        ride.setPrice(20.0);
+        ride.setTotalPrice(20.0);
         ride.setStartTime(LocalDateTime.now().minusMinutes(30));
         ride.setEndTime(LocalDateTime.now().minusMinutes(10));
         ride.setStatus(RideStatus.ACTIVE);
