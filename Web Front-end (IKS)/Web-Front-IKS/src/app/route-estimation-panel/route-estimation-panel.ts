@@ -1,9 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatOptionModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -32,6 +32,9 @@ import { switchMap } from 'rxjs/operators';
   styleUrl: './route-estimation-panel.css',
 })
 export class RouteEstimationPanel {
+  @ViewChild('startTrigger') startTrigger?: MatAutocompleteTrigger;
+  @ViewChild('endTrigger') endTrigger?: MatAutocompleteTrigger;
+
   estimatedTime = signal<number | null>(null);
   panelVisible = signal<boolean>(true);
   beginningDestination = signal<string>('');
@@ -52,6 +55,7 @@ export class RouteEstimationPanel {
     maxLon: 19.98,
     maxLat: 45.36,
   };
+  private activeField: 'beginning' | 'ending' | null = null;
 
   constructor(
     private routeEstimationService: RouteEstimationService,
@@ -61,11 +65,35 @@ export class RouteEstimationPanel {
   onBeginningInput(value: string) {
     this.beginningDestination.set(value);
     this.scheduleSuggestions(value, 'beginning');
+    if (this.beginningSuggestions.length > 0) {
+      this.togglePanel(this.startTrigger, true);
+    }
   }
 
   onEndingInput(value: string) {
     this.endingDestination.set(value);
     this.scheduleSuggestions(value, 'ending');
+    if (this.endingSuggestions.length > 0) {
+      this.togglePanel(this.endTrigger, true);
+    }
+  }
+
+  onBeginningFocus() {
+    this.activeField = 'beginning';
+    if (this.beginningSuggestions.length > 0) {
+      this.togglePanel(this.startTrigger, true);
+    }
+  }
+
+  onEndingFocus() {
+    this.activeField = 'ending';
+    if (this.endingSuggestions.length > 0) {
+      this.togglePanel(this.endTrigger, true);
+    }
+  }
+
+  onInputBlur() {
+    this.activeField = null;
   }
 
   onBeginningOptionSelected(value: string) {
@@ -161,11 +189,29 @@ export class RouteEstimationPanel {
       .subscribe((results) => {
         if (type === 'beginning' && queryId === this.lastBeginningQueryId) {
           this.beginningSuggestions = results;
+          if (this.activeField === 'beginning') {
+            this.togglePanel(this.startTrigger, results.length > 0);
+          }
         }
         if (type === 'ending' && queryId === this.lastEndingQueryId) {
           this.endingSuggestions = results;
+          if (this.activeField === 'ending') {
+            this.togglePanel(this.endTrigger, results.length > 0);
+          }
         }
       });
+  }
+
+  private togglePanel(trigger: MatAutocompleteTrigger | undefined, shouldOpen: boolean) {
+    if (!trigger) {
+      return;
+    }
+
+    if (shouldOpen && !trigger.panelOpen) {
+      trigger.openPanel();
+    } else if (!shouldOpen && trigger.panelOpen) {
+      trigger.closePanel();
+    }
   }
 
   togglePanelVisibility() {

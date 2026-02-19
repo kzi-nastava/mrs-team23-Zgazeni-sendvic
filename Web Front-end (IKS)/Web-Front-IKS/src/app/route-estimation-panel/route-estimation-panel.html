@@ -13,6 +13,9 @@
         [ngModel]="beginningDestination()"
         (ngModelChange)="onBeginningInput($event)"
         [matAutocomplete]="startAuto"
+        (focus)="onBeginningFocus()"
+        (blur)="onInputBlur()"
+        #startTrigger="matAutocompleteTrigger"
       />
       <mat-autocomplete
         #startAuto="matAutocomplete"
@@ -33,6 +36,9 @@
         [ngModel]="endingDestination()"
         (ngModelChange)="onEndingInput($event)"
         [matAutocomplete]="endAuto"
+        (focus)="onEndingFocus()"
+        (blur)="onInputBlur()"
+        #endTrigger="matAutocompleteTrigger"
       />
       <mat-autocomplete
         #endAuto="matAutocomplete"
