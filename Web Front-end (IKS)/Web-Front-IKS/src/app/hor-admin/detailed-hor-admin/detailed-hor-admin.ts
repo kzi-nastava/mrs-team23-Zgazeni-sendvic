@@ -139,7 +139,7 @@ export class DetailedHorAdmin implements AfterViewInit {
     }
     
     now.setHours(now.getHours() + hours);
-    const fromDate = now.toISOString().split('T')[0];
+    const fromDate = now.toISOString().replace('Z', '').split('.')[0];
     
     this.http.post(`http://localhost:8080/api/riderequest/ride-reorder/${this.rideID}?fromDate=${fromDate}`, {})
       .subscribe({
