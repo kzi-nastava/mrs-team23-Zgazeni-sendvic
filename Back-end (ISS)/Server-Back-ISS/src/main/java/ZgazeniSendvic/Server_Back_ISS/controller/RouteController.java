@@ -3,6 +3,9 @@ package ZgazeniSendvic.Server_Back_ISS.controller;
 import ZgazeniSendvic.Server_Back_ISS.dto.RouteDTO;
 import ZgazeniSendvic.Server_Back_ISS.service.IRouteService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +24,35 @@ public class RouteController {
     @GetMapping("/favorites")
     public ResponseEntity<List<RouteDTO>> myFavorites() {
         return ResponseEntity.ok(routeService.getMyFavoriteRoutes());
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/favorites/paged")
+    public ResponseEntity<Page<RouteDTO>> myFavoritesPaged(
+            @RequestParam(required = false) Boolean hasMidpoints,
+
+            @RequestParam(required = false) Double startMinLat,
+            @RequestParam(required = false) Double startMaxLat,
+            @RequestParam(required = false) Double startMinLng,
+            @RequestParam(required = false) Double startMaxLng,
+
+            @RequestParam(required = false) Double destMinLat,
+            @RequestParam(required = false) Double destMaxLat,
+            @RequestParam(required = false) Double destMinLng,
+            @RequestParam(required = false) Double destMaxLng,
+
+            @PageableDefault(size = 10) Pageable pageable
+    ) {
+        return ResponseEntity.ok(
+                routeService.getMyFavoriteRoutesPaged(
+                        hasMidpoints,
+                        startMinLat, startMaxLat,
+                        startMinLng, startMaxLng,
+                        destMinLat, destMaxLat,
+                        destMinLng, destMaxLng,
+                        pageable
+                )
+        );
     }
 
     @PreAuthorize("isAuthenticated()")

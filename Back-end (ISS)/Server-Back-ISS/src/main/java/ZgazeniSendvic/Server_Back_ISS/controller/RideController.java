@@ -167,7 +167,7 @@ class RideController {
         }
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('DRIVER')")
     @PutMapping(
             value = "ride-start",
             consumes = MediaType.APPLICATION_JSON_VALUE,

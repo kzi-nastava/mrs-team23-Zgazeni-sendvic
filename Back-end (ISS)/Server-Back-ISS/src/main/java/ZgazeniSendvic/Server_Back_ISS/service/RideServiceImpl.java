@@ -261,7 +261,7 @@ public class RideServiceImpl implements IRideService {
         }
 
         ride.setStatus(RideStatus.ACTIVE);
-        ride.setStartTime(LocalDateTime.now()); // optional but realistic
+        ride.setStartTime(LocalDateTime.now());
         allRides.save(ride);
     }
 

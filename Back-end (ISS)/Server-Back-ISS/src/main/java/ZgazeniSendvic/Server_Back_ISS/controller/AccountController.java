@@ -1,5 +1,6 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
+import ZgazeniSendvic.Server_Back_ISS.dto.AccountAdminViewDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.GetAccountDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.UpdateAccountDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.*;
@@ -7,6 +8,9 @@ import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
 
 import ZgazeniSendvic.Server_Back_ISS.service.ChangeRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
+import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -100,15 +105,24 @@ public class AccountController {
         return ResponseEntity.ok("Changes approved.");
     }
 
-    @PreAuthorize("hasRole('ACCOUNT')")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/all")
+    public ResponseEntity<Page<AccountAdminViewDTO>> getAllAccounts(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Boolean confirmed,
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        Page<AccountAdminViewDTO> page = accountService
+                .getAllPaged(q, type, confirmed, pageable)
+                .map(AccountAdminViewDTO::from);
+
+        return ResponseEntity.ok(page);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/ban/{id}")
     public ResponseEntity<String> ban(@PathVariable Long id) {
-        Account current = accountService.getCurrentAccount();
-        if (!(current instanceof Admin)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Not authorized.");
-        }
-
         Account banned = accountService.findAccount(id);
         banned.setIsBanned(true);
         accountService.update(banned);

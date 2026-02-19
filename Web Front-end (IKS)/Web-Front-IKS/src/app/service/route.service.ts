@@ -9,6 +9,10 @@ export class RouteService {
 
   constructor(private http: HttpClient) {}
 
+  getFavoritesPaged(page: number, size: number) {
+    return this.http.get<any>(`${this.api}/favorites/paged?page=${page}&size=${size}&sort=id,desc`);
+  }
+
   getFavorites(): Observable<RouteDTO[]> {
     return this.http.get<RouteDTO[]>(`${this.api}/favorites`);
   }

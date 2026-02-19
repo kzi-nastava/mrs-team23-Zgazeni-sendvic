@@ -1,6 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.repository;
 
 import ZgazeniSendvic.Server_Back_ISS.model.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +14,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class RideRequestRepositoryTest {
 
     @Autowired RideRequestRepository repo;
+
+    @BeforeEach
+    void setUp() {
+        repo.deleteAll();
+    }
 
     @Test
     void findByStatus_returnsMatching() {
