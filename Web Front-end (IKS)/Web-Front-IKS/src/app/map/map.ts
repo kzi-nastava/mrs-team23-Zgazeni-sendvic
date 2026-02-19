@@ -55,6 +55,7 @@ export class Map implements AfterViewInit, OnDestroy {
   private routeLine: L.Polyline | null = null;
   private pendingVehicleMarkers: VehiclePosition[] | null = null;
   private pendingRideUpdate: RideMapUpdate | null = null;
+  private pendingRouteLine: L.LatLngTuple[] | null = null;
 
   constructor() {}
 
@@ -108,6 +109,11 @@ export class Map implements AfterViewInit, OnDestroy {
       this.updateRideLocationInternal(this.pendingRideUpdate);
       this.pendingRideUpdate = null;
     }
+
+    if (this.pendingRouteLine) {
+      this.setRouteLineInternal(this.pendingRouteLine);
+      this.pendingRouteLine = null;
+    }
   }
 
   setVehicleMarkers(vehicles: VehiclePosition[]): void {
@@ -132,6 +138,15 @@ export class Map implements AfterViewInit, OnDestroy {
     }
 
     this.updateRideLocationInternal(update);
+  }
+
+  setRouteLine(route: L.LatLngTuple[] | null): void {
+    if (!this.mapInstance || !this.rideLayer) {
+      this.pendingRouteLine = route;
+      return;
+    }
+
+    this.setRouteLineInternal(route);
   }
 
   fitToBounds(points: L.LatLngTuple[]): void {
@@ -252,6 +267,22 @@ export class Map implements AfterViewInit, OnDestroy {
         this.rideLayer.removeLayer(this.routeLine);
         this.routeLine = null;
       }
+    }
+  }
+
+  private setRouteLineInternal(route: L.LatLngTuple[] | null): void {
+    if (!this.rideLayer) {
+      return;
+    }
+
+    if (this.routeLine) {
+      this.rideLayer.removeLayer(this.routeLine);
+      this.routeLine = null;
+    }
+
+    if (route && route.length > 1) {
+      this.routeLine = L.polyline(route, { color: '#1976d2', weight: 4 })
+        .addTo(this.rideLayer);
     }
   }
 }
