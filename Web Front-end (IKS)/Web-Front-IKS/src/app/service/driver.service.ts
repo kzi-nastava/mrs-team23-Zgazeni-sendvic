@@ -26,4 +26,8 @@ export class DriverService {
   rejectRide(token: string) {
     return this.http.post(`/api/driver/ride-decision/reject`, { token });
   }
+
+  requestDriverDeactivation(statusOfDriver: boolean) {
+    return this.http.put(`http://localhost:8080/api/driver/deactivate`, statusOfDriver, { responseType: 'text' });
+  }
 }
