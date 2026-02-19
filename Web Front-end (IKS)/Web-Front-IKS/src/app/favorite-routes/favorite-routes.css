@@ -1,0 +1,44 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: linear-gradient(to bottom, #E8E839, #39ACBE);
+}
+
+.card {
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  max-width: 1000px;
+  margin: 40px auto;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 24px;
+  font-family: 'Arial';
+  font-size: 32px;
+}
+
+.routes-table {
+  width: 100%;
+}
+
+.route {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.arrow {
+  font-size: 18px;
+  opacity: 0.6;
+}
+
+button[mat-raised-button] {
+  border-radius: 20px !important;
+  background-color: #41A79D !important;
+  color: white !important;
+}

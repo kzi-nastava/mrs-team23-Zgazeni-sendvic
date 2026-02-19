@@ -1,0 +1,52 @@
+
+<div class="card">
+  <h2 class="title">Edit Profile</h2>
+
+  <form [formGroup]="form">
+
+  <div class="form-container">
+
+    <div class="left">
+
+      <mat-form-field appearance="fill">
+        <mat-label>First Name</mat-label>
+        <input matInput formControlName="name">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Address</mat-label>
+        <input matInput formControlName="address">
+      </mat-form-field>
+
+    </div>
+
+    <div class="right">
+
+      <mat-form-field appearance="fill">
+        <mat-label>Last Name</mat-label>
+        <input matInput formControlName="lastName">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Phone</mat-label>
+        <input matInput formControlName="phoneNumber">
+      </mat-form-field>
+
+      <input type="file" accept="image/*" (change)="onPhotoSelected($event)">
+
+    </div>
+
+  </div>
+
+  <div class="bottom-section">
+    <button mat-raised-button color="primary" (click)="submit()">
+      Save Changes
+    </button>
+
+    <div *ngIf="message">
+      <p>{{ message }}</p>
+    </div>
+  </div>
+  
+  </form>
+</div>

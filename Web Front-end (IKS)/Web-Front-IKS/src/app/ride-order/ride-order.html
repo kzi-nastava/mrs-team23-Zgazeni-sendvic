@@ -1,0 +1,62 @@
+<div class="ride-page">
+
+  <!-- MAP BACKGROUND -->
+  <app-map
+    class="ride-map"
+    [showMultipleVehicles]="false"
+    [pickup]="pickupCoords"
+    [destination]="destinationCoords"
+    (mapClicked)="handleMapClick($event)">
+  </app-map>
+
+  <!-- FLOATING FORM CARD -->
+  <div class="ride-card">
+    <h2>Order a Ride</h2>
+
+    <form [formGroup]="rideForm" (ngSubmit)="submitRide()">
+
+      <!-- Stops -->
+      <h3>Stops</h3>
+      <div formArrayName="locations">
+        <div *ngFor="let loc of locations.controls; let i = index"
+             [formGroupName]="i"
+             class="location-item">
+          <input formControlName="address"
+                 placeholder="Select on map or enter manually" />
+        </div>
+      </div>
+
+      <!-- Add Stop Button -->
+      <button type="button" (click)="addLocation()">Add Stop</button>
+
+      <!-- Vehicle Type -->
+      <h3>Vehicle Type</h3>
+      <select formControlName="vehicleType">
+        <option *ngFor="let v of vehicleTypes" [value]="v">
+          {{ v }}
+        </option>
+      </select>
+
+      <!-- Options -->
+      <h3>Options</h3>
+      <label>
+        <input type="checkbox" formControlName="babiesAllowed"> Babies
+      </label>
+      <label>
+        <input type="checkbox" formControlName="petsAllowed"> Pets
+      </label>
+
+      <!-- Schedule -->
+      <h3>Schedule</h3>
+      <input type="datetime-local" formControlName="scheduledTime">
+
+      <!-- Estimated Distance -->
+      <h3>Estimated Distance (km)</h3>
+      <input type="number" formControlName="estimatedDistanceKm" readonly>
+
+      <button type="submit">Request Ride</button>
+    </form>
+  </div>
+
+</div>
+

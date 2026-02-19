@@ -1,0 +1,18 @@
+.card {
+  max-width: 420px;
+  margin: 80px auto;
+  padding: 32px;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+}
+
+.error {
+  color: red;
+  text-align: center;
+  margin-top: 40px;
+}

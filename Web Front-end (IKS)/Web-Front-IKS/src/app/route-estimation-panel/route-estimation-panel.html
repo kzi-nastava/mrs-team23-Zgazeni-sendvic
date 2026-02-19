@@ -1,0 +1,30 @@
+@if (panelVisible()) {
+  <mat-card class="route-estimation-panel">
+    <h2 class="panel-title">Route Estimation</h2>
+
+    <div class="time-display mat-body-1">
+      Estimated Time: {{ estimatedTime() ? estimatedTime() + ' min' : '--:-- min' }}
+    </div>
+
+    <mat-form-field appearance="fill" class="location-input">
+      <mat-label>Starting Location</mat-label>
+      <input matInput [(ngModel)]="beginningDestination" />
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" color="primary" class="location-input">
+      <mat-label>Ending Location</mat-label>
+      <input matInput [(ngModel)]="endingDestination" />
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" class="estimate-button" (click)="estimateRoute()">
+      Estimate Route
+    </button>
+
+    <div class="error-message">
+      @if (errorMessage()) {
+        {{ errorMessage() }}
+      }
+    </div>
+  </mat-card>
+}
+

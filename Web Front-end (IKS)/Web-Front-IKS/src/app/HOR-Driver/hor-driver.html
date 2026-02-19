@@ -1,0 +1,22 @@
+<div class="hor-driver">
+    <h1 class="hor-title">History of Rides</h1>
+    <div class="history-list">
+        <ul>
+            @for (ride of rides; track ride.id) {
+                <li>
+                    <div class="ride-entry">
+                        <span class="ride-date">{{ ride.date }}</span>
+                        <span class="ride-time-start">{{ ride.timeStart }}</span>
+                        <span class="ride-time-end">{{ ride.timeEnd }}</span>
+                        <span class="ride-origin">{{ ride.originAddress }}</span>
+                        <span class="ride-destination">{{ ride.destinationAddress }}</span>
+                        <span class="ride-price">{{ ride.price }}</span>
+                        <span class="ride-canceled">{{ ride.canceled }}</span>
+                        <span class="ride-panic">{{ ride.panic }}</span>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+

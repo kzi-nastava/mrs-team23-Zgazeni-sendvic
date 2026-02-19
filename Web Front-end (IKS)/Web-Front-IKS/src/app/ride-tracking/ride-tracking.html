@@ -1,0 +1,102 @@
+<div class="ride-tracking-container">
+  <app-map [showMultipleVehicles]="false" (routeMetrics)="onRouteMetrics($event)"></app-map>
+  
+  <aside class="ride-sidebar">
+    <div class="sidebar-content">
+      <div class="ride-info">
+        <div class="info-item">
+          <h3>Starting Point</h3>
+          <p>{{ startingPoint }}</p>
+        </div>
+        
+        <div class="info-item">
+          <h3>Destination</h3>
+          <p>{{ destination }}</p>
+        </div>
+        
+        <div class="info-item">
+          <h3>Estimated Time</h3>
+          <p class="time">{{ estimatedTime }}</p>
+        </div>
+        
+    </div>
+    
+    <div class="sidebar-actions">
+        @if (isDriver()) {
+        <button class="sidebar-buttons" (click)="stopRide()">End Ride</button>
+        }
+        @if (!isDriver()) {
+        <button class="sidebar-buttons" (click)="openNote()">Note</button>
+        <button class="sidebar-buttons" (click)="openRate()">Rate</button>
+        }
+      </div>
+    </div>
+  </aside>
+
+  <!-- Note Form -->
+  @if (showNoteForm) {
+  <div class="form-overlay">
+    <div class="form-container">
+      <div class="form-header">
+        <h2>Add Note</h2>
+        <button class="close-btn" (click)="closeNoteForm()">&times;</button>
+      </div>
+      <div class="form-body">
+        <textarea 
+          [(ngModel)]="noteText" 
+          placeholder="Write your note here..."
+          class="note-textarea"
+          rows="8"></textarea>
+        <button class="send-btn" (click)="sendNote()">Send</button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Rate Form -->
+  @if (showRateForm) {
+  <div class="form-overlay">
+    <div class="form-container">
+      <div class="form-header">
+        <h2>Rate Ride</h2>
+        <button class="close-btn" (click)="closeRateForm()">&times;</button>
+      </div>
+      <div class="form-body">
+        <div class="rating-field">
+          <label for="driverRating">Driver Rating (1-10)</label>
+          <input 
+            type="number" 
+            id="driverRating"
+            [(ngModel)]="driverRating" 
+            min="1" 
+            max="10" 
+            class="rating-input" />
+        </div>
+        
+        <div class="rating-field">
+          <label for="vehicleRating">Vehicle Rating (1-10)</label>
+          <input 
+            type="number" 
+            id="vehicleRating"
+            [(ngModel)]="vehicleRating" 
+            min="1" 
+            max="10" 
+            class="rating-input" />
+        </div>
+        
+        <div class="rating-field">
+          <label for="comment">Comment</label>
+          <textarea 
+            id="comment"
+            [(ngModel)]="ratingComment" 
+            placeholder="Add a comment (optional)..."
+            class="comment-textarea"
+            rows="5"></textarea>
+        </div>
+        
+        <button id="send-rating-btn" class="send-btn" (click)="sendRating()">Send</button>
+      </div>
+    </div>
+  </div>
+  }
+</div>

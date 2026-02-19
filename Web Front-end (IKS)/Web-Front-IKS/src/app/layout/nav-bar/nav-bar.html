@@ -1,0 +1,39 @@
+<nav class="navbar">
+  <div class="left">
+    <span class="logo" [routerLink]="['/']">DriveBy</span>
+  </div>
+
+  <div class="right">
+    <div class="button-container1">      
+      @if (isHomePage()) {  
+        <button mat-raised-button color="accent" (click)="panelService.togglePanel()">Estimate Route</button>
+      }
+      @if (isAdmin()) {
+        <button mat-raised-button color="warn" [routerLink]="['/panic-notifications']">
+          <mat-icon>warning</mat-icon>
+          Panic Notifications
+        </button>
+      }
+      <button mat-raised-button color="primary" [routerLink]="['/ride-order']">Order Ride</button>
+      @if (isDriver() || isUser()) {
+        <button mat-raised-button color="primary" [routerLink]="['/ride-tracking']">Ride Tracking</button>
+      }
+      @if (isDriver()) {
+        <button mat-raised-button color="primary" [routerLink]="['/hor-driver']">HOR Driver</button>
+      }
+      @if (isAdmin()) {
+        <button mat-raised-button color="primary" [routerLink]="['/rides-overview']">Rides Overview</button>
+      }
+      @if (isDriver()) {
+        <button mat-raised-button color="primary" [routerLink]="['/future-rides']">Future Rides</button>
+      }
+      <button mat-raised-button color="primary" [routerLink]="['/login']">Log in</button>
+    </div>
+    <div class="button-container">
+      <button type="button" class="logout" aria-label="Log out of your account" (click)="logout()">Log out</button>
+    </div>
+    <a [routerLink]="['/profile']" class="profile-link" aria-label="Go to your profile page">
+      <img src="assets/profiles/profile-placeholder.jpg" class="profile-pic" />
+    </a>
+  </div>
+</nav>

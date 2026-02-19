@@ -1,0 +1,69 @@
+<div class="page">
+  <div class="card">
+    <h2 class="title">Create Driver</h2>
+
+    <form [formGroup]="form">
+      <div class="form-container">
+
+        <!-- LEFT COLUMN -->
+        <div class="left">
+          <h3>Driver information</h3>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email">
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="name">
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Surname</mat-label>
+            <input matInput formControlName="surname">
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Phone</mat-label>
+            <input matInput formControlName="phone">
+          </mat-form-field>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="right">
+          <h3>Vehicle</h3>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Select vehicle</mat-label>
+            <mat-select formControlName="vehicleId">
+              <mat-option *ngFor="let v of vehicles" [value]="v.id">
+                {{ v.model }} ({{ v.licensePlate }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button
+            mat-raised-button
+            color="primary"
+            type="button"
+            routerLink="/register-vehicle">
+            Register new vehicle
+          </button>
+        </div>
+
+      </div>
+
+      <div class="bottom-section">
+        <button
+          mat-raised-button
+          color="primary"
+          type="button"
+          data-testid="create-driver-btn"
+          (click)="submit()">
+          Create driver
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

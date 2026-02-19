@@ -1,0 +1,17 @@
+<div class="future-rides">
+    <h1 class="future-title">Future Rides</h1>
+    <div class="history-list">
+        <ul>
+            @for (ride of rides; track ride) {
+                <li>
+                    <div class="ride-entry">
+                        <span class="ride-date">{{ ride.date }}</span>
+                        <span class="ride-time-start">{{ ride.timeStart }}</span>
+                        <span class="ride-origin">{{ ride.origin }}</span>
+                        <span class="ride-destination">{{ ride.destination }}</span>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+</div>

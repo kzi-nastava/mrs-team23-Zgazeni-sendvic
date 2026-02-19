@@ -1,0 +1,59 @@
+<div class="card">
+  <div class="image-wrapper">
+    <img [src]="profileImage || 'assets/profiles/profile-placeholder.jpg'" alt="Profile" />
+    
+    <button class="edit-btn" (click)="onEditClick()">
+      <img src="assets/profiles/pencil-edit-button.svg" alt="Edit Profile" />
+    </button>
+  </div>
+
+  <h2 class="display-name">{{ displayName }}</h2>
+
+  <hr />
+
+  <div *ngIf="driverStatistic" class="driver-statistic">
+    <div class="statistic-label">{{ driverStatistic.label }}</div>
+    <div class="statistic-value">{{ driverStatistic.value }}</div>
+  </div>
+
+  <div class="info">
+    <div class="grid-row">
+      <div class="field">
+        <div class="label">Name:</div>
+        <div class="value">{{ name }}</div>
+      </div>
+      <div class="field">
+        <div class="label">Surname:</div>
+        <div class="value">{{ surname }}</div>
+      </div>
+    </div>
+
+    <div class="grid-row">
+      <div class="field">
+        <div class="label">Email:</div>
+        <div class="value">{{ email }}</div>
+      </div>
+      <div class="field">
+        <div class="label">Phone:</div>
+        <div class="value">{{ phone }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-buttons">
+    <button class="hor-action-btn" [routerLink]="getRouteLink()" *ngIf="variant">
+      <p>History of rides</p>
+    </button>
+
+    <button
+      class="hor-action-btn"
+      *ngIf="variant === 'user'"
+      [routerLink]="'/favorite-routes'">
+      <p>Favorite routes</p>
+    </button>
+
+    <button *ngIf="adminButton" class="admin-action-btn" (click)="onAdminButtonClick()">
+      {{ adminButton.label }}
+    </button>
+  </div>
+</div>
