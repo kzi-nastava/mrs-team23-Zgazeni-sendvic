@@ -78,5 +78,22 @@ public class RideRequestServiceImpl implements IRideRequestService {
 
         return saved;
     }
+
+
+    public void recreateRideRequest(Long rideID, LocalDateTime when){
+        RideRequest rr = rideRequestRepository.findById(rideID).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride request not found"));
+
+        CreateRideRequestDTO dto = new CreateRideRequestDTO();
+        dto.setVehicleType(rr.getVehicleType());
+        dto.setBabiesAllowed(rr.isBabiesAllowed());
+        dto.setPetsAllowed(rr.isPetsAllowed());
+        dto.setEstimatedDistanceKm(rr.getEstimatedDistanceKm());
+        dto.setInvitedPassengerEmails(rr.getInvitedPassengers().stream().map(Account::getEmail).collect(Collectors.toList()));
+        dto.setLocations(rr.getLocations());
+        dto.setScheduledTime(when);
+        createRideRequest(dto);
+    }
+
+
 }
 
