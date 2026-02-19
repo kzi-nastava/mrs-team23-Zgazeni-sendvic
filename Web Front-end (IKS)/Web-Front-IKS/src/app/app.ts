@@ -1,7 +1,7 @@
 import { Component, signal, OnInit, inject } from '@angular/core';
 import { RouterOutlet, RouterModule } from '@angular/router';
 import { NavBar } from './layout/nav-bar/nav-bar';
-import { AuthService } from './services/auth.service';
+import { AuthService } from './service/auth.service';
 import { PanicNotificationsService } from './service/panic-notifications.service';
 
 @Component({
