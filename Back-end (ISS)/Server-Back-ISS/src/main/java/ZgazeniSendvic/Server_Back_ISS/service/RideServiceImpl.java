@@ -380,6 +380,48 @@ public class RideServiceImpl implements IRideService {
         }
     }
 
+    public RidesOverviewDTO getRidesOverview() {
+        List<Ride> rides = allRides.findAll();
+        List<ActiveRideDTO> activeRidesList = new ArrayList<>();
+
+        for (Ride ride : rides) {
+            if (ride.getStatus() == RideStatus.SCHEDULED || ride.getStatus() == RideStatus.ACTIVE) {
+                ActiveRideDTO dto = new ActiveRideDTO();
+                dto.setId(ride.getId());
+
+                if (ride.getLocations() != null && !ride.getLocations().isEmpty()) {
+                    dto.setOrigin(ride.getLocations().get(0));
+                    if (ride.getLocations().size() > 1) {
+                        dto.setDestination(ride.getLocations().get(ride.getLocations().size() - 1));
+                    }
+                }
+
+                if (ride.getStartTime() != null) {
+                    dto.setDepartureTime(ride.getStartTime().toString());
+                }
+                if (ride.getEndTime() != null) {
+                    dto.setArrivalTime(ride.getEndTime().toString());
+                }
+
+                dto.setPanic(ride.isPanic());
+                dto.setStatus(ride.getStatus().toString());
+                dto.setPrice(ride.getTotalPrice());
+
+                if (ride.getDriver() != null && ride.getDriver().getEmail() != null) {
+                    dto.setDriverEmail(ride.getDriver().getEmail());
+                }
+
+                if (ride.getStartTime() != null) {
+                    dto.setDate(ride.getStartTime().toLocalDate().toString());
+                }
+
+                activeRidesList.add(dto);
+            }
+        }
+
+        return new RidesOverviewDTO(activeRidesList);
+    }
+
     @Override
     public Ride delete(Long rideId) {
         return null;

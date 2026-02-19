@@ -15,9 +15,18 @@
         </button>
       }
       <button mat-raised-button color="primary" [routerLink]="['/ride-order']">Order Ride</button>
-      <button mat-raised-button color="primary" [routerLink]="['/ride-tracking']">Ride Tracking</button>
-      <button mat-raised-button color="primary" [routerLink]="['/hor-driver']">HOR Driver</button>
-      <button mat-raised-button color="primary" [routerLink]="['/future-rides']">Future Rides</button>
+      @if (isDriver() || isUser()) {
+        <button mat-raised-button color="primary" [routerLink]="['/ride-tracking']">Ride Tracking</button>
+      }
+      @if (isDriver()) {
+        <button mat-raised-button color="primary" [routerLink]="['/hor-driver']">HOR Driver</button>
+      }
+      @if (isAdmin()) {
+        <button mat-raised-button color="primary" [routerLink]="['/rides-overview']">Rides Overview</button>
+      }
+      @if (isDriver()) {
+        <button mat-raised-button color="primary" [routerLink]="['/future-rides']">Future Rides</button>
+      }
       <button mat-raised-button color="primary" [routerLink]="['/login']">Log in</button>
     </div>
     <div class="button-container">

@@ -233,4 +233,11 @@ class RideController {
         return ResponseEntity.ok(dto);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(value = "rides-overview", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RidesOverviewDTO> getRidesOverview() {
+        RidesOverviewDTO ridesOverview = rideService.getRidesOverview();
+        return new ResponseEntity<>(ridesOverview, HttpStatus.OK);
+    }
+
 }
