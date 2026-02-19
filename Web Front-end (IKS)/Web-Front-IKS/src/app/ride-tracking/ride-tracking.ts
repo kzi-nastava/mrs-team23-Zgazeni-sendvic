@@ -7,6 +7,7 @@ import { RideTrackingWebSocketService } from '../service/ride-tracking-websocket
 import { RideTrackingUpdate } from '../models/ride-tracking.models';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../service/auth.service';
+import { PanicNotificationDTO } from '../models/panic.models';
 
 @Component({
   selector: 'app-ride-tracking',
@@ -22,7 +23,7 @@ export class RideTracking implements OnInit, OnDestroy {
   private rideSubscription?: Subscription;
   private connectionSubscription?: Subscription;
   private userId: number | null = null;
-  private userRole: string | null = null;
+  userRole: string | null = null;
   private previousRideStatus: string | null = null;
 
   startingPoint = 'Bulevar oslobođenja 46, Novi Sad';
@@ -189,6 +190,63 @@ export class RideTracking implements OnInit, OnDestroy {
         console.error('Error stopping ride:', err);
       }
     }); 
+  }
+
+  panicRide(): void {
+    if (!this.currentRide?.rideId) {
+      console.error('No current ride ID available');
+      return;
+    }
+    console.log('Panic button clicked for ride:', this.currentRide.rideId);
+    this.http.post<PanicNotificationDTO>(`http://localhost:8080/api/ride-PANIC/${this.currentRide.rideId}`, {}).subscribe({
+      next: (response: PanicNotificationDTO) => {
+        console.log('Panic notification sent successfully:', response);
+        alert('Panic notification has been sent');
+      },
+      error: (err) => {
+        console.error('Error sending panic notification:', err);
+        alert('Error sending panic notification');
+      }
+    });
+  }
+
+  stopRideDriver(): void {
+    if (!this.currentRide?.rideId) {
+      console.error('No current ride ID available');
+      return;
+    }
+    
+    if (!this.currentRide) {
+      console.error('No current ride data available');
+      return;
+    }
+
+    console.log('Stop ride (driver) clicked for ride:', this.currentRide.rideId);
+
+    // Prepare passed locations from route or use default
+    const passedLocations = (this.currentRide.route || []).map(point => ({
+      latitude: point.latitude,
+      longitude: point.longitude
+    }));
+
+    // If no locations, use default empty array
+    const currentTime = new Date().toISOString();
+
+    const rideStopRequest = {
+      passedLocations: passedLocations.length > 0 ? passedLocations : [],
+      currentTime: currentTime
+    };
+
+    this.http.put(`http://localhost:8080/api/ride-tracking/stop/${this.currentRide.rideId}`, rideStopRequest).subscribe({
+      next: (response) => {
+        console.log('Ride stopped successfully:', response);
+        alert('Ride has been stopped');
+      },
+      error: (err) => {
+        console.error('Error stopping ride:', err);
+        alert('Error stopping ride');
+      }
+    });
   }
 
   isDriver(): boolean {
