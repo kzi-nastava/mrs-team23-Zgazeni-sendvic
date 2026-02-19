@@ -9,6 +9,14 @@ import { RouteService } from '../service/route.service';
 import { RouteDTO } from '../models/route.dto';
 import { finalize, catchError, of, timeout } from 'rxjs';
 
+type PageResponse<T> = {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number; // current page (0-based)
+};
+
 @Component({
   selector: 'app-favorite-routes',
   standalone: true,
@@ -23,6 +31,12 @@ export class FavoriteRoutes implements OnInit {
   favoriteRoutes: RouteDTO[] = [];
   loading = false;
 
+  // pagination state
+  pageIndex = 0;        // 0-based
+  pageSize = 10;
+  totalElements = 0;
+  totalPages = 0;
+
   constructor(
     private routeService: RouteService,
     private router: Router,
@@ -30,31 +44,54 @@ export class FavoriteRoutes implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.load();
+    this.loadPage(0);
   }
 
-  load() {
+  loadPage(page: number) {
+    if (page < 0) return;
+    if (this.totalPages > 0 && page >= this.totalPages) return;
+
     this.loading = true;
     this.cdr.markForCheck();
 
-    this.routeService.getFavorites().pipe(
+    this.routeService.getFavoritesPaged(page, this.pageSize).pipe(
       timeout(8000),
 
       catchError((err) => {
         this.favoriteRoutes = [];
-        // keep your alert if you want
+        this.totalElements = 0;
+        this.totalPages = 0;
         alert('Failed to load favorite routes.');
-        return of([] as RouteDTO[]);
+        // return empty page shape to keep code simple
+        const empty: PageResponse<RouteDTO> = {
+          content: [],
+          totalElements: 0,
+          totalPages: 0,
+          size: this.pageSize,
+          number: page
+        };
+        return of(empty);
       }),
 
       finalize(() => {
         this.loading = false;
         this.cdr.markForCheck();
       })
-    ).subscribe((routes) => {
-      this.favoriteRoutes = routes ?? [];
+    ).subscribe((res: PageResponse<RouteDTO>) => {
+      this.favoriteRoutes = res?.content ?? [];
+      this.totalElements = res?.totalElements ?? 0;
+      this.totalPages = res?.totalPages ?? 0;
+      this.pageIndex = res?.number ?? page;
       this.cdr.markForCheck();
     });
+  }
+
+  nextPage() {
+    this.loadPage(this.pageIndex + 1);
+  }
+
+  prevPage() {
+    this.loadPage(this.pageIndex - 1);
   }
 
   useRoute(route: RouteDTO) {

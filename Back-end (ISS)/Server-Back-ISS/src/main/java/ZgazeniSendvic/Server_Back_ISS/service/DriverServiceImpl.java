@@ -15,6 +15,8 @@ import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -272,6 +274,11 @@ public class DriverServiceImpl implements IDriverService {
     @Override
     public Collection<Account> getAll() {
         return accountRepository.findAll();
+    }
+
+    @Override
+    public Page<Account> getAllPaged(String q, String type, Boolean confirmed, Pageable pageable) {
+        return null;
     }
 
     @Override

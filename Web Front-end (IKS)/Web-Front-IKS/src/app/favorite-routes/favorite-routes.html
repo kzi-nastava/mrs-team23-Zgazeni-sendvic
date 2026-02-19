@@ -32,6 +32,27 @@
 
     </table>
 
+    <div class="pager"
+         *ngIf="!loading && totalPages > 0 && favoriteRoutes.length > 0">
+
+      <button mat-button
+              (click)="prevPage()"
+              [disabled]="pageIndex === 0">
+        Prev
+      </button>
+
+      <span>
+        Page {{ pageIndex + 1 }} / {{ totalPages }}
+        ({{ totalElements }} routes)
+      </span>
+
+      <button mat-button
+              (click)="nextPage()"
+              [disabled]="pageIndex + 1 >= totalPages">
+        Next
+      </button>
+    </div>
+
     <div *ngIf="!loading && favoriteRoutes.length === 0">
       No favorite routes yet.
     </div>

@@ -1,5 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
+
+import static ZgazeniSendvic.Server_Back_ISS.repository.spec.AccountSpecs.*;
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.*;
 //import ZgazeniSendvic.Server_Back_ISS.model.EmailDetails; WRONG IMPORT
@@ -11,8 +13,10 @@ import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -357,6 +361,15 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
         }
 
         return accounts;
+    }
+
+    @Override
+    public Page<Account> getAllPaged(String q, String type, Boolean confirmed, Pageable pageable) {
+        Specification<Account> spec = Specification.where(search(q))
+                .and(type(type))
+                .and(confirmed(confirmed));
+
+        return allAccounts.findAll(spec, pageable);
     }
 }
 

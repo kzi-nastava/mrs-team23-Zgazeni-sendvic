@@ -9,6 +9,8 @@ import ZgazeniSendvic.Server_Back_ISS.repository.RouteRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository; // if you have it
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,7 +27,7 @@ public class RouteServiceImpl implements IRouteService {
     @Autowired
     AccountServiceImpl accountService;
     @Autowired
-    RideRepository rideRepository; // or RideService if you prefer
+    RideRepository rideRepository;
 
     @Override
     public List<RouteDTO> getMyFavoriteRoutes() {
@@ -36,6 +38,31 @@ public class RouteServiceImpl implements IRouteService {
                 .stream()
                 .map(this::toDto)
                 .toList();
+    }
+
+    @Override
+    public Page<RouteDTO> getMyFavoriteRoutesPaged(
+            Boolean hasMidpoints,
+            Double startMinLat, Double startMaxLat,
+            Double startMinLng, Double startMaxLng,
+            Double destMinLat,  Double destMaxLat,
+            Double destMinLng,  Double destMaxLng,
+            Pageable pageable
+    ) {
+        Account me = accountService.getCurrentAccount();
+        if (me == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
+
+        return routeRepository
+                .findMineFiltered(
+                        me.getId(),
+                        hasMidpoints,
+                        startMinLat, startMaxLat,
+                        startMinLng, startMaxLng,
+                        destMinLat, destMaxLat,
+                        destMinLng, destMaxLng,
+                        pageable
+                )
+                .map(this::toDto);
     }
 
     @Override
