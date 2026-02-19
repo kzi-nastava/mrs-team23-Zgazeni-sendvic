@@ -173,8 +173,9 @@ export class HORAdmin {
       next: (details: ARideDetailsRequestedDTO) => {
         console.log('Ride Details:', details);
         // Add route information from the ride data
-        const detailsWithRoute: ARideDetailsRequestedDTO = {
+        const detailsWithRoute: ARideDetailsRequestedDTO & { rideID: number } = {
           ...details,
+          rideID: ride.rideID,
           arrivingPoint: ride.arrivingPoint,
           endingPoint: ride.endingPoint,
           destinations: ride.destinations
@@ -187,7 +188,7 @@ export class HORAdmin {
     });
   }
 
-  private openDetailedView(details: ARideDetailsRequestedDTO): void {
+  private openDetailedView(details: ARideDetailsRequestedDTO & { rideID: number }): void {
     this.dialog.open(DetailedHorAdmin, {
       data: details,
       width: '90%',

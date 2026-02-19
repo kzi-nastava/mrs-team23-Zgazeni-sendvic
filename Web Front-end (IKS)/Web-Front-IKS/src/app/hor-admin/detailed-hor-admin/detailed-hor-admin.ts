@@ -1,5 +1,6 @@
 import { Component, Inject, ChangeDetectionStrategy, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
@@ -8,6 +9,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { HttpClient } from '@angular/common/http';
 import { ARideDetailsRequestedDTO } from '../../models/hor.models';
 import { Map } from '../../map/map';
 import * as L from 'leaflet';
@@ -17,6 +20,7 @@ import * as L from 'leaflet';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatDialogModule,
     MatTabsModule,
     MatCardModule,
@@ -25,6 +29,7 @@ import * as L from 'leaflet';
     MatButtonModule,
     MatDividerModule,
     MatTooltipModule,
+    MatSnackBarModule,
     Map
   ],
   templateUrl: './detailed-hor-admin.html',
@@ -34,13 +39,18 @@ import * as L from 'leaflet';
 export class DetailedHorAdmin implements AfterViewInit {
   @ViewChild(Map) mapComponent!: Map;
   rideDetails: ARideDetailsRequestedDTO;
+  rideID: number;
+  reorderHours: string = '';
 
   constructor(
     public dialogRef: MatDialogRef<DetailedHorAdmin>,
-    @Inject(MAT_DIALOG_DATA) public data: ARideDetailsRequestedDTO,
-    private cdr: ChangeDetectorRef
+    @Inject(MAT_DIALOG_DATA) public data: ARideDetailsRequestedDTO & { rideID: number },
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient,
+    private snackBar: MatSnackBar
   ) {
     this.rideDetails = data;
+    this.rideID = data.rideID;
   }
 
   ngAfterViewInit(): void {
@@ -120,8 +130,28 @@ export class DetailedHorAdmin implements AfterViewInit {
   }
 
   onReorderClick(): void {
-    console.log('Reorder ride');
-    this.dialogRef.close({ reorder: true });
+    const now = new Date();
+    const hours = parseInt(this.reorderHours, 10);
+    
+    if (isNaN(hours)) {
+      this.snackBar.open('Please enter a valid number of hours', 'Close', { duration: 3000 });
+      return;
+    }
+    
+    now.setHours(now.getHours() + hours);
+    const fromDate = now.toISOString().replace('Z', '').split('.')[0];
+    
+    this.http.post(`http://localhost:8080/api/riderequest/ride-reorder/${this.rideID}?fromDate=${fromDate}`, {})
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Ride reordered successfully!', 'Close', { duration: 3000 });
+          this.dialogRef.close({ reorder: true });
+        },
+        error: (error) => {
+          console.error('Reorder failed:', error);
+          this.snackBar.open('Failed to reorder ride. Please try again.', 'Close', { duration: 5000 });
+        }
+      });
   }
 
   onCloseClick(): void {
