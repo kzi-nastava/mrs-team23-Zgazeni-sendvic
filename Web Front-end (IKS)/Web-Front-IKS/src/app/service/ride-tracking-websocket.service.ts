@@ -2,7 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Client, StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { RideTrackingUpdate } from '../models/ride-tracking.models';
+import { RideTrackingUpdate, RideEndedNotification } from '../models/ride-tracking.models';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +11,9 @@ import { RideTrackingUpdate } from '../models/ride-tracking.models';
 export class RideTrackingWebSocketService implements OnDestroy {
   private stompClient: Client | null = null;
   private subscription: StompSubscription | null = null;
+  private rideEndedSubscription: StompSubscription | null = null;
   private rideUpdates$ = new BehaviorSubject<RideTrackingUpdate | null>(null);
+  private rideEnded$ = new BehaviorSubject<RideEndedNotification | null>(null);
   private connectionStatus$ = new BehaviorSubject<boolean>(false);
 
   constructor() {}
@@ -66,10 +68,10 @@ export class RideTrackingWebSocketService implements OnDestroy {
       (message: { body: string; }) => {
         try {
           const data = JSON.parse(message.body);
-          
+
           // Handle both single ride object and array of rides
           let rideUpdate: RideTrackingUpdate | null = null;
-          
+
           if (Array.isArray(data)) {
             // If backend sends array of rides, prioritize: ACTIVE > SCHEDULED > FINISHED
             rideUpdate = this.selectPrioritizedRide(data);
@@ -77,11 +79,27 @@ export class RideTrackingWebSocketService implements OnDestroy {
             // If backend sends single ride object
             rideUpdate = data as RideTrackingUpdate;
           }
-          
+
           console.log('Ride update received:', rideUpdate);
           this.rideUpdates$.next(rideUpdate);
         } catch (error) {
           console.error('Error parsing ride update:', error);
+        }
+      }
+    );
+
+    this.rideEndedSubscription = this.stompClient.subscribe(
+      `/user/${userId}/queue/ride-ended`,
+      (message: { body: string; }) => {
+        try {
+          const body = message.body?.trim();
+          const data = body
+            ? (JSON.parse(body) as RideEndedNotification)
+            : ({ status: 'FINISHED', rideId: 0, price: null, endTime: null } as RideEndedNotification);
+          this.rideEnded$.next(data);
+        } catch (error) {
+          console.warn('Non-JSON ride-ended notification received, emitting fallback event');
+          this.rideEnded$.next({ status: 'FINISHED', rideId: 0, price: null, endTime: null });
         }
       }
     );
@@ -125,6 +143,10 @@ export class RideTrackingWebSocketService implements OnDestroy {
     return this.rideUpdates$.asObservable();
   }
 
+  getRideEndedNotifications(): Observable<RideEndedNotification | null> {
+    return this.rideEnded$.asObservable();
+  }
+
   getConnectionStatus(): Observable<boolean> {
     return this.connectionStatus$.asObservable();
   }
@@ -150,12 +172,18 @@ export class RideTrackingWebSocketService implements OnDestroy {
       this.subscription = null;
     }
 
+    if (this.rideEndedSubscription) {
+      this.rideEndedSubscription.unsubscribe();
+      this.rideEndedSubscription = null;
+    }
+
     if (this.stompClient) {
       this.stompClient.deactivate();
       this.stompClient = null;
     }
 
     this.rideUpdates$.next(null);
+    this.rideEnded$.next(null);
     this.connectionStatus$.next(false);
     console.log('Disconnected from Ride Tracking WebSocket');
   }

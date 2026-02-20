@@ -129,9 +129,12 @@ class AuthController {
     public ResponseEntity<String> logOut()
             throws Exception {
 
-
-        driverService.ThrowIfNotAllowedToLogOut();
-
+        try {
+            driverService.ThrowIfNotAllowedToLogOut();
+        } catch (IllegalStateException ex) {
+            // Driver is still available, they need to set themselves to unavailable first
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        }
 
         return ResponseEntity.ok("Log Out successful");
 
