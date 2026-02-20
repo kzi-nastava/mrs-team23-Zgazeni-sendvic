@@ -11,6 +11,7 @@ import ZgazeniSendvic.Server_Back_ISS.repository.PanicNotificationRepository;
 import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import ZgazeniSendvic.Server_Back_ISS.security.jwt.JwtUtils;
 import ZgazeniSendvic.Server_Back_ISS.websocket.RideTrackingWebSocketService;
+import ZgazeniSendvic.Server_Back_ISS.websocket.RideEndNotificationWebSocketService;
 import jakarta.transaction.Transactional;
 import ZgazeniSendvic.Server_Back_ISS.security.EmailDetails;
 import org.jspecify.annotations.NonNull;
@@ -47,6 +48,8 @@ public class RideServiceImpl implements IRideService {
     JwtUtils jwtUtils;
     @Autowired
     RideTrackingWebSocketService rideTrackingWebSocketService;
+    @Autowired
+    RideEndNotificationWebSocketService rideEndNotificationWebSocketService;
 
     @Override
     public Collection<Ride> getAll() {
@@ -290,12 +293,49 @@ public class RideServiceImpl implements IRideService {
                     loc.getLatitude()
             ));
         }
-        OrsRouteResult result = orsRoutingService.getFastestRouteWithPath(coordinates);
-        ride.setTotalPrice(result.getPrice());
+
+        // Try to get route result from ORS, but handle null gracefully
+        OrsRouteResult result = null;
+        try {
+            result = orsRoutingService.getFastestRouteWithPath(coordinates);
+        } catch (Exception ex) {
+            System.err.println("Failed to get route result from ORS service for ride " + ride.getId() + ": " + ex.getMessage());
+        }
+
+        // Update price only if we successfully got a result from ORS
+        if (result != null) {
+            ride.setTotalPrice(result.getPrice());
+        } else {
+            System.err.println("Using existing ride price since ORS route calculation failed for ride " + ride.getId());
+            // Keep the existing totalPrice from the ride
+        }
+
         ride.setStatus(RideStatus.FINISHED);
         ride.setEndTime(stopReq.getCurrentTime());
         allRides.save(ride);
         allRides.flush();
+
+        try {
+            rideEndNotificationWebSocketService.sendRideEndedNotification(ride);
+        } catch (Exception ex) {
+            System.err.println("Failed to send ride-ended notification via WebSocket for ride " + ride.getId() + ": " + ex.getMessage());
+        }
+
+        List<Account> passengers = ride.getPassengers();
+        if (passengers != null && !passengers.isEmpty()) {
+            for (Account passenger : passengers) {
+                if (passenger == null || passenger.getEmail() == null) continue;
+                try {
+                    EmailDetails details = new EmailDetails();
+                    details.setRecipient("aleksanen04@gmail.com");
+                    details.setSubject("Ride ended");
+                    details.setMsgBody("Your ride (ID: " + ride.getId() + ") has ended. Final price: " + ride.getTotalPrice());
+                    emailService.sendSimpleMail(details);
+                } catch (Exception ex) {
+                    System.err.println("Failed to send ride-ended email to " + passenger.getEmail() + ": " + ex.getMessage());
+                }
+            }
+        }
 
         //should I call end ride here too?
 
@@ -351,7 +391,7 @@ public class RideServiceImpl implements IRideService {
                 if (passenger == null || passenger.getEmail() == null) continue;
                 try {
                     EmailDetails details = new EmailDetails();
-                    details.setRecipient(passenger.getEmail());
+                    details.setRecipient("aleksanen04@gmail.com");
                     details.setSubject("Ride ended");
                     details.setMsgBody("Your ride (ID: " + ride.getId() + ") has ended. Final price: " + ride.getTotalPrice());
                     emailService.sendSimpleMail(details);

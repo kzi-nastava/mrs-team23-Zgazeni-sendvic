@@ -28,8 +28,26 @@ export class NavBar {
         this.authService.clearToken();
         this.router.navigate(['/login']);
       },
-      error: err => {
+      error: (err: any) => {
         console.error('Logout failed:', err);
+
+        // Get the error message from the backend response
+        let errorMessage = 'Logout failed. Please try again.';
+
+        if (err.error && typeof err.error === 'string') {
+          errorMessage = err.error;
+        } else if (err.error && err.error.message) {
+          errorMessage = err.error.message;
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+
+        // Check if it's a driver availability issue
+        if (err.status === 400 && errorMessage.includes('available')) {
+          errorMessage = 'You must set your status to "Not Available" before logging out.';
+        }
+
+        alert(errorMessage);
       }
     });
   }
@@ -43,6 +61,11 @@ export class NavBar {
       },
       error: err => {
         console.error('Driver status update failed:', err);
+        if (err?.status === 401) {
+          alert('Session expired or unauthorized. Please log in again.');
+          return;
+        }
+        alert('Unable to update driver status. Please try again.');
       }
     });
   }

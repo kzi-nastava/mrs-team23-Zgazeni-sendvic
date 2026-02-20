@@ -1,9 +1,13 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { AuthService } from "./auth.service";
 
 @Injectable({ providedIn: 'root' })
 export class DriverService {
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
 
   createDriver(data: any) {
     return this.http.post('/api/driver', data);
@@ -28,6 +32,15 @@ export class DriverService {
   }
 
   requestDriverDeactivation(statusOfDriver: boolean) {
-    return this.http.put(`http://localhost:8080/api/driver/deactivate`, statusOfDriver, { responseType: 'text' });
+    const token = this.authService.getToken();
+    const headers = token
+      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+      : undefined;
+
+    return this.http.put(
+      `http://localhost:8080/api/driver/deactivate`,
+      statusOfDriver,
+      { headers, responseType: 'text' }
+    );
   }
 }
