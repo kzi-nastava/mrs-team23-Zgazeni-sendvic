@@ -274,7 +274,7 @@ export class HORAdmin {
     if (this.geocodePending.has(key)) return key;
     this.geocodePending.add(key);
 
-    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lon}&lon=${lat}`;
     this.http.get<{ display_name?: string }>(url).subscribe({
       next: response => {
         const city = response.display_name ? response.display_name.split(',')[4]?.trim() : null;

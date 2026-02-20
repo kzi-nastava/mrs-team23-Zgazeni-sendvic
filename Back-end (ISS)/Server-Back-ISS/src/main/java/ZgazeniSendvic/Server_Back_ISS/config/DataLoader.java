@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +25,9 @@ public class DataLoader {
     public CommandLineRunner loadData(AccountRepository accountRepository,
                                       VehicleRepository vehicleRepository,
                                       RideRepository rideRepository,
-                                      VehiclePositionsRepository vehiclePositionsRepository) {
+                                      VehiclePositionsRepository vehiclePositionsRepository,
+                                      RideNoteRepository rideNoteRepository,
+                                      RideDriverRatingRepository rideDriverRatingRepository) {
         return args -> {
             // Check if data already exists to avoid duplication
             if (accountRepository.count() > 0) {
@@ -217,8 +220,136 @@ public class DataLoader {
             vehiclePos4 = vehiclePositionsRepository.save(vehiclePos4);
             System.out.println("Created Vehicle Position 4 (Driver 2's vehicle)");
 
+            // ============ CREATE ADDITIONAL RIDES WITH NOTES AND RATINGS ============
+
+            // Ride 3: Account A with Driver 1 (created 5 days ago, ACTIVE status)
+            Ride ride3 = new Ride();
+            ride3.setDriver(driver1);
+            ride3.setCreator(accountA);
+
+            List<Account> ride3Passengers = new ArrayList<>();
+            ride3Passengers.add(accountA);
+            ride3.setPassengers(ride3Passengers);
+
+            List<Location> ride3Locations = new ArrayList<>();
+            ride3Locations.add(new Location(20.4600, 44.8300)); // Start location
+            ride3Locations.add(new Location(20.4700, 44.8400)); // End location
+            ride3.setLocations(ride3Locations);
+
+            ride3.setTotalPrice(18.50);
+            LocalDateTime ride3CreationTime = LocalDateTime.now().minusDays(5);
+            ride3.setCreationDate(ride3CreationTime);
+            ride3.setStartTime(ride3CreationTime.plusMinutes(15));
+            ride3.setEndTime(ride3CreationTime.plusMinutes(35));
+            ride3.setStatus(RideStatus.ACTIVE);
+            ride3.setPanic(false);
+            ride3.setStartLatitude(20.4600);
+            ride3.setStartLongitude(44.8300);
+            ride3.setEndLatitude(20.4700);
+            ride3.setEndLongitude(44.8400);
+            ride3.setCurrentLatitude(20.4650);
+            ride3.setCurrentLongitude(44.8350);
+            ride3 = rideRepository.save(ride3);
+            System.out.println("Created Ride 3 (Account A, Driver 1, ACTIVE, 5 days ago)");
+
+            // Create RideNote for Ride 3
+            RideNote note3 = new RideNote(
+                    ride3.getId(),
+                    accountA.getId(),
+                    "Driver was very professional and punctual.",
+                    OffsetDateTime.now().minusDays(5)
+            );
+            rideNoteRepository.save(note3);
+            System.out.println("Created RideNote for Ride 3");
+
+            // Create RideDriverRating for Ride 3
+            RideDriverRating rating3 = new RideDriverRating(
+                    accountA.getId(),
+                    ride3.getId(),
+                    9,
+                    8,
+                    "Excellent ride, clean vehicle, smooth driving."
+            );
+            rating3.setRecordedAt(OffsetDateTime.now().minusDays(5));
+            rideDriverRatingRepository.save(rating3);
+            System.out.println("Created RideDriverRating for Ride 3");
+
+            // Ride 4: Accounts A & B with Driver 1 (created 10 days ago, ACTIVE status)
+            Ride ride4 = new Ride();
+            ride4.setDriver(driver1);
+            ride4.setCreator(accountA);
+
+            List<Account> ride4Passengers = new ArrayList<>();
+            ride4Passengers.add(accountA);
+            ride4Passengers.add(accountB);
+            ride4.setPassengers(ride4Passengers);
+
+            List<Location> ride4Locations = new ArrayList<>();
+            ride4Locations.add(new Location(20.4800, 44.8600)); // Start location
+            ride4Locations.add(new Location(20.4900, 44.8700)); // End location
+            ride4.setLocations(ride4Locations);
+
+            ride4.setTotalPrice(22.00);
+            LocalDateTime ride4CreationTime = LocalDateTime.now().minusDays(10);
+            ride4.setCreationDate(ride4CreationTime);
+            ride4.setStartTime(ride4CreationTime.plusMinutes(10));
+            ride4.setEndTime(ride4CreationTime.plusMinutes(30));
+            ride4.setStatus(RideStatus.ACTIVE);
+            ride4.setPanic(false);
+            ride4.setStartLatitude(20.4800);
+            ride4.setStartLongitude(44.8600);
+            ride4.setEndLatitude(20.4900);
+            ride4.setEndLongitude(44.8700);
+            ride4.setCurrentLatitude(20.4850);
+            ride4.setCurrentLongitude(44.8650);
+            ride4 = rideRepository.save(ride4);
+            System.out.println("Created Ride 4 (Accounts A & B, Driver 1, ACTIVE, 10 days ago)");
+
+            // Create RideNote for Ride 4 (from Account A)
+            RideNote note4a = new RideNote(
+                    ride4.getId(),
+                    accountA.getId(),
+                    "Great shared ride with a friend.",
+                    OffsetDateTime.now().minusDays(10)
+            );
+            rideNoteRepository.save(note4a);
+            System.out.println("Created RideNote for Ride 4 (Account A)");
+
+            // Create RideNote for Ride 4 (from Account B)
+            RideNote note4b = new RideNote(
+                    ride4.getId(),
+                    accountB.getId(),
+                    "Driver was friendly and the ride was comfortable.",
+                    OffsetDateTime.now().minusDays(10)
+            );
+            rideNoteRepository.save(note4b);
+            System.out.println("Created RideNote for Ride 4 (Account B)");
+
+            // Create RideDriverRating for Ride 4 (from Account A)
+            RideDriverRating rating4a = new RideDriverRating(
+                    accountA.getId(),
+                    ride4.getId(),
+                    10,
+                    9,
+                    "Perfect ride, highly recommend this driver!"
+            );
+            rating4a.setRecordedAt(OffsetDateTime.now().minusDays(10));
+            rideDriverRatingRepository.save(rating4a);
+            System.out.println("Created RideDriverRating for Ride 4 (Account A)");
+
+            // Create RideDriverRating for Ride 4 (from Account B)
+            RideDriverRating rating4b = new RideDriverRating(
+                    accountB.getId(),
+                    ride4.getId(),
+                    8,
+                    8,
+                    "Good experience overall."
+            );
+            rating4b.setRecordedAt(OffsetDateTime.now().minusDays(10));
+            rideDriverRatingRepository.save(rating4b);
+            System.out.println("Created RideDriverRating for Ride 4 (Account B)");
+
             System.out.println("✓ Database population completed successfully!");
         };
     }
 }
-
