@@ -67,13 +67,13 @@ export class DetailedHorAdmin implements AfterViewInit {
     }
 
     const startPoint: L.LatLngTuple = [
-      this.rideDetails.arrivingPoint.latitude,
-      this.rideDetails.arrivingPoint.longitude
+      this.rideDetails.arrivingPoint.longitude,
+      this.rideDetails.arrivingPoint.latitude
     ];
 
     const endPoint: L.LatLngTuple = [
-      this.rideDetails.endingPoint.latitude,
-      this.rideDetails.endingPoint.longitude
+      this.rideDetails.endingPoint.longitude,
+      this.rideDetails.endingPoint.latitude
     ];
 
     let routePoints: L.LatLngTuple[] = [startPoint];
@@ -83,7 +83,7 @@ export class DetailedHorAdmin implements AfterViewInit {
       routePoints.push(
         ...this.rideDetails.destinations
           .filter(dest => dest && dest.latitude !== undefined && dest.longitude !== undefined)
-          .map(dest => [dest.latitude, dest.longitude] as L.LatLngTuple)
+          .map(dest => [dest.longitude, dest.latitude] as L.LatLngTuple)
       );
     }
 

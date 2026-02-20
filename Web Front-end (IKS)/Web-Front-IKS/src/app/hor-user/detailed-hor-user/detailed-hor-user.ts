@@ -78,13 +78,13 @@ export class DetailedHorUser implements AfterViewInit {
     }
 
     const startPoint: L.LatLngTuple = [
-      this.arrivingPoint.latitude,
-      this.arrivingPoint.longitude
+      this.arrivingPoint.longitude,
+      this.arrivingPoint.latitude
     ];
 
     const endPoint: L.LatLngTuple = [
-      this.endingPoint.latitude,
-      this.endingPoint.longitude
+      this.endingPoint.longitude,
+      this.endingPoint.latitude
     ];
 
     let routePoints: L.LatLngTuple[] = [startPoint];
@@ -94,7 +94,7 @@ export class DetailedHorUser implements AfterViewInit {
       routePoints.push(
         ...this.destinations
           .filter(dest => dest && dest.latitude !== undefined && dest.longitude !== undefined)
-          .map(dest => [dest.latitude, dest.longitude] as L.LatLngTuple)
+          .map(dest => [dest.longitude, dest.latitude] as L.LatLngTuple)
       );
     }
 
