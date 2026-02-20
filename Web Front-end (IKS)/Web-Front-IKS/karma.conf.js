@@ -27,9 +27,6 @@ module.exports = function (config) {
         flags: ['--no-sandbox', '--disable-gpu']
       }
     },
-    files: [
-      { pattern: 'src/polyfills-test.js', included: true, watched: false }
-    ],
     singleRun: false,
     restartOnFileChange: true
   });

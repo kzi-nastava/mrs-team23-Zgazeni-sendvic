@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../service/auth.service';
 import { RouteEstimationService } from '../../service/route.estimation.serivce';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-nav-bar',
@@ -13,7 +14,7 @@ import { RouteEstimationService } from '../../service/route.estimation.serivce';
   styleUrl: './nav-bar.css',
 })
 export class NavBar {
-  constructor(private authService: AuthService, private router: Router, public panelService: RouteEstimationService) {}
+  constructor(private authService: AuthService, private router: Router, public panelService: RouteEstimationService, private http: HttpClient) {}
 
   logout() {
     this.authService.clearToken();
@@ -38,5 +39,9 @@ export class NavBar {
 
   isLoggedIn(): boolean {
     return this.authService.isAuthenticated();
+  }
+
+  startRide() {
+    return this.http.put(`http://localhost:8080/api/ride-start`, {});
   }
 }

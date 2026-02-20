@@ -20,6 +20,8 @@ import { DetailedHorUser } from './hor-user/detailed-hor-user/detailed-hor-user'
 import { PanicNotifications } from './panic-notifications/panic-notifications';
 import { FavoriteRoutes } from './favorite-routes/favorite-routes';
 import { RidesOverview } from './rides-overview/rides-overview';
+import { BanAccount } from './admin/ban-account/ban-account';
+import { RegisterDriver } from './driver/register-driver/register-driver';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -30,6 +32,8 @@ export const routes: Routes = [
   { path: 'future-rides', component: FutureRides },
   { path: 'ride-order', component: RideOrder },
   { path: 'favorite-routes', component: FavoriteRoutes },
+  { path: 'admin/ban-account', component: BanAccount },
+  { path: 'register-driver', component: RegisterDriver },
   { path: 'ride-tracking', component: RideTracking },
   { path: 'register', component: Registration },
   { path: 'login', component: Login },

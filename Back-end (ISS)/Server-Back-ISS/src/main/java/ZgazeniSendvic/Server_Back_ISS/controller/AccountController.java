@@ -9,7 +9,9 @@ import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
 import ZgazeniSendvic.Server_Back_ISS.service.ChangeRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -32,7 +34,7 @@ public class AccountController {
     @Autowired
     ChangeRequestService changeRequestService;
 
-    @PreAuthorize("hasAnyRole('DRIVER','ACCOUNT','USER')")
+    @PreAuthorize("hasAnyRole('DRIVER','ADMIN','USER')")
     @GetMapping(value = "/me")
     public ResponseEntity<GetAccountDTO> getMyAccount(Principal principal) {
 
@@ -60,7 +62,7 @@ public class AccountController {
         return ResponseEntity.ok(dto);
     }
 
-    @PreAuthorize("hasAnyRole('DRIVER','ACCOUNT','USER')")
+    @PreAuthorize("hasAnyRole('DRIVER','ADMIN','USER')")
     @PutMapping(value = "/me/change-request",
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
@@ -69,7 +71,7 @@ public class AccountController {
         return ResponseEntity.ok("Account updated: " + updated);
     }
 
-    @PreAuthorize("hasRole('ACCOUNT')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/approve-driver-changes/{id}")
     public ResponseEntity<String> approveDriverChange(@PathVariable Long id) {
 
@@ -111,10 +113,24 @@ public class AccountController {
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) Boolean confirmed,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir,
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        Page<AccountAdminViewDTO> page = accountService
-                .getAllPaged(q, type, confirmed, pageable)
+        String sortField = switch (sortBy) {
+            case "confirmed" -> "confirmed";   // or "isConfirmed" if that's your entity field
+            case "email" -> "email";
+            case "name" -> "name";
+            case "lastName" -> "lastName";
+            default -> "id";
+        };
+
+        Sort.Direction dir = sortDir.equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable fixed = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(dir, sortField));
+
+        Page<AccountAdminViewDTO> page = accountService.getAllPaged(q, type, confirmed, fixed)
                 .map(AccountAdminViewDTO::from);
 
         return ResponseEntity.ok(page);

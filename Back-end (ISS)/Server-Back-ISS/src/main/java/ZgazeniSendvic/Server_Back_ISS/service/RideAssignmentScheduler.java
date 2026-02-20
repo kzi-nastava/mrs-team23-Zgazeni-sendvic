@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +24,7 @@ public class RideAssignmentScheduler {
     RideNotificationService notificationService;
 
     @Scheduled(fixedRate = 5000) // every 5 seconds
+    @Transactional
     public void processPendingRideRequests() {
 
         List<RideRequest> pendingRequests =

@@ -28,6 +28,10 @@ public class CustomUserDetails implements UserDetails {
         return account;
     }
 
+    public boolean isBanned() {
+        return Boolean.TRUE.equals(account.getIsBanned());
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
 

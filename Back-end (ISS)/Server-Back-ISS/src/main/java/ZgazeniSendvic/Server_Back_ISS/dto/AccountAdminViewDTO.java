@@ -10,6 +10,7 @@ public record AccountAdminViewDTO(
         String phoneNumber,
         String address,
         boolean confirmed,
+        boolean banned,
         String accountType
 ) {
     public static AccountAdminViewDTO from(Account a) {
@@ -21,7 +22,8 @@ public record AccountAdminViewDTO(
                 a.getPhoneNumber(),
                 a.getAddress(),
                 a.isConfirmed(),
-                a.getClass().getSimpleName() // or discriminator if you have it
+                a.getIsBanned(),
+                a.getClass().getSimpleName()
         );
     }
 }

@@ -5,6 +5,7 @@ import ZgazeniSendvic.Server_Back_ISS.model.Driver;
 import ZgazeniSendvic.Server_Back_ISS.model.Vehicle;
 import ZgazeniSendvic.Server_Back_ISS.service.IDriverService;
 
+import ZgazeniSendvic.Server_Back_ISS.service.IVehicleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,12 +13,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/driver")
 public class DriverController {
 
     @Autowired
     IDriverService driverService;
+    @Autowired
+    IVehicleService vehicleService;
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(
@@ -61,6 +66,15 @@ public class DriverController {
             return ResponseEntity.badRequest().body(e.getMessage());
 
         }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(value="/vehicles", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<VehicleDTO>> getVehicles() {
+        List<VehicleDTO> list = vehicleService.getVehicles().stream()
+                .map(VehicleDTO::from)
+                .toList();
+        return ResponseEntity.ok(list);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
