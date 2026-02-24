@@ -1,0 +1,90 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+  background: linear-gradient(to bottom, #E8E839, #39ACBE);
+}
+
+.card {
+  width: min(1200px, 100%);
+  border-radius: 30px;
+  padding: 28px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  border: 1px solid rgba(0,0,0,0.25);
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 18px;
+  font-family: Arial;
+  font-size: 32px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.control {
+  width: 220px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 18px 0 10px;
+}
+
+.summary-card {
+  background: rgba(65, 167, 157, 0.08);
+  border: 1px solid rgba(65, 167, 157, 0.35);
+  border-radius: 18px;
+  padding: 12px 14px;
+}
+
+.summary-card .k {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-bottom: 6px;
+}
+
+.summary-card .v {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.chart-card {
+  border-radius: 20px;
+  padding: 14px;
+}
+
+.error {
+  margin-top: 10px;
+  color: #b00020;
+  font-weight: 600;
+}
+
+.empty {
+  margin-top: 16px;
+  text-align: center;
+  opacity: 0.8;
+}
+
+button[mat-raised-button] {
+  border-radius: 20px !important;
+  background-color: #41A79D !important;
+  color: white !important;
+}

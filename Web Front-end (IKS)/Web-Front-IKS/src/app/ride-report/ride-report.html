@@ -1,0 +1,116 @@
+<div class="page">
+  <mat-card class="card">
+    <h2 class="title">Ride Reports</h2>
+
+    <div class="controls">
+      <mat-form-field appearance="fill" class="control">
+        <mat-label>From</mat-label>
+        <input matInput [matDatepicker]="pickerFrom" [(ngModel)]="fromDate">
+        <mat-datepicker-toggle matSuffix [for]="pickerFrom"></mat-datepicker-toggle>
+        <mat-datepicker #pickerFrom></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="control">
+        <mat-label>To</mat-label>
+        <input matInput [matDatepicker]="pickerTo" [(ngModel)]="toDate">
+        <mat-datepicker-toggle matSuffix [for]="pickerTo"></mat-datepicker-toggle>
+        <mat-datepicker #pickerTo></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field *ngIf="isAdmin" appearance="fill" class="control">
+        <mat-label>Scope</mat-label>
+        <mat-select [(ngModel)]="scope">
+          <mat-option value="ME">Me</mat-option>
+          <mat-option value="ALL_DRIVERS">All drivers</mat-option>
+          <mat-option value="ALL_PASSENGERS">All passengers</mat-option>
+          <mat-option value="ACCOUNT">One account</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field *ngIf="isAdmin && scope === 'ACCOUNT'" appearance="fill" class="control">
+        <mat-label>Account ID</mat-label>
+        <input matInput type="number" [(ngModel)]="accountId">
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" (click)="apply()">Generate</button>
+    </div>
+
+    <div *ngIf="loading">Loading...</div>
+    <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+    <div *ngIf="!loading && summary" class="summary">
+      <div class="summary-card">
+        <div class="k">Total rides</div>
+        <div class="v">{{ summary.totalRides }}</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="k">Total km</div>
+        <div class="v">{{ summary.totalKilometers }}</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="k">Total money</div>
+        <div class="v">{{ summary.totalMoney }}</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="k">Avg rides/day</div>
+        <div class="v">{{ summary.avgRidesPerDay }}</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="k">Avg km/day</div>
+        <div class="v">{{ summary.avgKilometersPerDay }}</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="k">Avg money/day</div>
+        <div class="v">{{ summary.avgMoneyPerDay }}</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="k">Avg km/ride</div>
+        <div class="v">{{ summary.avgKilometersPerRide }}</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="k">Avg money/ride</div>
+        <div class="v">{{ summary.avgMoneyPerRide }}</div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && points.length > 0" class="charts">
+      <mat-card class="chart-card">
+        <h3>Rides per day</h3>
+        <canvas
+          baseChart
+          [data]="{ labels: ridesLabels, datasets: [{ data: ridesData, label: 'Rides' }] }"
+          [type]="'line'">
+        </canvas>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <h3>Kilometers per day</h3>
+        <canvas
+          baseChart
+          [data]="{ labels: kmLabels, datasets: [{ data: kmData, label: 'Km' }] }"
+          [type]="'line'">
+        </canvas>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <h3>Money per day</h3>
+        <canvas
+          baseChart
+          [data]="{ labels: moneyLabels, datasets: [{ data: moneyData, label: 'Money' }] }"
+          [type]="'line'">
+        </canvas>
+      </mat-card>
+    </div>
+
+    <div *ngIf="!loading && points.length === 0 && !errorMsg" class="empty">
+      No rides in selected range.
+    </div>
+  </mat-card>
+</div>
