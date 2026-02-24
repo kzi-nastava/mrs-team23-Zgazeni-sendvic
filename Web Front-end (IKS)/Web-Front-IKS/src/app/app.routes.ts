@@ -22,18 +22,22 @@ import { FavoriteRoutes } from './favorite-routes/favorite-routes';
 import { RidesOverview } from './rides-overview/rides-overview';
 import { BanAccount } from './admin/ban-account/ban-account';
 import { RegisterDriver } from './driver/register-driver/register-driver';
+import { ActivateDriver } from './driver/activate-driver/activate-driver';
+import { RegisterVehicle } from './driver/register-vehicle/register-vehicle';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'profile', component: ProfileCard},
   { path: 'profile/edit', component: ProfileEdit },
   { path: 'approve', component: DriverAcceptEdit},
+  { path: 'activate-driver', component: ActivateDriver },
   { path: 'hor-driver', component: HorDriver },
   { path: 'future-rides', component: FutureRides },
   { path: 'ride-order', component: RideOrder },
   { path: 'favorite-routes', component: FavoriteRoutes },
   { path: 'admin/ban-account', component: BanAccount },
   { path: 'register-driver', component: RegisterDriver },
+  { path: 'register-vehicle', component: RegisterVehicle},
   { path: 'ride-tracking', component: RideTracking },
   { path: 'register', component: Registration },
   { path: 'login', component: Login },
