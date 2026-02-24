@@ -24,6 +24,7 @@ export class AuthService {
   private userIdKey = 'user_id';
   private roleKey = 'user_role';
   private profilePictureKey = 'profile_picture';
+  private driverActiveKey = 'driver_active';
 
   constructor(
     private http: HttpClient,
@@ -43,6 +44,10 @@ export class AuthService {
           }
           if (response.user?.role) {
             localStorage.setItem(this.roleKey, response.user.role);
+
+            if (response.user.role === 'DRIVER') {
+              this.setDriverActive(true);
+            }
             
             // If admin, connect to panic notifications WebSocket immediately
             if (response.user.role === 'ADMIN') {
@@ -50,6 +55,14 @@ export class AuthService {
             }
           }
         }),
+        catchError(this.handleError)
+      );
+  }
+
+  logout(): Observable<string> {
+    return this.http.post(`${this.apiUrl}/logout`, {}, { responseType: 'text' })
+      .pipe(
+        tap(response => console.log('Logout response:', response)),
         catchError(this.handleError)
       );
   }
@@ -184,6 +197,15 @@ export class AuthService {
     localStorage.removeItem(this.userIdKey);
     localStorage.removeItem(this.roleKey);
     localStorage.removeItem(this.profilePictureKey);
+    localStorage.removeItem(this.driverActiveKey);
+  }
+
+  getDriverActive(): boolean {
+    return localStorage.getItem(this.driverActiveKey) === 'true';
+  }
+
+  setDriverActive(isActive: boolean): void {
+    localStorage.setItem(this.driverActiveKey, String(isActive));
   }
 
   isAuthenticated(): boolean {

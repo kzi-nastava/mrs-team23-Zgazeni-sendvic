@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -22,7 +22,11 @@ export class Home implements AfterViewInit {
   constructor(
     private http: HttpClient,
     public panelService: RouteEstimationService
-  ) {}
+  ) {
+    effect(() => {
+      this.applyEstimatedRoute(this.panelService.routePath());
+    });
+  }
 
   ngOnInit() {
     this.panelService.hidePanel();
@@ -30,6 +34,7 @@ export class Home implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.loadVehiclePositions();
+    this.applyEstimatedRoute(this.panelService.routePath());
   }
 
   private loadVehiclePositions(): void {
@@ -45,5 +50,16 @@ export class Home implements AfterViewInit {
           console.error('Error message:', err.message);
         },
       });
+  }
+
+  private applyEstimatedRoute(path: number[][] | null): void {
+    if (!path || path.length < 2) {
+      this.mapComponent?.setRouteLine(null);
+      return;
+    }
+
+    const latLngs = path.map(([lng, lat]) => [lat, lng] as [number, number]);
+    this.mapComponent?.setRouteLine(latLngs);
+    this.mapComponent?.fitToBounds(latLngs);
   }
 }

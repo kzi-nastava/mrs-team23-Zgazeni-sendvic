@@ -7,10 +7,12 @@ import { RideTrackingWebSocketService } from '../service/ride-tracking-websocket
 import { RideTrackingUpdate } from '../models/ride-tracking.models';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../service/auth.service';
+import { PanicNotificationDTO } from '../models/panic.models';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-ride-tracking',
-  imports: [MapComponent, MatButtonModule, FormsModule],
+  imports: [MapComponent, MatButtonModule, FormsModule, MatSnackBarModule],
   templateUrl: './ride-tracking.html',
   styleUrl: './ride-tracking.css',
 })
@@ -22,8 +24,10 @@ export class RideTracking implements OnInit, OnDestroy {
   private rideSubscription?: Subscription;
   private connectionSubscription?: Subscription;
   private userId: number | null = null;
-  private userRole: string | null = null;
+  userRole: string | null = null;
   private previousRideStatus: string | null = null;
+  private rideEndedSubscription?: Subscription;
+  private rideEndedAlertShown = false;
 
   startingPoint = 'Bulevar oslobođenja 46, Novi Sad';
   destination = 'Trg slobode 1, Novi Sad';
@@ -44,8 +48,17 @@ export class RideTracking implements OnInit, OnDestroy {
   constructor(
     private rideTrackingService: RideTrackingWebSocketService,
     private http: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private snackBar: MatSnackBar
   ) {}
+
+  private showRideEndedNotification(): void {
+    this.snackBar.open('Ride ended', 'OK', {
+      duration: 7000,
+      horizontalPosition: 'center',
+      verticalPosition: 'top'
+    });
+  }
 
   ngOnInit(): void {
     this.userId = this.authService.getCurrentUserId();
@@ -59,18 +72,33 @@ export class RideTracking implements OnInit, OnDestroy {
       .subscribe(rideUpdate => {
         if (rideUpdate) {
           const displayRide = this.selectRideToDisplay(rideUpdate);
-          
-          if (displayRide && this.previousRideStatus !== 'FINISHED' && 
-              displayRide.status === 'FINISHED' && 
+
+          if (displayRide && this.previousRideStatus !== 'FINISHED' &&
+              displayRide.status === 'FINISHED' &&
               this.userRole !== 'DRIVER') {
+            if (!this.rideEndedAlertShown) {
+              this.showRideEndedNotification();
+              this.rideEndedAlertShown = true;
+            }
             this.openRate();
           }
           this.previousRideStatus = displayRide?.status ?? null;
-          
+
           this.currentRide = displayRide;
           if (displayRide) {
             this.updateMapView(displayRide);
           }
+        }
+      });
+
+    this.rideEndedSubscription = this.rideTrackingService.getRideEndedNotifications()
+      .subscribe(notification => {
+        if (!notification) {
+          return;
+        }
+        if (!this.rideEndedAlertShown && this.userRole !== 'DRIVER') {
+          this.showRideEndedNotification();
+          this.rideEndedAlertShown = true;
         }
       });
 
@@ -180,15 +208,115 @@ export class RideTracking implements OnInit, OnDestroy {
   }
 
   stopRide(): void {
+    const token = this.authService.getToken();
+    if (!token) {
+      console.error('No auth token available for ending ride');
+      alert('Authentication error: Please login again');
+      return;
+    }
+
     console.log('Stop Ride clicked');
-    this.http.put('http://localhost:8080/api/ride-end', { rideId: this.currentRide?.rideId,price: this.currentRide?.price, paid: true, ended: true }).subscribe({
+    this.http.put('http://localhost:8080/api/ride-end', { rideId: this.currentRide?.rideId, price: this.currentRide?.price, paid: true, ended: true }).subscribe({
       next: (response) => {
         console.log('Ride stopped successfully:', response);
       },
       error: (err) => {
         console.error('Error stopping ride:', err);
       }
-    }); 
+    });
+  }
+
+  panicRide(): void {
+    if (!this.currentRide?.rideId) {
+      console.error('No current ride ID available');
+      return;
+    }
+    console.log('Panic button clicked for ride:', this.currentRide.rideId);
+    this.http.post<PanicNotificationDTO>(`http://localhost:8080/api/ride-PANIC/${this.currentRide.rideId}`, {}).subscribe({
+      next: (response: PanicNotificationDTO) => {
+        console.log('Panic notification sent successfully:', response);
+        alert('Panic notification has been sent');
+      },
+      error: (err) => {
+        console.error('Error sending panic notification:', err);
+        alert('Error sending panic notification');
+      }
+    });
+  }
+
+  stopRideDriver(): void {
+    if (!this.currentRide?.rideId) {
+      console.error('No current ride ID available');
+      return;
+    }
+
+    if (!this.currentRide) {
+      console.error('No current ride data available');
+      return;
+    }
+
+    const token = this.authService.getToken();
+    console.log('Stop ride (driver) clicked for ride:', this.currentRide.rideId);
+    console.log('Token available:', !!token, 'Token length:', token?.length);
+
+    if (!token) {
+      console.error('No auth token available for driver stop ride');
+      alert('Authentication error: Please login again');
+      return;
+    }
+
+    const routePoints = this.currentRide.route || [];
+
+    // Prepare passed locations from route
+    const passedLocations = routePoints.map(point => ({
+      latitude: point.latitude,
+      longitude: point.longitude
+    }));
+
+    // Backend expects at least one passed location for stop processing
+    if (passedLocations.length === 0) {
+      passedLocations.push({
+        latitude: this.currentRide.currentLatitude,
+        longitude: this.currentRide.currentLongitude
+      });
+    }
+
+    // Send LocalDateTime-like string (without trailing Z) for backend compatibility
+    const currentTime = new Date().toISOString().replace('Z', '');
+
+    const rideStopRequest = {
+      passedLocations,
+      currentTime: currentTime
+    };
+
+    console.log('Stop ride request payload:', rideStopRequest);
+
+    this.http.put(`http://localhost:8080/api/ride-tracking/stop/${this.currentRide.rideId}`, rideStopRequest).subscribe({
+      next: (response) => {
+        console.log('Ride stopped successfully:', response);
+        alert('Ride has been stopped');
+      },
+      error: (err) => {
+        console.error('Error stopping ride:', {
+          status: err?.status,
+          message: err?.message,
+          error: err?.error,
+          statusText: err?.statusText
+        });
+
+        // Extract detailed error message
+        let errorMessage = 'Error stopping ride';
+        if (err.error && err.error.message) {
+          errorMessage = err.error.message;
+        } else if (err.error && err.error.error) {
+          errorMessage = err.error.error;
+        } else if (err.statusText) {
+          errorMessage = `Error: ${err.status} ${err.statusText}`;
+        }
+
+        alert(errorMessage);
+      }
+    });
   }
 
   isDriver(): boolean {
@@ -250,7 +378,7 @@ export class RideTracking implements OnInit, OnDestroy {
       vehicleRating: this.vehicleRating,
       comment: this.ratingComment
     }).subscribe({
-      next: (response) => {        
+      next: (response) => {
       console.log('Rating sent successfully:', response);
       console.log('Rating:', {
       driver: this.driverRating,
@@ -263,7 +391,7 @@ export class RideTracking implements OnInit, OnDestroy {
         this.closeRateForm();
       }
     });
-    
+
     this.closeRateForm();
   }
 
@@ -273,6 +401,9 @@ export class RideTracking implements OnInit, OnDestroy {
     }
     if(this.connectionSubscription) {
       this.connectionSubscription.unsubscribe();
+    }
+    if (this.rideEndedSubscription) {
+      this.rideEndedSubscription.unsubscribe();
     }
     if (this.userId) {
       this.rideTrackingService.disconnect(this.userId);

@@ -1,10 +1,11 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { AuthService } from './auth.service';
 import { PanicNotificationDTO, PageResponse } from '../models/panic.models';
 import { Client, StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 export interface PanicNotificationsQuery {
   page?: number;
@@ -15,7 +16,7 @@ export interface PanicNotificationsQuery {
 }
 
 @Injectable({ providedIn: 'root' })
-export class PanicNotificationsService implements OnDestroy {
+export class PanicNotificationsService {
   private apiUrl = 'http://localhost:8080/api/panic-notifications';
   private wsUrl = 'http://localhost:8080/ws';
   
@@ -26,6 +27,13 @@ export class PanicNotificationsService implements OnDestroy {
   private panicNotifications$ = new Subject<PanicNotificationDTO>();
   private panicResolvedNotifications$ = new Subject<PanicNotificationDTO>();
   private connectionStatus$ = new Subject<boolean>();
+  
+  private snackBar = inject(MatSnackBar);
+  private audioContext?: AudioContext;
+  private notificationsInitialized = false;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 10;
+  private reconnectDelay = 5000;
 
   constructor(
     private http: HttpClient,
@@ -72,29 +80,32 @@ export class PanicNotificationsService implements OnDestroy {
 
     this.stompClient = new Client({
       webSocketFactory: () => socket,
-      reconnectDelay: 5000,
+      reconnectDelay: this.reconnectDelay,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
 
       onConnect: () => {
-        console.log('Connected to Panic Notifications WebSocket');
+        console.log('✅ Connected to Panic Notifications WebSocket');
+        this.reconnectAttempts = 0; // Reset on successful connection
         this.connectionStatus$.next(true);
         this.subscribeToPanicTopics();
       },
 
       onStompError: (frame) => {
-        console.error('STOMP error:', frame);
+        console.error('❌ STOMP error:', frame);
         this.connectionStatus$.next(false);
       },
 
       onWebSocketClose: () => {
-        console.log('WebSocket connection closed');
+        console.log('⚠️ WebSocket connection closed - will attempt to reconnect...');
         this.connectionStatus$.next(false);
+        this.attemptReconnect();
       },
 
       onDisconnect: () => {
-        console.log('Disconnected from WebSocket');
+        console.log('⚠️ Disconnected from WebSocket - will attempt to reconnect...');
         this.connectionStatus$.next(false);
+        this.attemptReconnect();
       }
     });
 
@@ -113,6 +124,9 @@ export class PanicNotificationsService implements OnDestroy {
         const panicDTO: PanicNotificationDTO = JSON.parse(message.body);
         console.log('New panic notification received:', panicDTO);
         this.panicNotifications$.next(panicDTO);
+        
+        // Display notification globally
+        this.displayPanicNotification(panicDTO);
       } catch (error) {
         console.error('Error parsing panic notification:', error);
       }
@@ -124,6 +138,9 @@ export class PanicNotificationsService implements OnDestroy {
         const panicDTO: PanicNotificationDTO = JSON.parse(message.body);
         console.log('Panic resolved notification received:', panicDTO);
         this.panicResolvedNotifications$.next(panicDTO);
+        
+        // Display notification globally
+        this.displayResolvedNotification(panicDTO);
       } catch (error) {
         console.error('Error parsing panic resolved notification:', error);
       }
@@ -148,7 +165,142 @@ export class PanicNotificationsService implements OnDestroy {
     return this.stompClient?.connected ?? false;
   }
 
+  initializeGlobalNotifications(): void {
+    if (this.notificationsInitialized) {
+      return;
+    }
+    this.notificationsInitialized = true;
+    
+    // Request notification permission for browser notifications
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }
+
+  private displayPanicNotification(panic: PanicNotificationDTO): void {
+    // Show browser notification
+    this.showBrowserNotification(
+      'PANIC ALERT!',
+      `Panic from ${panic.callerName} (ID: ${panic.callerId}) - Ride #${panic.rideId}`,
+      'urgent'
+    );
+
+    // Play urgent audio
+    this.playNotificationSound('urgent');
+
+    // Show snackbar
+    this.snackBar.open(
+      `🚨 NEW PANIC: ${panic.callerName} - Ride #${panic.rideId}`,
+      'View',
+      { 
+        duration: 10000,
+        panelClass: ['panic-snackbar']
+      }
+    );
+  }
+
+  private displayResolvedNotification(panic: PanicNotificationDTO): void {
+    // Show browser notification
+    this.showBrowserNotification(
+      'Panic Resolved',
+      `Panic #${panic.id} from ${panic.callerName} has been resolved`,
+      'resolved'
+    );
+
+    // Play resolved audio
+    this.playNotificationSound('resolved');
+
+    // Show snackbar
+    this.snackBar.open(
+      `✓ Panic #${panic.id} resolved - ${panic.callerName}`,
+      'OK',
+      { 
+        duration: 5000,
+        panelClass: ['resolved-snackbar']
+      }
+    );
+  }
+
+  private showBrowserNotification(title: string, body: string, type: 'urgent' | 'resolved'): void {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const notification = new Notification(title, {
+        body: body,
+        icon: type === 'urgent' ? '/assets/panic-icon.png' : '/assets/check-icon.png',
+        badge: '/assets/panic-icon.png',
+        tag: 'panic-notification',
+        requireInteraction: type === 'urgent', // Keep urgent notifications visible
+        silent: false
+      });
+
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+    }
+  }
+
+  private playNotificationSound(type: 'urgent' | 'resolved'): void {
+    try {
+      // Create audio context if not exists
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+
+      const ctx = this.audioContext;
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      if (type === 'urgent') {
+        // Urgent alarm sound: alternating high-pitched beeps
+        oscillator.frequency.setValueAtTime(880, ctx.currentTime); // A5 note
+        oscillator.frequency.setValueAtTime(1046, ctx.currentTime + 0.15); // C6 note
+        oscillator.frequency.setValueAtTime(880, ctx.currentTime + 0.3);
+        oscillator.frequency.setValueAtTime(1046, ctx.currentTime + 0.45);
+        
+        gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+        
+        oscillator.start(ctx.currentTime);
+        oscillator.stop(ctx.currentTime + 0.6);
+      } else {
+        // Resolved sound: pleasant two-tone chime
+        oscillator.frequency.setValueAtTime(523, ctx.currentTime); // C5 note
+        oscillator.frequency.setValueAtTime(659, ctx.currentTime + 0.15); // E5 note
+        
+        gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        
+        oscillator.start(ctx.currentTime);
+        oscillator.stop(ctx.currentTime + 0.4);
+      }
+    } catch (error) {
+      console.error('Error playing notification sound:', error);
+    }
+  }
+
+  private attemptReconnect(): void {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error('❌ Max reconnection attempts reached. WebSocket will stop trying to reconnect.');
+      return;
+    }
+
+    this.reconnectAttempts++;
+    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
+    console.log(`🔄 Reconnecting... (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms`);
+
+    setTimeout(() => {
+      if (this.stompClient && !this.stompClient.connected) {
+        console.log('🔄 Attempting to reconnect to WebSocket...');
+        this.stompClient.activate();
+      }
+    }, delay);
+  }
+
   disconnectFromWebSocket(): void {
+    console.log('🛑 Manually disconnecting WebSocket (logout)');
     if (this.panicSubscription) {
       this.panicSubscription.unsubscribe();
       this.panicSubscription = null;
@@ -165,10 +317,7 @@ export class PanicNotificationsService implements OnDestroy {
     }
 
     this.connectionStatus$.next(false);
+    this.reconnectAttempts = 0;
     console.log('Disconnected from Panic Notifications WebSocket');
-  }
-
-  ngOnDestroy(): void {
-    this.disconnectFromWebSocket();
   }
 }

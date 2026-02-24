@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit, inject } from '@angular/core';
 import { RouterOutlet, RouterModule } from '@angular/router';
 import { NavBar } from './layout/nav-bar/nav-bar';
+import { AuthService } from './service/auth.service';
+import { PanicNotificationsService } from './service/panic-notifications.service';
 
 @Component({
   selector: 'app-root',
@@ -8,6 +10,17 @@ import { NavBar } from './layout/nav-bar/nav-bar';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {
+export class App implements OnInit {
   protected readonly title = signal('Web-Front-IKS');
+  
+  private authService = inject(AuthService);
+  private panicService = inject(PanicNotificationsService);
+  
+  ngOnInit(): void {
+    // Initialize global panic notifications if user is admin
+    const userRole = this.authService.getRole();
+    if (userRole === 'ADMIN') {
+      this.panicService.initializeGlobalNotifications();
+    }
+  }
 }

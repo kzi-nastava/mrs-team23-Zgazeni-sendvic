@@ -133,11 +133,13 @@ export class HORUser {
         console.log('Ride Details:', details);
         // Add route information from the ride data
         const detailsWithRoute: URideDetailsRequestedDTO & {
+          rideID: number;
           arrivingPoint?: { latitude: number; longitude: number };
           endingPoint?: { latitude: number; longitude: number };
           destinations?: { latitude: number; longitude: number }[];
         } = {
           ...details,
+          rideID: ride.rideID,
           arrivingPoint: ride.destinations?.[0],
           endingPoint: ride.destinations?.[ride.destinations.length - 1],
           destinations: ride.destinations?.slice(1, -1)
@@ -151,6 +153,7 @@ export class HORUser {
   }
 
   private openDetailedView(details: URideDetailsRequestedDTO & {
+    rideID: number;
     arrivingPoint?: { latitude: number; longitude: number };
     endingPoint?: { latitude: number; longitude: number };
     destinations?: { latitude: number; longitude: number }[];
@@ -230,7 +233,7 @@ export class HORUser {
     if (this.geocodePending.has(key)) return key;
     this.geocodePending.add(key);
 
-    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lon}&lon=${lat}`;
     this.http.get<{ display_name?: string }>(url).subscribe({
       next: response => {
         const city = response.display_name ? response.display_name.split(',')[4]?.trim() : null;

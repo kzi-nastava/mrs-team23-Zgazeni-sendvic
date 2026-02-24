@@ -22,8 +22,11 @@
     </div>
     
     <div class="sidebar-actions">
+        @if (userRole) {
+        <button class="sidebar-buttons panic-btn" (click)="panicRide()">Panic</button>
+        }
         @if (isDriver()) {
-        <button class="sidebar-buttons" (click)="stopRide()">End Ride</button>
+        <button class="sidebar-buttons" (click)="stopRideDriver()">Stop Ride</button>
         }
         @if (!isDriver()) {
         <button class="sidebar-buttons" (click)="openNote()">Note</button>

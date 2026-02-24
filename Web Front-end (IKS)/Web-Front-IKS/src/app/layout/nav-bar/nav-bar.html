@@ -20,6 +20,12 @@
       @if (isDriver() || isUser()) {
         <button mat-raised-button color="primary" [routerLink]="['/ride-tracking']">Ride Tracking</button>
       }
+      @if (isDriver()) {
+        <button mat-raised-button color="primary" [routerLink]="['/hor-driver']">HOR Driver</button>
+      }
+      @if (isAdmin() || isUser()) {
+        <button mat-raised-button color="primary" (click)="navigateToHOR()">HOR</button>
+      }
       @if (isAdmin()) {
         <button mat-raised-button color="primary" [routerLink]="['/rides-overview']">Rides Overview</button>
       }
@@ -34,6 +40,12 @@
       }
     </div>
     <div class="button-container">
+      @if (isDriver()) {
+        <div class="driver-status">
+          <span class="driver-status-dot" [class.driver-status-dot--active]="getDriverActive()" [class.driver-status-dot--inactive]="!getDriverActive()" [title]="getDriverStatusText()"></span>
+          <button type="button" class="driver-toggle" (click)="toggleDriverStatus()">{{ getDriverToggleLabel() }}</button>
+        </div>
+      }
       @if (isUser() || isDriver() || isAdmin()) {
         <button type="button" class="logout" aria-label="Log out of your account" (click)="logout()">Log out</button>
       }

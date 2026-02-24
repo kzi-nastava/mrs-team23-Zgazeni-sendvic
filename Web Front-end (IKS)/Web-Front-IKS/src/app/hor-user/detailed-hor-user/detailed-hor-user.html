@@ -130,6 +130,7 @@
   </mat-dialog-content>
 
   <mat-dialog-actions class="dialog-actions">
+    <input type="number" placeholder="Hours" [(ngModel)]="reorderHours" class="hours-input" />
     <button mat-raised-button color="primary" (click)="onReorderClick()">
       <mat-icon>repeat</mat-icon>
       Reorder Route

@@ -107,6 +107,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/panic-notifications/retrieve").authenticated()
                         .requestMatchers("/api/auth/logout").authenticated()
                         .requestMatchers("/api/driver/deactivate").authenticated()
+                        .requestMatchers("/api/riderequest/ride-reorder/**").authenticated()
 
                         .anyRequest().permitAll() // for testing
                 )

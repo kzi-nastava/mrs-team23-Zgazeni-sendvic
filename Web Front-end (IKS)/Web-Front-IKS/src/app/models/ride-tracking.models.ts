@@ -15,3 +15,10 @@ export interface RideTrackingUpdate {
     phoneNumber: string;
   };
 }
+
+export interface RideEndedNotification {
+  rideId: number;
+  status: 'FINISHED' | string;
+  price: number | null;
+  endTime: string | null;
+}

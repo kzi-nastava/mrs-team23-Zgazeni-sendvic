@@ -15,6 +15,6 @@ public interface IDriverService extends IAccountService {
 
     void activateDriver(String token, String passwordRaw);
 
-    void deactivateDriverIfRequested();
+    void deactivateDriverIfRequested(boolean status);
 
 }
