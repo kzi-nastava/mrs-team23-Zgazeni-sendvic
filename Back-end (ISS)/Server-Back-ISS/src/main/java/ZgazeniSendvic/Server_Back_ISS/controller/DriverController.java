@@ -124,8 +124,8 @@ public class DriverController {
             value = "/deactivate",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<?> requestDriverDeactivation() {
-        driverService.deactivateDriverIfRequested();
+    public ResponseEntity<?> requestDriverDeactivation(@RequestBody boolean statusOfDriver) {
+        driverService.deactivateDriverIfRequested(statusOfDriver);
         return ResponseEntity.ok("Deactivation request processed");
     }
 }

@@ -173,8 +173,9 @@ export class HORAdmin {
       next: (details: ARideDetailsRequestedDTO) => {
         console.log('Ride Details:', details);
         // Add route information from the ride data
-        const detailsWithRoute: ARideDetailsRequestedDTO = {
+        const detailsWithRoute: ARideDetailsRequestedDTO & { rideID: number } = {
           ...details,
+          rideID: ride.rideID,
           arrivingPoint: ride.arrivingPoint,
           endingPoint: ride.endingPoint,
           destinations: ride.destinations
@@ -187,7 +188,7 @@ export class HORAdmin {
     });
   }
 
-  private openDetailedView(details: ARideDetailsRequestedDTO): void {
+  private openDetailedView(details: ARideDetailsRequestedDTO & { rideID: number }): void {
     this.dialog.open(DetailedHorAdmin, {
       data: details,
       width: '90%',
@@ -273,7 +274,7 @@ export class HORAdmin {
     if (this.geocodePending.has(key)) return key;
     this.geocodePending.add(key);
 
-    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lon}&lon=${lat}`;
     this.http.get<{ display_name?: string }>(url).subscribe({
       next: response => {
         const city = response.display_name ? response.display_name.split(',')[4]?.trim() : null;
