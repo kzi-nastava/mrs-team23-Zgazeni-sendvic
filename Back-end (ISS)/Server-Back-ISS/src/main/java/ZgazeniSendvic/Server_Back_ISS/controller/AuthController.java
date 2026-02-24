@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.token.TokenService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -79,6 +80,9 @@ class AuthController {
 
         //as previous checks passed, account must exist
         Account account = accountService.findAccountByEmail(request.getEmail());
+        if (Boolean.TRUE.equals(account.getIsBanned())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is banned");
+        }
         String jwt = tokenUtils.generateToken(account);
         int expiresIn = tokenUtils.getExpiredIn();
 

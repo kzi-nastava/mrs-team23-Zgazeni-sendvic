@@ -14,7 +14,9 @@
           Panic Notifications
         </button>
       }
-      <button mat-raised-button color="primary" [routerLink]="['/ride-order']">Order Ride</button>
+      @if (isUser()){
+        <button mat-raised-button color="primary" [routerLink]="['/ride-order']">Order Ride</button>
+      }
       @if (isDriver() || isUser()) {
         <button mat-raised-button color="primary" [routerLink]="['/ride-tracking']">Ride Tracking</button>
       }
@@ -27,10 +29,15 @@
       @if (isAdmin()) {
         <button mat-raised-button color="primary" [routerLink]="['/rides-overview']">Rides Overview</button>
       }
+      @if (isAdmin()) {
+        <button mat-raised-button color="primary" [routerLink]="['/register-driver']">Register Driver</button>
+      }
       @if (isDriver()) {
         <button mat-raised-button color="primary" [routerLink]="['/future-rides']">Future Rides</button>
       }
-      <button mat-raised-button color="primary" [routerLink]="['/login']">Log in</button>
+      @if (!isAdmin() && !isDriver() && !isUser()) {
+        <button mat-raised-button color="primary" [routerLink]="['/login']">Log in</button>
+      }
     </div>
     <div class="button-container">
       @if (isDriver()) {
@@ -39,10 +46,14 @@
           <button type="button" class="driver-toggle" (click)="toggleDriverStatus()">{{ getDriverToggleLabel() }}</button>
         </div>
       }
-      <button type="button" class="logout" aria-label="Log out of your account" (click)="logout()">Log out</button>
+      @if (isUser() || isDriver() || isAdmin()) {
+        <button type="button" class="logout" aria-label="Log out of your account" (click)="logout()">Log out</button>
+      }
     </div>
-    <a [routerLink]="['/profile']" class="profile-link" aria-label="Go to your profile page">
-      <img src="assets/profiles/profile-placeholder.jpg" class="profile-pic" />
-    </a>
+    @if (isUser() || isDriver() || isAdmin()) {
+      <a [routerLink]="['/profile']" class="profile-link" aria-label="Go to your profile page">
+        <img src="assets/profiles/profile-placeholder.jpg" class="profile-pic" />
+      </a>
+    }
   </div>
 </nav>

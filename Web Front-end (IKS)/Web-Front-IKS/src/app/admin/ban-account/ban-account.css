@@ -1,0 +1,205 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+  background: linear-gradient(to bottom, #E8E839, #39ACBE);
+}
+
+/* mat-card wrapper */
+.card {
+  width: 100%;
+  max-width: 1100px;
+  border-radius: 28px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.title {
+  text-align: center;
+  margin: 6px 0 18px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* ===== Filters ===== */
+.filters {
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr 0.8fr auto;
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 18px;
+}
+
+.filter {
+  width: 100%;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-bottom: 4px; /* aligns with mat-form-field underline */
+}
+
+@media (max-width: 900px) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+  .filter-actions {
+    justify-content: flex-start;
+  }
+}
+
+/* ===== States ===== */
+.error {
+  margin: 10px 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(211, 47, 47, 0.08);
+  border: 1px solid rgba(211, 47, 47, 0.25);
+  color: #b71c1c;
+  font-weight: 600;
+}
+
+/* ===== List ===== */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: #fff;
+
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.row:hover {
+  background: #f7fbfb;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.info {
+  min-width: 0; /* allows text ellipsis */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.email {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  opacity: 0.92;
+}
+
+.dot {
+  opacity: 0.5;
+}
+
+.addr {
+  font-size: 13px;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* “Active/BANNED” pill */
+.status {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+
+  background: rgba(46, 125, 50, 0.12);
+  border: 1px solid rgba(46, 125, 50, 0.25);
+  color: #1b5e20;
+}
+
+.status.banned {
+  background: rgba(211, 47, 47, 0.12);
+  border: 1px solid rgba(211, 47, 47, 0.25);
+  color: #b71c1c;
+}
+
+/* Dim banned rows */
+.row:has(.status.banned) {
+  opacity: 0.72;
+}
+
+/* ===== Actions ===== */
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.actions button {
+  min-width: 140px;
+  border-radius: 16px !important;
+}
+
+/* Make primary buttons match your theme */
+button[mat-raised-button][color="primary"] {
+  background-color: #41A79D !important;
+  color: #fff !important;
+}
+
+/* Warn button: keep red but slightly nicer */
+button[mat-raised-button][color="warn"] {
+  border-radius: 16px !important;
+}
+
+/* Disabled look */
+button[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ===== Pager ===== */
+.pager {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pager span {
+  font-weight: 600;
+  opacity: 0.85;
+}
