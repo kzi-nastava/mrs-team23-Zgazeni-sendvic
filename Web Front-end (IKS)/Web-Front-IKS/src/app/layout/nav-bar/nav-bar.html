@@ -17,6 +17,9 @@
       @if (isUser()){
         <button mat-raised-button color="primary" [routerLink]="['/ride-order']">Order Ride</button>
       }
+      @if (isDriver()) {
+        <button mat-raised-button color="primary" (click)="startRide()">Start Ride</button>
+      }
       @if (isDriver() || isUser()) {
         <button mat-raised-button color="primary" [routerLink]="['/ride-tracking']">Ride Tracking</button>
       }

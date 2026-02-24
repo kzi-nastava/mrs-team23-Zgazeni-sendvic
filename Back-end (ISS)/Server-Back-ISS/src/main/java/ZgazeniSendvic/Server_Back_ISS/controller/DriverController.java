@@ -36,8 +36,8 @@ public class DriverController {
 
             CreatedDriverDTO response = new CreatedDriverDTO();
             response.setId(saved.getId());
-            response.setAccount(saved);
-            response.setVehicle(saved.getVehicle());
+            response.setEmail(saved.getEmail());
+            response.setVehicleType(saved.getVehicle().getType());
 
             return new ResponseEntity<>(response, HttpStatus.CREATED);
 
