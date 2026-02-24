@@ -81,7 +81,9 @@ class AuthController {
         //as previous checks passed, account must exist
         Account account = accountService.findAccountByEmail(request.getEmail());
         if (Boolean.TRUE.equals(account.getIsBanned())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is banned");
+            String reason = account.getBanReason();
+            if (reason == null || reason.isBlank()) reason = "No reason provided.";
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is banned: " + reason);
         }
         String jwt = tokenUtils.generateToken(account);
         int expiresIn = tokenUtils.getExpiredIn();

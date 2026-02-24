@@ -10,6 +10,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { BanReasonDialog } from '../ban-reason-dialog/bar-reason-dialog';
+
 type AccountAdminViewDTO = {
   id: number;
   email: string;
@@ -40,7 +43,8 @@ type PageResponse<T> = {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule
+    MatSelectModule,
+    MatDialogModule
   ],
   templateUrl: './ban-account.html',
   styleUrls: ['./ban-account.css'],
@@ -71,7 +75,9 @@ export class BanAccount implements OnInit {
 
   banningIds = new Set<number>();
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
+  constructor(private http: HttpClient,
+     private cdr: ChangeDetectorRef,
+     private dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.loadPage(0);
@@ -137,15 +143,24 @@ export class BanAccount implements OnInit {
   }
 
   banAccount(a: AccountAdminViewDTO) {
-    if (!a?.id || a.banned) return;
+  if (!a?.id || a.banned) return;
 
-    const ok = confirm(`Ban account ${a.email}?`);
-    if (!ok) return;
+  const ref = this.dialog.open(BanReasonDialog, {
+    width: '520px',
+    data: { email: a.email }
+  });
+
+  ref.afterClosed().subscribe((reason: string | null) => {
+    if (!reason) return; // canceled
 
     this.banningIds.add(a.id);
     this.cdr.markForCheck();
 
-    this.http.put(`${this.apiBase}/ban/${a.id}`, null, { responseType: 'text' }).pipe(
+    this.http.put(
+      `${this.apiBase}/ban/${a.id}`,
+      { reason }, // IMPORTANT: send the reason
+      { responseType: 'text' }
+    ).pipe(
       timeout(8000),
       catchError(() => {
         alert('Failed to ban account.');
@@ -156,11 +171,11 @@ export class BanAccount implements OnInit {
         this.cdr.markForCheck();
       })
     ).subscribe(() => {
-      // update UI immediately
       a.banned = true;
       this.cdr.markForCheck();
     });
-  }
+  });
+}
 
   isBanning(id: number) {
     return this.banningIds.has(id);

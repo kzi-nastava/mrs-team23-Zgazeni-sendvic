@@ -1,6 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.AccountAdminViewDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.BanAccountDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.GetAccountDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.UpdateAccountDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.*;
@@ -138,9 +139,17 @@ public class AccountController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/ban/{id}")
-    public ResponseEntity<String> ban(@PathVariable Long id) {
+    public ResponseEntity<String> ban(@PathVariable Long id, @RequestBody BanAccountDTO dto) {
+
         Account banned = accountService.findAccount(id);
+        if (banned == null) return ResponseEntity.notFound().build();
+
+        String reason = (dto == null || dto.getReason() == null) ? "" : dto.getReason().trim();
+        if (reason.isBlank()) reason = "No reason provided.";
+
         banned.setIsBanned(true);
+        banned.setBanReason(reason);
+
         accountService.update(banned);
         return ResponseEntity.ok("Account banned.");
     }
