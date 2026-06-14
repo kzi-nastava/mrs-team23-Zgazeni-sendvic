@@ -1,7 +1,5 @@
 package ZgazeniSendvic.Server_Back_ISS.service;
 
-
-import static ZgazeniSendvic.Server_Back_ISS.repository.spec.AccountSpecs.*;
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.*;
 //import ZgazeniSendvic.Server_Back_ISS.model.EmailDetails; WRONG IMPORT
@@ -32,6 +30,8 @@ import org.springframework.context.annotation.Primary;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static ZgazeniSendvic.Server_Back_ISS.repository.spec.AccountSpecs.*;
 
 @Primary
 @Service

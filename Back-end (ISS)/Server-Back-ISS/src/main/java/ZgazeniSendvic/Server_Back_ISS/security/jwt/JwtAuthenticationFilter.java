@@ -52,6 +52,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails userDetails =
                         userDetailsService.loadUserByUsername(email);
 
+                if (userDetails instanceof ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails cud
+                        && cud.isBanned()) {
+
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"message\":\"Account is banned\"}");
+                    return; // stop request here
+                }
+
                 if (jwtUtil.validateToken(token, userDetails)) {
 
                     UsernamePasswordAuthenticationToken authToken =

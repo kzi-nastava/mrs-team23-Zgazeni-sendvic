@@ -2,35 +2,31 @@ package ZgazeniSendvic.Server_Back_ISS.dto;
 
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Vehicle;
+import ZgazeniSendvic.Server_Back_ISS.model.VehicleType;
+import lombok.Getter;
+import lombok.Setter;
 
 public class CreatedDriverDTO {
-    private Long id;
-    private Account account;
-    private Vehicle vehicle;
+    @Getter @Setter
+    Long id;
+    @Getter @Setter
+    String email;
+    @Getter @Setter
+    String name;
+    @Getter @Setter
+    String lastName;
+    @Getter @Setter
+    String phoneNumber;
+    @Getter @Setter
+    boolean active;
+    @Getter @Setter
+    Long vehicleId;
+    @Getter @Setter
+    String vehicleModel;
+    @Getter @Setter
+    String vehicleRegistration;
+    @Getter @Setter
+    VehicleType vehicleType;
 
     public CreatedDriverDTO() { super(); }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Account getAccount() {
-        return account;
-    }
-
-    public void setAccount(Account account) {
-        this.account = account;
-    }
-
-    public Vehicle getVehicle() {
-        return vehicle;
-    }
-
-    public void setVehicle(Vehicle vehicle) {
-        this.vehicle = vehicle;
-    }
 }

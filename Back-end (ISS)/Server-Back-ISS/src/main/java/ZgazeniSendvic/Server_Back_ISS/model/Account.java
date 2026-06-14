@@ -61,6 +61,9 @@ public class Account {
     private Boolean isConfirmed = false;
     @Getter @Setter
     private Boolean isBanned = false;
+    @Getter @Setter
+    @Column(name = "ban_reason")
+    private String banReason = "";
 
     public Account() {
         super();

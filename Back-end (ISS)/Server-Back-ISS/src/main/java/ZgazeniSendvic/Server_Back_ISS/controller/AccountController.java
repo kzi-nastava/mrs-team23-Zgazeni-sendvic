@@ -1,6 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.AccountAdminViewDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.BanAccountDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.GetAccountDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.UpdateAccountDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.*;
@@ -9,7 +10,9 @@ import ZgazeniSendvic.Server_Back_ISS.service.AccountServiceImpl;
 import ZgazeniSendvic.Server_Back_ISS.service.ChangeRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -32,7 +35,7 @@ public class AccountController {
     @Autowired
     ChangeRequestService changeRequestService;
 
-    @PreAuthorize("hasAnyRole('DRIVER','ACCOUNT','USER')")
+    @PreAuthorize("hasAnyRole('DRIVER','ADMIN','USER')")
     @GetMapping(value = "/me")
     public ResponseEntity<GetAccountDTO> getMyAccount(Principal principal) {
 
@@ -60,7 +63,7 @@ public class AccountController {
         return ResponseEntity.ok(dto);
     }
 
-    @PreAuthorize("hasAnyRole('DRIVER','ACCOUNT','USER')")
+    @PreAuthorize("hasAnyRole('DRIVER','ADMIN','USER')")
     @PutMapping(value = "/me/change-request",
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
@@ -69,7 +72,7 @@ public class AccountController {
         return ResponseEntity.ok("Account updated: " + updated);
     }
 
-    @PreAuthorize("hasRole('ACCOUNT')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/approve-driver-changes/{id}")
     public ResponseEntity<String> approveDriverChange(@PathVariable Long id) {
 
@@ -111,10 +114,24 @@ public class AccountController {
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) Boolean confirmed,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir,
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        Page<AccountAdminViewDTO> page = accountService
-                .getAllPaged(q, type, confirmed, pageable)
+        String sortField = switch (sortBy) {
+            case "confirmed" -> "confirmed";   // or "isConfirmed" if that's your entity field
+            case "email" -> "email";
+            case "name" -> "name";
+            case "lastName" -> "lastName";
+            default -> "id";
+        };
+
+        Sort.Direction dir = sortDir.equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable fixed = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(dir, sortField));
+
+        Page<AccountAdminViewDTO> page = accountService.getAllPaged(q, type, confirmed, fixed)
                 .map(AccountAdminViewDTO::from);
 
         return ResponseEntity.ok(page);
@@ -122,9 +139,17 @@ public class AccountController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/ban/{id}")
-    public ResponseEntity<String> ban(@PathVariable Long id) {
+    public ResponseEntity<String> ban(@PathVariable Long id, @RequestBody BanAccountDTO dto) {
+
         Account banned = accountService.findAccount(id);
+        if (banned == null) return ResponseEntity.notFound().build();
+
+        String reason = (dto == null || dto.getReason() == null) ? "" : dto.getReason().trim();
+        if (reason.isBlank()) reason = "No reason provided.";
+
         banned.setIsBanned(true);
+        banned.setBanReason(reason);
+
         accountService.update(banned);
         return ResponseEntity.ok("Account banned.");
     }

@@ -8,7 +8,7 @@ public class CreateDriverDTO {
     private String name;
     private String lastName;
     private String address;
-    private Vehicle vehicle;
+    private Long vehicleId;
     private String phoneNumber;
     private String imgString;
 
@@ -54,12 +54,12 @@ public class CreateDriverDTO {
         this.address = address;
     }
 
-    public Vehicle getVehicle() {
-        return vehicle;
+    public Long getVehicleId() {
+        return vehicleId;
     }
 
-    public void setVehicle(Vehicle vehicle) {
-        this.vehicle = vehicle;
+    public void setVehicleId(Long vehicleId) {
+        this.vehicleId = vehicleId;
     }
 
     public String getPhoneNumber() {

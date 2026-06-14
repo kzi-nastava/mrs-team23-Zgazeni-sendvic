@@ -64,7 +64,7 @@ export class ProfileCard implements OnInit, OnDestroy {
     switch (acc.role) {
       case 'ADMIN':
         this.variant = 'admin';
-        this.adminButton = { label: 'Admin panel' };
+        this.adminButton = { label: 'Ban Accounts' };
         break;
 
       case 'DRIVER':
@@ -94,7 +94,7 @@ export class ProfileCard implements OnInit, OnDestroy {
   }
 
   onAdminButtonClick(): void {
-    // future admin logic
+    this.router.navigate(['/admin/ban-account']);
   }
 
   @HostBinding('class')

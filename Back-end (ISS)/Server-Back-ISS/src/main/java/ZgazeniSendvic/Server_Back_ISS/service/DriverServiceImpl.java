@@ -55,12 +55,14 @@ public class DriverServiceImpl implements IDriverService {
             Pattern.compile("^\\+?[0-9]{8,15}$");
 
     @Override
+    @Transactional
     public Driver registerDriver(CreateDriverDTO dto) {
 
-        if (dto.getEmail() == null || dto.getPassword() == null ||
-                dto.getName() == null || dto.getLastName() == null ||
-                dto.getPhoneNumber() == null) {
-
+        if (dto.getEmail() == null ||
+                dto.getName() == null ||
+                dto.getLastName() == null ||
+                dto.getPhoneNumber() == null ||
+                dto.getVehicleId() == null) {
             throw new IllegalArgumentException("Required fields must not be null");
         }
 
@@ -76,24 +78,38 @@ public class DriverServiceImpl implements IDriverService {
             throw new IllegalStateException("Account with this email already exists");
         }
 
+        Vehicle vehicle = vehicleRepository.findById(dto.getVehicleId())
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found"));
+
         Driver driver = new Driver();
-        driver.setEmail(dto.getEmail());
-        driver.setPassword(dto.getPassword()); // hash later
+        driver.setEmail(dto.getEmail().trim().toLowerCase());
+
+        // Set a temporary password (hashed) so Spring Security never stores raw
+        // User still cannot login if inactive (see note below)
+        driver.setPassword(passwordEncoder.encode("PENDING_ACTIVATION"));
+
         driver.setName(dto.getName());
         driver.setLastName(dto.getLastName());
-        driver.setAddress(dto.getAddress());
+        String addr = dto.getAddress();
+        if (addr == null || addr.isBlank()) {
+            addr = "N/A";
+        }
+        driver.setAddress(addr);
         driver.setPhoneNumber(dto.getPhoneNumber());
         driver.setImgString(dto.getImgString());
-        driver.setVehicle(dto.getVehicle());
+
+        driver.setVehicle(vehicle);
+
+        // inactive until activation
         driver.setActive(false);
 
+        // token stored in driver table (simple flow)
         String token = UUID.randomUUID().toString();
         driver.setActivationToken(token);
 
         Driver saved = accountRepository.save(driver);
 
-        String activationLink =
-                frontendUrl + "/activate-driver/" + token;
+        String activationLink = frontendUrl + "/activate-driver?token=" + token;
 
         EmailDetails email = new EmailDetails();
         email.setRecipient(saved.getEmail());
@@ -101,11 +117,9 @@ public class DriverServiceImpl implements IDriverService {
         email.setMsgBody(
                 "Hello,\n\n" +
                         "An administrator has created a driver account for you.\n\n" +
-                        "Please activate your account using the link below (valid for 24 hours):\n\n" +
-                        activationLink + "\n\n" +
-                        "If you did not expect this email, please ignore it."
+                        "Please activate your account using the link below:\n\n" +
+                        activationLink + "\n\n"
         );
-
         emailService.sendSimpleMail(email);
 
         return saved;
@@ -115,27 +129,18 @@ public class DriverServiceImpl implements IDriverService {
     @Transactional
     public void activateDriver(String token, String rawPassword) {
 
-        Account account = passwordResetTokenRepositoryService
-                .validateResetToken(token)
+        Driver driver = accountRepository.findDriverByActivationToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid or expired token"));
 
-        if (!(account instanceof Driver driver)) {
-            throw new IllegalStateException("Account is not a driver");
-        }
-
-        if (driver.isActive()) {
-            throw new IllegalStateException("Driver already activated");
-        }
+        if (driver.isActive()) throw new IllegalStateException("Driver already activated");
 
         driver.setPassword(passwordEncoder.encode(rawPassword));
+        driver.setConfirmed(true);
         driver.setActive(true);
 
-        passwordResetTokenRepositoryService.markAsUsed(token);
-
+        driver.setActivationToken(null); // invalidate token
         accountRepository.save(driver);
     }
-
-
 
     @Override
     public Vehicle registerVehicle(RegisterVehicleDTO dto) {

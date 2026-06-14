@@ -1,0 +1,98 @@
+<div class="page">
+  <mat-card class="card">
+    <h2 class="title">Accounts</h2>
+
+    <!-- Filters -->
+    <div class="filters">
+      <mat-form-field appearance="fill" class="filter">
+        <mat-label>Search</mat-label>
+        <input matInput [(ngModel)]="q" placeholder="email, name, phone..." />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter">
+        <mat-label>Type</mat-label>
+        <mat-select [(ngModel)]="type">
+          <mat-option value="">All</mat-option>
+          <mat-option value="USER">User</mat-option>
+          <mat-option value="DRIVER">Driver</mat-option>
+          <mat-option value="ADMIN">Admin</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter">
+        <mat-label>Confirmed</mat-label>
+        <mat-select [(ngModel)]="confirmed">
+          <mat-option value="">All</mat-option>
+          <mat-option value="true">Confirmed</mat-option>
+          <mat-option value="false">Not confirmed</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter">
+        <mat-label>Sort by</mat-label>
+          <mat-select [(ngModel)]="sortBy">
+          <mat-option value="id">Newest</mat-option>
+          <mat-option value="email">Email</mat-option>
+          <mat-option value="confirmed">Confirmed</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter">
+        <mat-label>Direction</mat-label>
+        <mat-select [(ngModel)]="sortDir">
+          <mat-option value="desc">Descending</mat-option>
+          <mat-option value="asc">Ascending</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+
+      <div class="filter-actions">
+        <button mat-raised-button color="primary" (click)="applyFilters()">Apply</button>
+        <button mat-button (click)="clearFilters()">Clear</button>
+      </div>
+    </div>
+
+    <div *ngIf="loading">Loading...</div>
+    <div *ngIf="!loading && errorMsg" class="error">{{ errorMsg }}</div>
+
+    <div *ngIf="!loading && !errorMsg && accounts.length === 0">
+      No accounts found.
+    </div>
+
+    <!-- List -->
+    <div class="list" *ngIf="!loading && !errorMsg && accounts.length > 0">
+      <div class="row" *ngFor="let a of accounts">
+        <div class="info">
+          <div class="email">{{ a.email }}</div>
+          <div class="meta">
+            <span>{{ a.name }} {{ a.lastName }}</span>
+            <span class="dot">•</span>
+            <span>{{ a.accountType }}</span>
+            <span class="dot">•</span>
+            <span>{{ a.confirmed ? 'Confirmed' : 'Not confirmed' }}</span>
+            <span class="dot">•</span>
+            <span class="status" [class.banned]="a.banned">{{ a.banned ? 'BANNED' : 'Active' }}</span>
+          </div>
+          <div class="addr">{{ a.address }}</div>
+        </div>
+
+        <div class="actions">
+          <button
+            mat-raised-button
+            color="warn"
+            (click)="banAccount(a)"
+            [disabled]="a.banned || isBanning(a.id)">
+            {{ a.banned ? 'Banned' : (isBanning(a.id) ? 'Banning...' : 'Ban Account') }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pager -->
+    <div class="pager" *ngIf="!loading && totalPages > 0">
+      <button mat-button (click)="prevPage()" [disabled]="pageIndex === 0">Prev</button>
+      <span>Page {{ pageIndex + 1 }} / {{ totalPages }} ({{ totalElements }} total)</span>
+      <button mat-button (click)="nextPage()" [disabled]="pageIndex + 1 >= totalPages">Next</button>
+    </div>
+  </mat-card>
+</div>

@@ -8,12 +8,14 @@ import { AuthService } from '../../service/auth.service';
   selector: 'app-activate-driver',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './activate-driver.html'
+  templateUrl: './activate-driver.html',
+  styleUrls: ['./activate-driver.css']
 })
 export class ActivateDriver implements OnInit {
 
-  token!: string;
+  token = '';
   form!: FormGroup;
+  submitting = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -22,25 +24,39 @@ export class ActivateDriver implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.token = this.route.snapshot.queryParamMap.get('token')!;
+    const t = this.route.snapshot.queryParamMap.get('token');
+    this.token = t ?? '';
 
     this.form = this.fb.group({
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirm: ['', Validators.required]
     });
+
+    if (!this.token) {
+      alert('Missing activation token.');
+    }
   }
 
   submit() {
-    if (this.form.invalid) {
+    if (!this.token) {
+      alert('Missing activation token.');
       return;
     }
 
-    if (this.form.value.password !== this.form.value.confirm) {
+    if (this.form.invalid) return;
+
+    const { password, confirm } = this.form.value;
+    if (password !== confirm) {
       alert('Passwords do not match');
       return;
     }
 
-    this.authService.activate(this.token, this.form.value.password!)
-      .subscribe(() => alert('Account activated'));
+    this.submitting = true;
+
+    this.authService.activateDriver(this.token, this.form.value.password)
+    .subscribe({
+      next: () => alert('Account activated'),
+      error: (err) => alert(err?.error ?? 'Activation failed')
+    });
   }
 }

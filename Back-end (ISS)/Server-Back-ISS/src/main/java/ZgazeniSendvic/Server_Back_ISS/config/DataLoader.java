@@ -27,7 +27,10 @@ public class DataLoader {
                                       RideRepository rideRepository,
                                       VehiclePositionsRepository vehiclePositionsRepository,
                                       RideNoteRepository rideNoteRepository,
-                                      RideDriverRatingRepository rideDriverRatingRepository) {
+                                      RideDriverRatingRepository rideDriverRatingRepository,
+                                      RouteRepository routeRepository,
+                                      RideRequestRepository rideRequestRepository) {
+
         return args -> {
             // Check if data already exists to avoid duplication
             if (accountRepository.count() > 0) {
@@ -38,9 +41,8 @@ public class DataLoader {
             System.out.println("Starting database population...");
 
             // ============ CREATE ACCOUNTS ============
-            // Account A (User/Passenger)
             Account accountA = new User();
-            accountA.setEmail("accounta@test.com");
+            accountA.setEmail("marko28082004+user1@gmail.com");
             accountA.setPassword(passwordEncoder.encode("password123"));
             accountA.setName("John");
             accountA.setLastName("Doe");
@@ -48,11 +50,9 @@ public class DataLoader {
             accountA.setPhoneNumber("1234567890");
             accountA.setConfirmed(true);
             accountA = accountRepository.save(accountA);
-            System.out.println("Created Account A: " + accountA.getEmail());
 
-            // Account B (User/Passenger)
             Account accountB = new User();
-            accountB.setEmail("accountb@test.com");
+            accountB.setEmail("marko28082004+user2@gmail.com");
             accountB.setPassword(passwordEncoder.encode("password123"));
             accountB.setName("Jane");
             accountB.setLastName("Smith");
@@ -60,11 +60,9 @@ public class DataLoader {
             accountB.setPhoneNumber("0987654321");
             accountB.setConfirmed(true);
             accountB = accountRepository.save(accountB);
-            System.out.println("Created Account B: " + accountB.getEmail());
 
-            // Admin A (Admin)
             Admin adminA = new Admin();
-            adminA.setEmail("admina@test.com");
+            adminA.setEmail("marko28082004@gmail.com");
             adminA.setPassword(passwordEncoder.encode("password123"));
             adminA.setName("Alice");
             adminA.setLastName("Admin");
@@ -72,10 +70,10 @@ public class DataLoader {
             adminA.setPhoneNumber("5555555555");
             adminA.setConfirmed(true);
             adminA = accountRepository.save(adminA);
-            System.out.println("Created Admin A: " + adminA.getEmail());
+
+            System.out.println("Created accounts: " + accountA.getEmail() + ", " + accountB.getEmail() + ", " + adminA.getEmail());
 
             // ============ CREATE VEHICLES ============
-            // Vehicle for Driver 1
             Vehicle vehicle1 = new Vehicle(
                     "Toyota Camry",
                     "ABC-123",
@@ -85,9 +83,7 @@ public class DataLoader {
                     true
             );
             vehicle1 = vehicleRepository.save(vehicle1);
-            System.out.println("Created Vehicle 1: " + vehicle1.getRegistration());
 
-            // Vehicle for Driver 2
             Vehicle vehicle2 = new Vehicle(
                     "Mercedes S-Class",
                     "LUX-456",
@@ -97,12 +93,10 @@ public class DataLoader {
                     false
             );
             vehicle2 = vehicleRepository.save(vehicle2);
-            System.out.println("Created Vehicle 2: " + vehicle2.getRegistration());
 
             // ============ CREATE DRIVERS ============
-            // Driver 1
             Driver driver1 = new Driver(vehicle1);
-            driver1.setEmail("driver1@test.com");
+            driver1.setEmail("marko28082004+driver1@gmail.com");
             driver1.setPassword(passwordEncoder.encode("password123"));
             driver1.setName("Michael");
             driver1.setLastName("Johnson");
@@ -114,11 +108,9 @@ public class DataLoader {
             driver1.setBusy(false);
             driver1.setWorkedMinutesLast24h(0);
             driver1 = accountRepository.save(driver1);
-            System.out.println("Created Driver 1: " + driver1.getEmail());
 
-            // Driver 2
             Driver driver2 = new Driver(vehicle2);
-            driver2.setEmail("driver2@test.com");
+            driver2.setEmail("marko28082004+driver2@gmail.com");
             driver2.setPassword(passwordEncoder.encode("password123"));
             driver2.setName("Robert");
             driver2.setLastName("Williams");
@@ -130,95 +122,92 @@ public class DataLoader {
             driver2.setBusy(false);
             driver2.setWorkedMinutesLast24h(0);
             driver2 = accountRepository.save(driver2);
-            System.out.println("Created Driver 2: " + driver2.getEmail());
 
-            // ============ CREATE RIDES ============
-            // Ride 1: Accounts A & B with Driver 1
-            Ride ride1 = new Ride();
-            ride1.setDriver(driver1);
-            ride1.setCreator(accountA);
+            System.out.println("Created drivers: " + driver1.getEmail() + ", " + driver2.getEmail());
 
-            List<Account> ride1Passengers = new ArrayList<>();
-            ride1Passengers.add(accountA);
-            ride1Passengers.add(accountB);
-            ride1.setPassengers(ride1Passengers);
+            // ============ FAVORITE ROUTES (PAGED ENDPOINT NEEDS THIS) ============
+            // accountA favorites: add a few routes so pagination is visible
+            Route fav1 = new Route();
+            fav1.setOwner(accountA);
+            fav1.setStart(new Location(44.7866, 20.4489));
+            fav1.setDestination(new Location(44.8176, 20.4569));
+            fav1.setMidPoints(List.of(new Location(44.8125, 20.4612)));
+            fav1 = routeRepository.save(fav1);
 
-            List<Location> ride1Locations = new ArrayList<>();
-            ride1Locations.add(new Location(20.4489, 44.8176)); // Belgrade, Serbia
-            ride1Locations.add(new Location(20.3971, 44.9199)); // Another location
-            ride1.setLocations(ride1Locations);
+            Route fav2 = new Route();
+            fav2.setOwner(accountA);
+            fav2.setStart(new Location(44.8050, 20.4600));
+            fav2.setDestination(new Location(44.8200, 20.4300));
+            fav2.setMidPoints(List.of());
+            fav2 = routeRepository.save(fav2);
 
-            ride1.setTotalPrice(25.50);
-            ride1.setStartTime(LocalDateTime.now().plusHours(1));
-            ride1.setEndTime(LocalDateTime.now().plusHours(2));
-            ride1.setStatus(RideStatus.SCHEDULED);
-            ride1.setPanic(false);
-            //ride1.setCreationDate(LocalDateTime.now().minusHours(5));
-            ride1 = rideRepository.save(ride1);
-            System.out.println("Created Ride 1 (Accounts A & B, Driver 1)");
+            Route fav3 = new Route();
+            fav3.setOwner(accountA);
+            fav3.setStart(new Location(44.7900, 20.4100));
+            fav3.setDestination(new Location(44.8350, 20.4750));
+            fav3.setMidPoints(List.of(
+                    new Location(44.8100, 20.4400),
+                    new Location(44.8200, 20.4550)
+            ));
+            fav3 = routeRepository.save(fav3);
 
-            // Ride 2: Account A with Driver 1
-            Ride ride2 = new Ride();
-            ride2.setDriver(driver1);
-            ride2.setCreator(accountA);
+            // accountB favorites (optional, shows multi-user isolation works)
+            Route favB1 = new Route();
+            favB1.setOwner(accountB);
+            favB1.setStart(new Location(44.8000, 20.5000));
+            favB1.setDestination(new Location(44.8600, 20.4700));
+            favB1.setMidPoints(List.of());
+            routeRepository.save(favB1);
 
-            List<Account> ride2Passengers = new ArrayList<>();
-            ride2Passengers.add(accountA);
-            ride2.setPassengers(ride2Passengers);
+            System.out.println("Created favorite routes for accountA + accountB (good for paging).");
 
-            List<Location> ride2Locations = new ArrayList<>();
-            ride2Locations.add(new Location(20.5000, 44.8500)); // Different location
-            ride2Locations.add(new Location(20.4500, 44.9000)); // Another location
-            ride2.setLocations(ride2Locations);
+            // ============ RIDE REQUEST (OPTIONAL DEMO DATA) ============
+            // Useful for showing that creating requests works / for admin views etc.
+            RideRequest rr = new RideRequest();
+            rr.setCreator(accountA);
+            rr.setLocations(new ArrayList<>(List.of(
+                    new Location(44.7866, 20.4489),
+                    new Location(44.8125, 20.4612),
+                    new Location(44.8176, 20.4569)
+            )));
+            rr.setVehicleType(VehicleType.STANDARD);
+            rr.setBabiesAllowed(false);
+            rr.setPetsAllowed(false);
+            rr.setScheduledTime(null);
+            rr.setInvitedPassengers(new ArrayList<>()); // keep empty for demo
+            rr.setEstimatedDistanceKm(6.5);
+            rr.setEstimatedPrice(1200.0);
+            rr.setStatus(RequestStatus.PENDING); // adjust if your enum differs
+            rr.setRejectionReason(null);
 
-            ride2.setTotalPrice(15.75);
-            ride2.setStartTime(LocalDateTime.now().plusHours(3));
-            ride2.setEndTime(LocalDateTime.now().plusHours(4));
-            ride2.setStatus(RideStatus.SCHEDULED);
-            ride2.setPanic(false);
-            //ride2.setCreationDate(LocalDateTime.now().minusHours(20));
-            ride2 = rideRepository.save(ride2);
-            System.out.println("Created Ride 2 (Account A, Driver 1)");
+            rideRequestRepository.save(rr);
+            System.out.println("Created a sample RideRequest.");
 
-            // Driver 2 has no rides (already created above)
-            System.out.println("Driver 2 has no assigned rides (as intended)");
-
-            // ============ CREATE VEHICLE POSITIONS ============
-            VehiclePosition vehiclePos1 = new VehiclePosition(
+            // ============ VEHICLE POSITIONS ============
+            vehiclePositionsRepository.save(new VehiclePosition(
                     vehicle1.getId().toString(),
                     44.8176,
                     20.4489,
                     "ACTIVE"
-            );
-            vehiclePos1 = vehiclePositionsRepository.save(vehiclePos1);
-            System.out.println("Created Vehicle Position 1 (Driver 1's vehicle)");
-
-            VehiclePosition vehiclePos2 = new VehiclePosition(
+            ));
+            vehiclePositionsRepository.save(new VehiclePosition(
                     vehicle1.getId().toString(),
                     44.9199,
                     20.3971,
                     "ACTIVE"
-            );
-            vehiclePos2 = vehiclePositionsRepository.save(vehiclePos2);
-            System.out.println("Created Vehicle Position 2 (Driver 1's vehicle)");
-
-            VehiclePosition vehiclePos3 = new VehiclePosition(
+            ));
+            vehiclePositionsRepository.save(new VehiclePosition(
                     vehicle2.getId().toString(),
                     44.8797,
                     20.3995,
                     "ACTIVE"
-            );
-            vehiclePos3 = vehiclePositionsRepository.save(vehiclePos3);
-            System.out.println("Created Vehicle Position 3 (Driver 2's vehicle)");
-
-            VehiclePosition vehiclePos4 = new VehiclePosition(
+            ));
+            vehiclePositionsRepository.save(new VehiclePosition(
                     vehicle2.getId().toString(),
                     44.8152,
                     20.4090,
                     "IDLE"
-            );
-            vehiclePos4 = vehiclePositionsRepository.save(vehiclePos4);
-            System.out.println("Created Vehicle Position 4 (Driver 2's vehicle)");
+            ));
 
             // ============ CREATE ADDITIONAL RIDES WITH NOTES AND RATINGS ============
 

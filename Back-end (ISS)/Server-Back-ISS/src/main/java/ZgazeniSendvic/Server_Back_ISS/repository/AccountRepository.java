@@ -27,4 +27,5 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
     @Query("SELECT a FROM Admin a")
     List<Admin> findAllAdmins();
 
+    Optional<Driver> findDriverByActivationToken(String activationToken);
 }

@@ -1,11 +1,10 @@
-// src/app/register-driver/register-driver.spec.ts
 import { TestBed } from '@angular/core/testing';
 import { RegisterDriver } from './register-driver';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-describe('RegisterDriver (2.2.3)', () => {
+describe('RegisterDriver', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(async () => {
@@ -23,7 +22,7 @@ describe('RegisterDriver (2.2.3)', () => {
 
   it('should create component and initialize form', () => {
     const fixture = TestBed.createComponent(RegisterDriver);
-    fixture.detectChanges();
+    fixture.detectChanges(); // triggers ngOnInit
 
     const cmp = fixture.componentInstance;
     expect(cmp.form).toBeTruthy();
@@ -36,7 +35,6 @@ describe('RegisterDriver (2.2.3)', () => {
 
     fixture.componentInstance.submit();
 
-    // no HTTP calls
     expect(httpMock.match(() => true).length).toBe(0);
   });
 
@@ -53,13 +51,15 @@ describe('RegisterDriver (2.2.3)', () => {
       vehicleId: 2
     });
 
-    // click button (optional)
-    const btn: HTMLButtonElement = fixture.nativeElement.querySelector('[data-testid="create-driver-btn"]');
-    btn.click();
+    fixture.detectChanges();
+    expect(cmp.form.valid).toBeTrue();
 
-    const req = httpMock.expectOne((r) =>
+    // more stable than clicking
+    cmp.submit();
+
+    const req = httpMock.expectOne(r =>
       r.method === 'POST' &&
-      r.url === 'http://localhost:8080/api/admin/drivers'
+      r.url.endsWith('/api/driver')
     );
 
     expect(req.request.body).toEqual({
@@ -86,7 +86,40 @@ describe('RegisterDriver (2.2.3)', () => {
       vehicleId: 1
     });
 
+    fixture.detectChanges();
+    expect(cmp.form.invalid).toBeTrue();
+
     cmp.submit();
     expect(httpMock.match(() => true).length).toBe(0);
+  });
+
+  // OPTIONAL: if you really want to test the template click
+  it('clicking Create driver button triggers submit', () => {
+    const fixture = TestBed.createComponent(RegisterDriver);
+    fixture.detectChanges();
+
+    const cmp = fixture.componentInstance;
+    cmp.form.patchValue({
+      email: 'driver@test.com',
+      name: 'Pera',
+      surname: 'Peric',
+      phone: '+38164111222',
+      vehicleId: 2
+    });
+
+    fixture.detectChanges();
+
+    const btn: HTMLButtonElement =
+      fixture.nativeElement.querySelector('[data-testid="create-driver-btn"]');
+    expect(btn).toBeTruthy();
+
+    btn.click();
+
+    const req = httpMock.expectOne(r =>
+      r.method === 'POST' &&
+      r.url.endsWith('/api/admin/drivers')
+    );
+
+    req.flush(null);
   });
 });

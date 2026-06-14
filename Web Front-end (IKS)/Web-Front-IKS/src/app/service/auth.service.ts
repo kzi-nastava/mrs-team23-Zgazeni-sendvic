@@ -252,14 +252,11 @@ export class AuthService {
     }
   }
 
-  activate(token: string, password: string): Observable<void> {
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-
-    // Adjust the URL if your backend endpoint differs
-    return this.http.post<void>(
-      '/api/driver/activate',
-      { password },
-      { headers }
+  activateDriver(token: string, password: string) {
+    return this.http.put(
+      `http://localhost:8080/api/driver/activate?token=${encodeURIComponent(token)}`,
+      JSON.stringify(password), // <-- JSON string
+      { headers: { 'Content-Type': 'application/json' }, responseType: 'text' }
     );
   }
 }

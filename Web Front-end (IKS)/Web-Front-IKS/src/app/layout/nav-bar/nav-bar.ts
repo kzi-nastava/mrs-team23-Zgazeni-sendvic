@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../service/auth.service';
 import { DriverService } from '../../service/driver.service';
 import { RouteEstimationService } from '../../service/route.estimation.serivce';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-nav-bar',
@@ -19,7 +20,8 @@ export class NavBar {
     private driverService: DriverService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    public panelService: RouteEstimationService
+    public panelService: RouteEstimationService,
+    private http: HttpClient
   ) {}
 
   logout() {
@@ -108,5 +110,9 @@ export class NavBar {
 
   isLoggedIn(): boolean {
     return this.authService.isAuthenticated();
+  }
+
+  startRide() {
+    return this.http.put(`http://localhost:8080/api/ride-start`, {});
   }
 }

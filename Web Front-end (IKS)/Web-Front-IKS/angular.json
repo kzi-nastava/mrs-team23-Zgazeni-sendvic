@@ -68,16 +68,16 @@
           "defaultConfiguration": "development"
         },
         "test": {
-  "builder": "@angular-devkit/build-angular:karma",
-  "options": {
-    "karmaConfig": "karma.conf.js",
-    "polyfills": ["zone.js", "zone.js/testing"],
-    "tsConfig": "tsconfig.spec.json",
-    "assets": [],
-    "styles": [],
-    "scripts": []
-  }
-}
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "karmaConfig": "karma.conf.js",
+            "polyfills": ["zone.js", "zone.js/testing"],
+            "tsConfig": "tsconfig.spec.json",
+            "assets": [],
+            "styles": [],
+            "scripts": []
+          }
+        }
       }
     }
   }
