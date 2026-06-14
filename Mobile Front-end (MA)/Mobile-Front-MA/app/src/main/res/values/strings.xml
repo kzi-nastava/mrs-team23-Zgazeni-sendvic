@@ -4,4 +4,48 @@
     <string name="hor_driver_back_button_text">Home</string>
     <string name="app_name_toolbar">DriveBy</string>
     <string name="hor_title_text">History of Rides</string>
+
+    <!-- Auth: shared -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+
+    <!-- Auth: login -->
+    <string name="login_subtitle">Sign in to continue</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="no_account_prompt">Don\'t have an account?</string>
+    <string name="action_register">Register</string>
+    <string name="action_forgot_password">Forgot password?</string>
+    <string name="action_have_code">Have an activation code?</string>
+
+    <!-- Auth: forgot/reset password -->
+    <string name="forgot_title">Reset password</string>
+    <string name="forgot_subtitle">Enter your email and we\'ll send you a code</string>
+    <string name="prompt_code">Code from email</string>
+    <string name="prompt_new_password">New password</string>
+    <string name="action_send_code">Send code</string>
+    <string name="action_reset_password">Reset password</string>
+    <string name="action_back_to_login">Back to sign in</string>
+    <string name="forgot_code_sent">If an account exists, a reset code has been sent to your email.</string>
+    <string name="reset_success">Password changed. You can now sign in.</string>
+
+    <!-- Auth: account activation -->
+    <string name="confirm_title">Activate account</string>
+    <string name="confirm_subtitle">Enter the code we emailed you to activate your account</string>
+    <string name="action_activate">Activate</string>
+    <string name="confirm_success">Account activated! You can now sign in.</string>
+
+    <!-- Auth: registration -->
+    <string name="register_title">Create account</string>
+    <string name="prompt_first_name">First name</string>
+    <string name="prompt_last_name">Last name</string>
+    <string name="prompt_address">Address</string>
+    <string name="prompt_phone">Phone number</string>
+    <string name="prompt_confirm_password">Confirm password</string>
+    <string name="action_add_photo">Add profile photo (optional)</string>
+    <string name="action_create_account">Create account</string>
+    <string name="have_account_prompt">Already have an account?</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="register_success">Account created! Enter the code we emailed you to activate your account.</string>
+    <string name="action_log_out">Log out</string>
+    <string name="logout_success">You have been logged out.</string>
 </resources>

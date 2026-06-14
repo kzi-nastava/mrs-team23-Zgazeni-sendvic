@@ -13,6 +13,9 @@ import lombok.Setter;
 public class AccountConfirmationDTO {
 
     @NotBlank
-    String rawToken;
+    private String email;
+
+    @NotBlank
+    private String code; // 6-digit activation code emailed to the user
 
 }

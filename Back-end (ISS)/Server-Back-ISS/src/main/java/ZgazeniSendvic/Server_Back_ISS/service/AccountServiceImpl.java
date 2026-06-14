@@ -111,19 +111,22 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
 
 
         insert(account);
-        sendConfirmationLink(account.getEmail(),account);
+        sendConfirmationCode(account.getEmail(),account);
 
         return new LoginRequestedDTO("1", 1, new AccountLoginDTO(account));
 
     }
 
-    public void sendConfirmationLink(String email, Account account){
-        String rawToken = resetTokenService.createConfirmationToken(account);
+    public void sendConfirmationCode(String email, Account account){
+        String code = resetTokenService.createConfirmationToken(account);
 
         EmailDetails emailDetails = new EmailDetails();
         emailDetails.setRecipient(email); // sender is automatically set
         emailDetails.setSubject("Confirm your DriveBy account");
-        emailDetails.setMsgBody("http://localhost:8080/api/auth/confirm-account?token=" + rawToken);
+        emailDetails.setMsgBody(
+                "Welcome to DriveBy!\n\n" +
+                "Your account activation code is: " + code + "\n\n" +
+                "Enter it in the app to activate your account. The code is valid for 24 hours.");
         emailService.sendSimpleMail(emailDetails);
 
     }
@@ -235,65 +238,59 @@ public class AccountServiceImpl implements IAccountService, UserDetailsService {
     public void forgotPassword(String email){
         Optional<Account> account =  allAccounts.findByEmail(email);
         if(account.isEmpty()){
-            return; // email doesn't match, do not send an email
+            return; // email doesn't match, do not send an email (no account enumeration)
         }
 
-        //generate token
-        String rawToken = resetTokenService.createResetToken(account.get());
-        // Matches; send the email
+        // Generate a fresh reset code and email it. The user types it back into the
+        // app (web or mobile); no link, so the same flow works on every client.
+        String code = resetTokenService.createResetToken(account.get());
         EmailDetails emailDetails = new EmailDetails();
         emailDetails.setRecipient(email); // sender is automatically set
         emailDetails.setSubject("Reset your DriveBy password");
-        emailDetails.setMsgBody("http://localhost:4200/reset-password?token=" + rawToken);
+        emailDetails.setMsgBody(
+                "You requested to reset your DriveBy password.\n\n" +
+                "Your password reset code is: " + code + "\n\n" +
+                "Enter it in the app together with your new password. " +
+                "The code is valid for 10 minutes. If you didn't request this, you can ignore this email.");
         emailService.sendSimpleMail(emailDetails);
 
     }
 
     public void resetPassword(PasswordResetConfirmedRequestDTO resetRequestDTO){
 
-        String rawToken = resetRequestDTO.getToken();
+        String email = resetRequestDTO.getEmail();
+        String code = resetRequestDTO.getCode();
         String newPass = resetRequestDTO.getNewPassword();
 
-        if(!resetTokenService.isReset(rawToken)){
-            throw new BadCredentialsException("Is not a reset token");
-        }
+        Account account = allAccounts.findByEmail(email)
+                .orElseThrow(() -> new BadCredentialsException("Invalid code"));
 
-        Optional<Account> foundAccount = resetTokenService.validateResetToken(rawToken);
-        if(foundAccount.isEmpty()){
-            throw new BadCredentialsException("Invalid reset token");
-            //This doesnt work because I have a global handler that "misuses" it
-        }
-        //token is proper
-        Account account = foundAccount.get();
+        PasswordResetToken token = resetTokenService.findValidCode(account, code, false)
+                .orElseThrow(() -> new BadCredentialsException("Invalid or expired code"));
+
         account.setPassword(passwordEncoder.encode(newPass));
         allAccounts.save(account);
         allAccounts.flush();
 
-        resetTokenService.markAsUsed(rawToken);
-
-
+        resetTokenService.markAsUsed(token);
     }
 
     public void confirmAccount(AccountConfirmationDTO confirmationDTO){
 
-        String rawToken = confirmationDTO.getRawToken();
-        if(resetTokenService.isReset(rawToken)){
-            throw new BadCredentialsException("Is not a confirmation token");
-        }
+        String email = confirmationDTO.getEmail();
+        String code = confirmationDTO.getCode();
 
-        Optional<Account> foundAccount = resetTokenService.validateResetToken(rawToken);
-        if(foundAccount.isEmpty()){
-            throw new BadCredentialsException("Invalid confirmation token");
+        Account account = allAccounts.findByEmail(email)
+                .orElseThrow(() -> new BadCredentialsException("Invalid code"));
 
-        }
-        //token is proper
-        Account account = foundAccount.get();
+        PasswordResetToken token = resetTokenService.findValidCode(account, code, true)
+                .orElseThrow(() -> new BadCredentialsException("Invalid or expired code"));
+
         account.setConfirmed(true);
         allAccounts.save(account);
         allAccounts.flush();
 
-        resetTokenService.markAsUsed(rawToken);
-
+        resetTokenService.markAsUsed(token);
     }
 
     public Account getCurrentAccount() {
