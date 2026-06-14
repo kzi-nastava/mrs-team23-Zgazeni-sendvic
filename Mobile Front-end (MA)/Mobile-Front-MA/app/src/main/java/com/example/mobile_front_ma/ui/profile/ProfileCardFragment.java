@@ -1,17 +1,21 @@
 package com.example.mobile_front_ma.ui.profile;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.mobile_front_ma.R;
+import com.example.mobile_front_ma.activities.LoginActivity;
+import com.example.mobile_front_ma.data.SessionManager;
 
 public class ProfileCardFragment extends Fragment {
 
@@ -66,6 +70,23 @@ public class ProfileCardFragment extends Fragment {
             // Admin action
         });
 
+        // Log out: clear the saved session and return to the login screen.
+        view.findViewById(R.id.logoutButton).setOnClickListener(v -> logOut());
+
         return view;
+    }
+
+    private void logOut() {
+        new SessionManager(requireContext()).clear();
+        Toast.makeText(requireContext(), R.string.logout_success, Toast.LENGTH_SHORT).show();
+
+        // Send the user back to login and clear the back stack so they can't return
+        // to a logged-in screen with the back button.
+        Intent intent = new Intent(requireContext(), LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        if (getActivity() != null) {
+            getActivity().finish();
+        }
     }
 }

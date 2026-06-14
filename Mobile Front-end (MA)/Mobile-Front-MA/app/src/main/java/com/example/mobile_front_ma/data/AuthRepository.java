@@ -5,10 +5,13 @@ import androidx.annotation.NonNull;
 import com.example.mobile_front_ma.data.network.ApiCallback;
 import com.example.mobile_front_ma.data.network.ApiClient;
 import com.example.mobile_front_ma.data.network.AuthApi;
+import com.example.mobile_front_ma.models.dto.ConfirmAccountRequest;
+import com.example.mobile_front_ma.models.dto.ForgotPasswordRequest;
 import com.example.mobile_front_ma.models.dto.LoginRequest;
 import com.example.mobile_front_ma.models.dto.LoginResponse;
 import com.example.mobile_front_ma.models.dto.RegisterRequest;
 import com.example.mobile_front_ma.models.dto.RegisterResponse;
+import com.example.mobile_front_ma.models.dto.ResetPasswordRequest;
 
 import java.io.IOException;
 
@@ -69,6 +72,56 @@ public class AuthRepository {
                 callback.onError(networkErrorMessage());
             }
         });
+    }
+
+    /** Step 1 of password reset: ask the backend to email a 6-digit code. */
+    public void forgotPassword(ForgotPasswordRequest request, ApiCallback<Void> callback) {
+        api.forgotPassword(request).enqueue(simpleCallback(callback));
+    }
+
+    /** Step 2 of password reset: submit the emailed code plus the new password. */
+    public void resetPassword(ResetPasswordRequest request, ApiCallback<Void> callback) {
+        api.resetPassword(request).enqueue(simpleCallback(callback));
+    }
+
+    /** Activate a freshly registered account with the emailed 6-digit code. */
+    public void confirmAccount(ConfirmAccountRequest request, ApiCallback<Void> callback) {
+        api.confirmAccount(request).enqueue(simpleCallback(callback));
+    }
+
+    /**
+     * Shared callback for the endpoints that return a plain text status body. On error
+     * we surface the backend message (e.g. "Invalid or expired code") when present.
+     */
+    private Callback<ResponseBody> simpleCallback(ApiCallback<Void> callback) {
+        return new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponseBody> call,
+                                   @NonNull Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(null);
+                } else {
+                    callback.onError(codeErrorMessage(response));
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                callback.onError(networkErrorMessage());
+            }
+        };
+    }
+
+    private String codeErrorMessage(Response<?> response) {
+        String body = readErrorBody(response);
+        if (body != null && !body.trim().isEmpty()) {
+            // Backend sends a human-readable reason (e.g. "Invalid or expired code").
+            return body.trim().replace("\"", "");
+        }
+        if (response.code() == 401 || response.code() == 400) {
+            return "The code is invalid or has expired. Please try again.";
+        }
+        return "Request failed (error " + response.code() + ").";
     }
 
     /** Optional follow-up call after a successful registration, when a picture was chosen. */

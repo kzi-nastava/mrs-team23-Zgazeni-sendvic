@@ -1,5 +1,6 @@
 package com.example.mobile_front_ma.activities;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -116,7 +117,12 @@ public class RegisterActivity extends AppCompatActivity {
                     String message = result.data != null ? result.data
                             : getString(R.string.register_success);
                     Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-                    finish(); // back to the login screen
+                    // Account exists but is inactive: send the user to enter the
+                    // activation code we just emailed them (email pre-filled).
+                    Intent intent = new Intent(this, ConfirmAccountActivity.class);
+                    intent.putExtra(ConfirmAccountActivity.EXTRA_EMAIL, textOf(emailInput));
+                    startActivity(intent);
+                    finish(); // pop registration; back returns to login
                     break;
                 case ERROR:
                     setLoading(false);

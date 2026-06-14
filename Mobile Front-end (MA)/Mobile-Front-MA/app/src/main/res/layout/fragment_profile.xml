@@ -5,17 +5,25 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
     <!-- Card container -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
         android:minHeight="520dp"
         android:orientation="vertical"
         android:gravity="center_horizontal"
         android:padding="28dp"
         android:background="@drawable/bg_profile_card"
-        android:elevation="8dp">
+        android:elevation="8dp"
+        app:layout_constraintWidth_max="@dimen/auth_card_max_width"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <!-- Profile image -->
         <FrameLayout
@@ -285,6 +293,21 @@
                 android:textColor="@android:color/white" />
         </LinearLayout>
 
+        <!-- Log out -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/logoutButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/action_log_out"
+            android:textColor="#D32F2F"
+            app:icon="@android:drawable/ic_lock_power_off"
+            app:iconGravity="textStart"
+            app:iconTint="#D32F2F"
+            app:strokeColor="#D32F2F" />
+
     </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
 

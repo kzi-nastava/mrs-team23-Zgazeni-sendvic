@@ -96,7 +96,7 @@ class AuthController {
         //if not, do nothing, do not reveal anything, sounds relatively simple tbh
         accountService.forgotPassword(request.getEmail());
 
-        return new ResponseEntity<String>("Link has been sent if an account exists", HttpStatus.OK);
+        return new ResponseEntity<String>("If an account exists, a reset code has been sent", HttpStatus.OK);
     }
 
     @PostMapping(path = "reset-password", consumes = MediaType.APPLICATION_JSON_VALUE,

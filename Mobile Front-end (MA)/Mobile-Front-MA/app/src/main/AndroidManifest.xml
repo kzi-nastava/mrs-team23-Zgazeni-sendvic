@@ -29,6 +29,12 @@
             android:name=".activities.RegisterActivity"
             android:exported="false" />
         <activity
+            android:name=".activities.ForgotPasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.ConfirmAccountActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.HORDriverActivity"
             android:exported="false" />
         <activity

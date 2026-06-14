@@ -56,6 +56,18 @@ public class LoginActivity extends AppCompatActivity {
         findViewById(R.id.goToRegister).setOnClickListener(v ->
                 startActivity(new Intent(this, RegisterActivity.class)));
 
+        findViewById(R.id.goToForgotPassword).setOnClickListener(v -> {
+            Intent intent = new Intent(this, ForgotPasswordActivity.class);
+            intent.putExtra(ForgotPasswordActivity.EXTRA_EMAIL, textOf(emailInput));
+            startActivity(intent);
+        });
+
+        findViewById(R.id.goToConfirmAccount).setOnClickListener(v -> {
+            Intent intent = new Intent(this, ConfirmAccountActivity.class);
+            intent.putExtra(ConfirmAccountActivity.EXTRA_EMAIL, textOf(emailInput));
+            startActivity(intent);
+        });
+
         observeLogin();
     }
 
