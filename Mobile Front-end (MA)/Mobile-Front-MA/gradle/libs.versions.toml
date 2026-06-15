@@ -11,6 +11,7 @@ fragment = "1.8.9"
 recyclerview = "1.4.0"
 retrofit = "2.11.0"
 okhttpLogging = "4.12.0"
+osmdroid = "6.1.20"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -25,6 +26,7 @@ recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttpLogging" }
+osmdroid = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -31,3 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Secrets / local overrides ###
+.env
+*.env
+!.env.example
+
+### Runtime-uploaded files (keep the default asset) ###
+uploads/*
+!uploads/Default-profile.png

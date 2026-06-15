@@ -48,4 +48,19 @@
     <string name="register_success">Account created! Enter the code we emailed you to activate your account.</string>
     <string name="action_log_out">Log out</string>
     <string name="logout_success">You have been logged out.</string>
+
+    <!-- Ride estimation (spec 2.1.2) -->
+    <string name="estimate_fab">Estimate ride</string>
+    <string name="estimate_title">Ride estimate</string>
+    <string name="estimate_subtitle">Pick where you start and where you\'re going in Novi Sad.</string>
+    <string name="prompt_start">Start</string>
+    <string name="prompt_destination">Destination</string>
+    <string name="action_show_route">Show route</string>
+    <string name="estimate_route_title">Your route</string>
+    <string name="estimate_label_time">Est. time</string>
+    <string name="estimate_label_distance">Distance</string>
+    <string name="estimate_label_price">Approx. price</string>
+    <string name="estimate_error_pick">Pick a start and destination from the suggestions.</string>
+    <string name="estimate_clear">Clear route</string>
+    <string name="estimate_route_arrow">→</string>
 </resources>
