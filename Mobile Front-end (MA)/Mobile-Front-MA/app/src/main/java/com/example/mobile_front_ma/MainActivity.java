@@ -10,7 +10,10 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
+import com.example.mobile_front_ma.activities.AdminHistoryEntryActivity;
 import com.example.mobile_front_ma.activities.HORDriverActivity;
+import com.example.mobile_front_ma.activities.RideHistoryActivity;
+import com.example.mobile_front_ma.data.SessionManager;
 import com.example.mobile_front_ma.ui.map.MapFragment;
 import com.example.mobile_front_ma.ui.navbar.NavBarFragment;
 
@@ -59,11 +62,24 @@ public class MainActivity extends AppCompatActivity
     }
     
     private void configureHORDriverButton() {
-        // Implementation for configuring the HOR Driver button
+        // The "History of Rides" button opens the screen matching the logged-in role:
+        //  - registered user -> own history (spec 2.9.1)
+        //  - administrator    -> pick whose history to view (spec 2.9.3)
+        //  - driver           -> driver history (existing screen)
         Button horDriverButton = findViewById(R.id.horDriverButton);
-        horDriverButton.setOnClickListener(v -> {
-            // Handle button click
-            startActivity(new Intent(MainActivity.this, HORDriverActivity.class));
-        });
+        horDriverButton.setOnClickListener(v -> startActivity(historyIntentForRole()));
+    }
+
+    private Intent historyIntentForRole() {
+        String role = new SessionManager(this).getRole();
+        if ("ADMIN".equalsIgnoreCase(role)) {
+            return new Intent(this, AdminHistoryEntryActivity.class);
+        }
+        if ("DRIVER".equalsIgnoreCase(role)) {
+            return new Intent(this, HORDriverActivity.class);
+        }
+        Intent intent = new Intent(this, RideHistoryActivity.class);
+        intent.putExtra(RideHistoryActivity.EXTRA_MODE, RideHistoryActivity.MODE_USER);
+        return intent;
     }
 }

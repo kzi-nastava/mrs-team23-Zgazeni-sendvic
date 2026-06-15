@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#607BAD"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/greelow"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/hor_detail_title"
+            android:textColor="@color/bluack"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/backButton"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/lightBlue"
+            android:text="@string/hor_back"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
+    <org.osmdroid.views.MapView
+        android:id="@+id/detailMap"
+        android:layout_width="match_parent"
+        android:layout_height="260dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Re-order the same route (spec 2.9.1 / 2.9.3) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/reorderNowButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/lightBlue"
+                    android:text="@string/hor_reorder_now" />
+
+                <Button
+                    android:id="@+id/reorderLaterButton"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="@string/hor_reorder_later"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/HorSectionHeader"
+                android:text="@string/hor_detail_driver" />
+
+            <TextView
+                android:id="@+id/driverText"
+                style="@style/HorSectionBody"
+                android:text="@string/hor_detail_no_driver" />
+
+            <TextView
+                android:id="@+id/passengersHeader"
+                style="@style/HorSectionHeader"
+                android:text="@string/hor_detail_passengers" />
+
+            <TextView
+                android:id="@+id/passengersText"
+                style="@style/HorSectionBody"
+                android:text="@string/hor_detail_no_passengers" />
+
+            <TextView
+                style="@style/HorSectionHeader"
+                android:text="@string/hor_detail_reports" />
+
+            <TextView
+                android:id="@+id/reportsText"
+                style="@style/HorSectionBody"
+                android:text="@string/hor_detail_no_reports" />
+
+            <TextView
+                style="@style/HorSectionHeader"
+                android:text="@string/hor_detail_ratings" />
+
+            <TextView
+                android:id="@+id/ratingsText"
+                style="@style/HorSectionBody"
+                android:text="@string/hor_detail_no_ratings" />
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

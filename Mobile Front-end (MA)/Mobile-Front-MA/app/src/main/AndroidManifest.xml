@@ -40,6 +40,15 @@
             android:name=".activities.HORDriverActivity"
             android:exported="false" />
         <activity
+            android:name=".activities.RideHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.AdminHistoryEntryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.RideHistoryDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
     </application>

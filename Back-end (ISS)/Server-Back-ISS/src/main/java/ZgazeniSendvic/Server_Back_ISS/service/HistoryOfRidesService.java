@@ -11,6 +11,7 @@ import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
@@ -107,7 +108,8 @@ public class HistoryOfRidesService {
         System.out.println("toDate parameter: " + toDate);
 
 
-        Page<Ride> ridePage = rideRepository.findByAccountAndDateRange(account, fromDate, toDate, pageable);
+        Page<Ride> ridePage = rideRepository.findByAccountAndDateRange(
+                account, fromDate, toDate, remapSortToEntity(pageable));
 
         System.out.println("Number of results: " + ridePage.getTotalElements());
         ridePage.getContent().forEach(ride -> {
@@ -117,6 +119,24 @@ public class HistoryOfRidesService {
 
         // Convert Page<Ride> -> Page<ARideRequestedDTO> using mapper
         return ridesToARideRequestedDTOPage(ridePage);
+    }
+
+    /**
+     * The API exposes "price" as a sort field, but the Ride entity stores it as "totalPrice".
+     * Spring Data builds the ORDER BY from the entity property name, so we translate the
+     * client-facing field to the persistent one before querying (otherwise sorting by price
+     * throws PropertyReferenceException). Other fields pass through unchanged.
+     */
+    public static Pageable remapSortToEntity(Pageable pageable) {
+        if (!pageable.getSort().isSorted()) {
+            return pageable;
+        }
+        List<Sort.Order> remapped = new ArrayList<>();
+        for (Sort.Order order : pageable.getSort()) {
+            String property = "price".equals(order.getProperty()) ? "totalPrice" : order.getProperty();
+            remapped.add(new Sort.Order(order.getDirection(), property));
+        }
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(remapped));
     }
 
     public static void validateSortFields(Pageable pageable, Set<String> allowedFields) {

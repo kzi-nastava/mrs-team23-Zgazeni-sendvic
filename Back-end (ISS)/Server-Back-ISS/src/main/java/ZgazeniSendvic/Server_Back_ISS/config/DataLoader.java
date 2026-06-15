@@ -42,7 +42,7 @@ public class DataLoader {
 
             // ============ CREATE ACCOUNTS ============
             Account accountA = new User();
-            accountA.setEmail("marko28082004+user1@gmail.com");
+            accountA.setEmail("user1@gmail.com");
             accountA.setPassword(passwordEncoder.encode("password123"));
             accountA.setName("John");
             accountA.setLastName("Doe");
@@ -52,7 +52,7 @@ public class DataLoader {
             accountA = accountRepository.save(accountA);
 
             Account accountB = new User();
-            accountB.setEmail("marko28082004+user2@gmail.com");
+            accountB.setEmail("user2@gmail.com");
             accountB.setPassword(passwordEncoder.encode("password123"));
             accountB.setName("Jane");
             accountB.setLastName("Smith");
@@ -62,7 +62,7 @@ public class DataLoader {
             accountB = accountRepository.save(accountB);
 
             Admin adminA = new Admin();
-            adminA.setEmail("marko28082004@gmail.com");
+            adminA.setEmail("admina@gmail.com");
             adminA.setPassword(passwordEncoder.encode("password123"));
             adminA.setName("Alice");
             adminA.setLastName("Admin");
@@ -96,7 +96,7 @@ public class DataLoader {
 
             // ============ CREATE DRIVERS ============
             Driver driver1 = new Driver(vehicle1);
-            driver1.setEmail("marko28082004+driver1@gmail.com");
+            driver1.setEmail("driver1@gmail.com");
             driver1.setPassword(passwordEncoder.encode("password123"));
             driver1.setName("Michael");
             driver1.setLastName("Johnson");
@@ -110,7 +110,7 @@ public class DataLoader {
             driver1 = accountRepository.save(driver1);
 
             Driver driver2 = new Driver(vehicle2);
-            driver2.setEmail("marko28082004+driver2@gmail.com");
+            driver2.setEmail("driver2@gmail.com");
             driver2.setPassword(passwordEncoder.encode("password123"));
             driver2.setName("Robert");
             driver2.setLastName("Williams");
