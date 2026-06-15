@@ -3,6 +3,7 @@ package ZgazeniSendvic.Server_Back_ISS.service;
 import ZgazeniSendvic.Server_Back_ISS.dto.CreateRideRequestDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.*;
 import ZgazeniSendvic.Server_Back_ISS.repository.AccountRepository;
+import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import ZgazeniSendvic.Server_Back_ISS.repository.RideRequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +24,8 @@ public class RideRequestServiceImpl implements IRideRequestService {
 
     @Autowired
     RideRequestRepository rideRequestRepository;
+    @Autowired
+    RideRepository rideRepository;
     @Autowired
     AccountServiceImpl accountService;
     @Autowired
@@ -80,16 +82,21 @@ public class RideRequestServiceImpl implements IRideRequestService {
     }
 
 
+    @Transactional
     public void recreateRideRequest(Long rideID, LocalDateTime when){
-        RideRequest rr = rideRequestRepository.findById(rideID).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride request not found"));
+        // The id comes from the ride history, which lists Rides (not RideRequests). Those are
+        // two different tables with independent id sequences, so we must look up the Ride here
+        // and rebuild a fresh request from it (spec 2.9.1 / 2.9.3 "order the same route again").
+        Ride ride = rideRepository.findById(rideID)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found"));
 
+        // The Ride doesn't store the original vehicle type / distance, so we fall back to a
+        // sensible default and a 0 distance. Only the route (locations) is preserved.
         CreateRideRequestDTO dto = new CreateRideRequestDTO();
-        dto.setVehicleType(rr.getVehicleType());
-        dto.setBabiesAllowed(rr.isBabiesAllowed());
-        dto.setPetsAllowed(rr.isPetsAllowed());
-        dto.setEstimatedDistanceKm(rr.getEstimatedDistanceKm());
-        dto.setInvitedPassengerEmails(rr.getInvitedPassengers().stream().map(Account::getEmail).collect(Collectors.toList()));
-        dto.setLocations(rr.getLocations());
+        dto.setVehicleType(VehicleType.STANDARD);
+        dto.setEstimatedDistanceKm(0);
+        dto.setLocations(new ArrayList<>(ride.getLocations()));
+        dto.setInvitedPassengerEmails(new ArrayList<>());
         dto.setScheduledTime(when);
         createRideRequest(dto);
     }

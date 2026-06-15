@@ -116,7 +116,6 @@ public class RideServiceImpl implements IRideService {
         ride.setLocations(request.getLocations());
         ride.setScheduledTime(request.getScheduledTime());
         ride.setTotalPrice(request.getEstimatedPrice());
-        ride.setTotalPrice(request.getEstimatedPrice());
         ride.setStatus(RideStatus.SCHEDULED);
 
         return allRides.save(ride);

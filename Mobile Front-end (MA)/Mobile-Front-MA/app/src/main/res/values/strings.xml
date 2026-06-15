@@ -63,4 +63,52 @@
     <string name="estimate_error_pick">Pick a start and destination from the suggestions.</string>
     <string name="estimate_clear">Clear route</string>
     <string name="estimate_route_arrow">→</string>
+
+    <!-- Ride history (spec 2.9.1 user / 2.9.3 admin) -->
+    <string name="hor_user_title">My ride history</string>
+    <string name="hor_admin_title">Ride history</string>
+    <string name="hor_admin_title_for">History · %1$s</string>
+    <string name="hor_created_prefix">Created: %1$s</string>
+    <string name="hor_panic_flag">PANIC</string>
+    <string name="hor_sort_label">Sort by</string>
+    <string name="hor_sort_dir_asc">Ascending</string>
+    <string name="hor_sort_dir_desc">Descending</string>
+    <string name="hor_filter_from">From date</string>
+    <string name="hor_filter_to">To date</string>
+    <string name="hor_filter_apply">Apply</string>
+    <string name="hor_filter_clear">Clear</string>
+    <string name="hor_empty">No rides to show.</string>
+    <string name="hor_shake_hint">Shake the device to flip the date order.</string>
+
+    <!-- Sort field labels -->
+    <string name="hor_sort_creation">Creation date</string>
+    <string name="hor_sort_start_time">Start time</string>
+    <string name="hor_sort_end_time">End time</string>
+    <string name="hor_sort_start_loc">Start location</string>
+    <string name="hor_sort_end_loc">End location</string>
+    <string name="hor_sort_price">Price</string>
+    <string name="hor_sort_status">Status</string>
+
+    <!-- Admin: pick whose history to view -->
+    <string name="hor_admin_entry_title">Whose history?</string>
+    <string name="hor_admin_search_hint">Search by name or email</string>
+    <string name="hor_admin_search_action">Search</string>
+    <string name="hor_admin_empty">No accounts found. Type a name or email and search.</string>
+
+    <!-- Ride detail -->
+    <string name="hor_detail_title">Ride details</string>
+    <string name="hor_detail_driver">Driver</string>
+    <string name="hor_detail_passengers">Passengers</string>
+    <string name="hor_detail_reports">Inconsistency reports</string>
+    <string name="hor_detail_ratings">Ratings</string>
+    <string name="hor_detail_no_driver">No driver recorded.</string>
+    <string name="hor_detail_no_passengers">No passengers recorded.</string>
+    <string name="hor_detail_no_reports">No reports for this ride.</string>
+    <string name="hor_detail_no_ratings">No ratings for this ride.</string>
+    <string name="hor_detail_rating_line">Driver %1$d/5 · Vehicle %2$d/5</string>
+    <string name="hor_reorder_now">Order again now</string>
+    <string name="hor_reorder_later">Order again later</string>
+    <string name="hor_reorder_success">Ride ordered. A driver is being assigned.</string>
+    <string name="hor_reorder_scheduled">Ride scheduled for %1$s.</string>
+    <string name="hor_back">Back</string>
 </resources>

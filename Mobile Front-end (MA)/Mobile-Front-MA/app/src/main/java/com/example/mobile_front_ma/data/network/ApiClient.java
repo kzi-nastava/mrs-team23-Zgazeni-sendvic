@@ -1,5 +1,9 @@
 package com.example.mobile_front_ma.data.network;
 
+import android.content.Context;
+
+import com.example.mobile_front_ma.data.SessionManager;
+
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -26,6 +30,7 @@ public final class ApiClient {
     public static final String BASE_URL = "http://10.0.2.2:8080/";
 
     private static Retrofit retrofit;
+    private static Retrofit authRetrofit;
 
     private ApiClient() {
     }
@@ -54,5 +59,47 @@ public final class ApiClient {
 
     public static <T> T create(Class<T> service) {
         return getRetrofit().create(service);
+    }
+
+    /**
+     * Retrofit instance whose every request carries the logged-in user's JWT as
+     * "Authorization: Bearer ...". Used for the endpoints behind @PreAuthorize
+     * (ride history, account directory, ride re-order). The token is read fresh from
+     * {@link SessionManager} on each request so it survives app restarts and re-logins.
+     */
+    public static Retrofit getAuthRetrofit(Context context) {
+        if (authRetrofit == null) {
+            Context appContext = context.getApplicationContext();
+            SessionManager session = new SessionManager(appContext);
+
+            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+            logging.setLevel(HttpLoggingInterceptor.Level.BASIC);
+
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .addInterceptor(chain -> {
+                        String token = session.getToken();
+                        if (token == null || token.isEmpty()) {
+                            return chain.proceed(chain.request());
+                        }
+                        return chain.proceed(chain.request().newBuilder()
+                                .header("Authorization", "Bearer " + token)
+                                .build());
+                    })
+                    .addInterceptor(logging)
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .build();
+
+            authRetrofit = new Retrofit.Builder()
+                    .baseUrl(BASE_URL)
+                    .client(client)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+        }
+        return authRetrofit;
+    }
+
+    public static <T> T createAuthenticated(Context context, Class<T> service) {
+        return getAuthRetrofit(context).create(service);
     }
 }

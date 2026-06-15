@@ -35,8 +35,8 @@ public class HORController {
     public ResponseEntity<Page<ARideRequestedDTO>> adminRetrieveRides
             (@PathVariable Long targetID,
              @PageableDefault(sort = "creationDate", direction = Sort.Direction.DESC) Pageable pageable,
-             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime fromDate,
-             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime toDate)
+             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
+             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate)
             throws Exception{
         // here a service would go over the pageable and request params etc...
 
@@ -55,8 +55,8 @@ public class HORController {
     public ResponseEntity<Page<ARideRequestedUserDTO>> userRetrieveRides
             (
              @PageableDefault(sort = "creationDate", direction = Sort.Direction.DESC) Pageable pageable,
-             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime fromDate,
-             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime toDate)
+             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
+             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate)
             throws Exception{
         // here a service would go over the pageable and request params etc...
 

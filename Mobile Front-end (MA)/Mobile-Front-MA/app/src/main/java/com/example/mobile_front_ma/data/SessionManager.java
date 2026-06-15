@@ -53,6 +53,11 @@ public class SessionManager {
         return prefs.getString(KEY_ROLE, null);
     }
 
+    /** Backend account id of the logged-in user, or -1 if unknown. */
+    public long getUserId() {
+        return prefs.getLong(KEY_USER_ID, -1L);
+    }
+
     public String getEmail() {
         return prefs.getString(KEY_EMAIL, null);
     }

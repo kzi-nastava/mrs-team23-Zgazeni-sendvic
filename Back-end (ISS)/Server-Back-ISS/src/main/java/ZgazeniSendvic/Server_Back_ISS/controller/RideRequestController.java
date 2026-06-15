@@ -33,7 +33,7 @@ public class RideRequestController {
     @PostMapping(path = "ride-reorder/{rideID}",
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> reorderDrive(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
             @PathVariable Long rideID) throws Exception{
 
         rideRequestService.recreateRideRequest(rideID, fromDate);
