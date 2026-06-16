@@ -25,6 +25,14 @@ public interface AuthApi {
     @POST("api/auth/login")
     Call<LoginResponse> login(@Body LoginRequest body);
 
+    /**
+     * Log the current user out. For drivers the backend refuses (400) while they are
+     * still marked available, so they must go inactive first. Requires the JWT, so
+     * call it through the authenticated Retrofit client.
+     */
+    @POST("api/auth/logout")
+    Call<ResponseBody> logout();
+
     @POST("api/auth/register")
     Call<RegisterResponse> register(@Body RegisterRequest body);
 

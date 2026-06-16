@@ -49,6 +49,16 @@
     <string name="action_log_out">Log out</string>
     <string name="logout_success">You have been logged out.</string>
 
+    <!-- Driver controls (spec 2.2.1 active/inactive, 2.6.5 stop ride) -->
+    <string name="driver_status_active">Active</string>
+    <string name="driver_status_inactive">Inactive</string>
+    <string name="driver_go_active">Go active</string>
+    <string name="driver_go_inactive">Go inactive</string>
+    <string name="driver_status_changed_active">You are now active.</string>
+    <string name="driver_status_changed_inactive">You are now inactive.</string>
+    <string name="driver_stop_ride">2.6.5 Zaustavljanje vožnje dok je u toku (Student3</string>
+    <string name="driver_ride_stopped">Ride stopped. New price: %1$s</string>
+
     <!-- Ride estimation (spec 2.1.2) -->
     <string name="estimate_fab">Estimate ride</string>
     <string name="estimate_title">Ride estimate</string>

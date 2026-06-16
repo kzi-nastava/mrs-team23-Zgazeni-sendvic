@@ -18,6 +18,7 @@ public class SessionManager {
     private static final String KEY_LAST_NAME = "last_name";
     private static final String KEY_ROLE = "role";
     private static final String KEY_USER_ID = "user_id";
+    private static final String KEY_DRIVER_ACTIVE = "driver_active";
 
     private final SharedPreferences prefs;
 
@@ -64,6 +65,19 @@ public class SessionManager {
 
     public String getFirstName() {
         return prefs.getString(KEY_FIRST_NAME, null);
+    }
+
+    /**
+     * Whether the logged-in driver is currently active (available for rides).
+     * The backend has no "read current status" endpoint, so we remember the last
+     * value set from this device; drivers start inactive after logging in.
+     */
+    public boolean isDriverActive() {
+        return prefs.getBoolean(KEY_DRIVER_ACTIVE, false);
+    }
+
+    public void setDriverActive(boolean active) {
+        prefs.edit().putBoolean(KEY_DRIVER_ACTIVE, active).apply();
     }
 
     /** Clears the session (used on logout). */
