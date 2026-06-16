@@ -1,5 +1,7 @@
 package com.example.mobile_front_ma.data;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 import com.example.mobile_front_ma.data.network.ApiCallback;
@@ -87,6 +89,16 @@ public class AuthRepository {
     /** Activate a freshly registered account with the emailed 6-digit code. */
     public void confirmAccount(ConfirmAccountRequest request, ApiCallback<Void> callback) {
         api.confirmAccount(request).enqueue(simpleCallback(callback));
+    }
+
+    /**
+     * Log the current user out. Goes through the authenticated client so the backend
+     * can identify the user from the JWT. On error we surface the backend message
+     * (e.g. a driver who is still available must go inactive first).
+     */
+    public void logout(Context context, ApiCallback<Void> callback) {
+        AuthApi authApi = ApiClient.createAuthenticated(context, AuthApi.class);
+        authApi.logout().enqueue(simpleCallback(callback));
     }
 
     /**

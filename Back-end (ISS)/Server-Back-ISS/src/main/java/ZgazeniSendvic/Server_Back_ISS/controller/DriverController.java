@@ -103,17 +103,18 @@ public class DriverController {
         }
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PutMapping(path = "/changeStatus", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> changeDriverStatus(@RequestBody DriverChangeStatusDTO request)
             throws Exception {
 
-
+        // The driver is identified from the JWT in the service; the request body only
+        // carries the desired target state. Going inactive while driving is a valid,
+        // deferred outcome (200), not a 403.
         try {
-            driverService.changeAvailableStatus(request.getEmail(), request.isToState());
-            return ResponseEntity.ok("Status updated successfully");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            DriverStatusChangedDTO result = driverService.changeAvailableStatus(request.isToState());
+            return ResponseEntity.ok(result);
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }

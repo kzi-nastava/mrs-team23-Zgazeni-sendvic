@@ -1,0 +1,6 @@
+<!-- Small circular indicator; the fill colour is tinted in code to show
+     whether the driver is active (green) or inactive (grey). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@android:color/white" />
+</shape>

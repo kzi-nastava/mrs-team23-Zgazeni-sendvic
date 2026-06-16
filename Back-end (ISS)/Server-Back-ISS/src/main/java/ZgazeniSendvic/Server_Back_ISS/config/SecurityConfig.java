@@ -93,6 +93,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // public endpoints
                         .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                        // Logout is reachable without a valid JWT so an expired/missing token
+                        // can still clear the session. The controller only runs the driver
+                        // logout logic when an authenticated user is present in the context.
+                        .requestMatchers("/api/auth/logout").permitAll()
 
                         // authenticated endpoints
                         .requestMatchers("/api/account/me", "/api/account/me/change-request").authenticated()
@@ -105,7 +109,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/HOR/user/detailed/**").authenticated()
                         .requestMatchers("/api/panic-notifications/resolve/**").authenticated()
                         .requestMatchers("/api/panic-notifications/retrieve").authenticated()
-                        .requestMatchers("/api/auth/logout").authenticated()
                         .requestMatchers("/api/driver/deactivate").authenticated()
                         .requestMatchers("/api/riderequest/ride-reorder/**").authenticated()
 

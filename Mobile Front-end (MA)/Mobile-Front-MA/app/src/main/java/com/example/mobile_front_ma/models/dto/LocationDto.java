@@ -8,6 +8,13 @@ public class LocationDto {
     public Double latitude;
     public Double longitude;
 
+    public LocationDto() {}
+
+    public LocationDto(Double latitude, Double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
     public Double getLatitude() {
         return latitude;
     }
