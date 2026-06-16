@@ -2,6 +2,7 @@ package ZgazeniSendvic.Server_Back_ISS.service;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.ActivateDriverDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.CreateDriverDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.DriverStatusChangedDTO;
 import ZgazeniSendvic.Server_Back_ISS.dto.RegisterVehicleDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Driver;
@@ -192,33 +193,47 @@ public class DriverServiceImpl implements IDriverService {
     }
 
 
-    public void changeAvailableStatus(String email, boolean value){
+    public DriverStatusChangedDTO changeAvailableStatus(boolean value){
 
+        // Identify the driver from the JWT, never from a client-supplied email,
+        // so one driver can't flip another driver's status.
+        Driver driver = getAuthenticatedDriver();
 
-            Optional<Account> found = accountRepository.findByEmail(email);
-            if (found.isPresent()) {
-                if(found.get().getRole().equals("DRIVER")){ //second fix
-                    Driver driver = (Driver) found.get();
-                    //if changing to Active, always allow
-                    if(value){
-                        driver.setAvailable(true);
-                        return;
-                    } else{
-                        //to Unavailable and driving
-                        if(driver.getDriving()){
-                            driver.setAwaitingDeactivation(true);
-                            throw new IllegalStateException("Driver is currently driving. Marked as awaiting deactivation");
-                        }
-                        //to Unavailable and not driving
-                        driver.setAvailable(false);
-                        return;
-                    }
-                }
-                throw new IllegalStateException("Account with email " + email + " is not a driver");
-            } // not found
+        // Going active is always allowed.
+        if (value) {
+            driver.setAvailable(true);
+            accountRepository.save(driver);
+            return new DriverStatusChangedDTO(true, "You are now active.");
+        }
 
-        throw new IllegalArgumentException("Account with email " + email + " not found");
+        // Going inactive while mid-ride can't take effect immediately, so we record
+        // the intent and let the ride finish. The driver stays available until then,
+        // so the returned state is still active. This is a normal outcome, not an error.
+        if (driver.getDriving()) {
+            driver.setAwaitingDeactivation(true);
+            accountRepository.save(driver);
+            return new DriverStatusChangedDTO(driver.getAvailable(),
+                    "You are currently driving. You will be set inactive once the ride ends.");
+        }
 
+        // Going inactive while idle.
+        driver.setAvailable(false);
+        accountRepository.save(driver);
+        return new DriverStatusChangedDTO(false, "You are now inactive.");
+    }
+
+    /** The driver behind the current JWT, or an error if the principal isn't a driver. */
+    private Driver getAuthenticatedDriver() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth instanceof AnonymousAuthenticationToken
+                || !(auth.getPrincipal() instanceof CustomUserDetails userDetails)) {
+            throw new IllegalStateException("No authenticated driver in the security context.");
+        }
+        Account account = userDetails.getAccount();
+        if (!(account instanceof Driver driver)) {
+            throw new IllegalStateException("The authenticated account is not a driver.");
+        }
+        return driver;
     }
 
     public void ThrowIfNotAllowedToLogOut(){
