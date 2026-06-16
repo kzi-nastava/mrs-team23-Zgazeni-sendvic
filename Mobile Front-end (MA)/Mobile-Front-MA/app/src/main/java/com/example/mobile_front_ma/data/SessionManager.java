@@ -38,6 +38,12 @@ public class SessionManager {
             if (response.getUser().getUserID() != null) {
                 editor.putLong(KEY_USER_ID, response.getUser().getUserID());
             }
+            // The backend activates a driver the moment they log in (AuthController ->
+            // ActivateIfDriver sets available=true), so the session must start active too.
+            // Otherwise the GUI shows "inactive" while the server considers the driver
+            // available, which then blocks logout.
+            boolean isDriver = "DRIVER".equalsIgnoreCase(response.getUser().getRole());
+            editor.putBoolean(KEY_DRIVER_ACTIVE, isDriver);
         }
         editor.apply();
     }
@@ -70,7 +76,8 @@ public class SessionManager {
     /**
      * Whether the logged-in driver is currently active (available for rides).
      * The backend has no "read current status" endpoint, so we remember the last
-     * value set from this device; drivers start inactive after logging in.
+     * value set from this device; drivers start active right after logging in,
+     * matching the backend which activates them on login.
      */
     public boolean isDriverActive() {
         return prefs.getBoolean(KEY_DRIVER_ACTIVE, false);

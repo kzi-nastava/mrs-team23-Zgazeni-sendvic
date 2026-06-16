@@ -31,7 +31,7 @@ import com.example.mobile_front_ma.models.dto.RideStoppedResponse;
 import android.content.res.ColorStateList;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.Arrays;
 
 public class ProfileCardFragment extends Fragment {
 
@@ -180,8 +180,13 @@ public class ProfileCardFragment extends Fragment {
      * data with ride id 1.
      */
     private void stopRide() {
+        // The backend needs at least two passed locations to build the driven route
+        // (OrsRoutingService rejects fewer). Until the real in-progress-ride screen
+        // supplies the actual track, send two dummy points around Novi Sad.
         RideStopRequest request = new RideStopRequest(
-                Collections.singletonList(new LocationDto(45.2671, 19.8335)),
+                Arrays.asList(
+                        new LocationDto(45.2671, 19.8335),
+                        new LocationDto(45.2550, 19.8450)),
                 LocalDateTime.now().toString());
 
         rideRepository.stopRide(DUMMY_RIDE_ID, request, new ApiCallback<RideStoppedResponse>() {
