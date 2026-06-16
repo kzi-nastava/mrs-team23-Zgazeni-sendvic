@@ -9,6 +9,8 @@ import com.example.mobile_front_ma.data.network.ApiClient;
 import com.example.mobile_front_ma.data.network.RideApi;
 import com.example.mobile_front_ma.models.dto.RideStopRequest;
 import com.example.mobile_front_ma.models.dto.RideStoppedResponse;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.IOException;
 
@@ -49,16 +51,56 @@ public class RideRepository {
     }
 
     private String errorMessage(Response<?> response) {
+        // Prefer the backend's own reason when it sends one.
+        String backendMessage = backendMessage(response);
+        if (backendMessage != null && !backendMessage.isEmpty()) {
+            return backendMessage;
+        }
+        // Otherwise (e.g. Spring's default 403 body carries no message) fall back to a
+        // clear, ride-specific message instead of a bare "403 Forbidden".
+        switch (response.code()) {
+            case 400:
+                return "This ride can't be stopped – it may have already finished.";
+            case 403:
+                return "You are not the driver of this ride.";
+            case 404:
+                return "Ride not found.";
+            default:
+                return "Could not stop the ride (error " + response.code() + ").";
+        }
+    }
+
+    /** Pulls a human-readable reason out of the backend error body, or null if there isn't one. */
+    private String backendMessage(Response<?> response) {
         try (ResponseBody errorBody = response.errorBody()) {
-            if (errorBody != null) {
-                String body = errorBody.string().trim();
-                if (!body.isEmpty()) {
-                    return body.replace("\"", "");
+            if (errorBody == null) {
+                return null;
+            }
+            String body = errorBody.string().trim();
+            if (body.isEmpty()) {
+                return null;
+            }
+            // Most error bodies are JSON like {"status":...,"error":...,"message":"..."}.
+            try {
+                JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+                if (!json.has("message") || json.get("message").isJsonNull()) {
+                    return null;
                 }
+                String message = json.get("message").getAsString().trim();
+                // ResponseStatusException prefixes its reason, e.g. 400 BAD_REQUEST "Ride is
+                // not active" – keep only the readable part inside the quotes when present.
+                int firstQuote = message.indexOf('"');
+                int lastQuote = message.lastIndexOf('"');
+                if (firstQuote >= 0 && lastQuote > firstQuote) {
+                    message = message.substring(firstQuote + 1, lastQuote).trim();
+                }
+                return message.isEmpty() ? null : message;
+            } catch (RuntimeException notJson) {
+                // Not JSON – treat the raw body as the message.
+                return body.replace("\"", "");
             }
         } catch (IOException ignored) {
-            // fall through to the generic message
+            return null;
         }
-        return "Could not stop the ride (error " + response.code() + ").";
     }
 }
