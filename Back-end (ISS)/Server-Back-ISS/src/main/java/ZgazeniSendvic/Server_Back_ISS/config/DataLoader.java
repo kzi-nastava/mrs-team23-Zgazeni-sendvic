@@ -338,6 +338,35 @@ public class DataLoader {
             rideDriverRatingRepository.save(rating4b);
             System.out.println("Created RideDriverRating for Ride 4 (Account B)");
 
+            // Ride 5: Account A with Driver 1, SCHEDULED for 2 days from now.
+            // This is the cancellable ride used to exercise spec 2.5 (cancel a scheduled ride):
+            // it is far enough in the future that a passenger is still within the 10-minute window.
+            Ride ride5 = new Ride();
+            ride5.setDriver(driver1);
+            ride5.setCreator(accountA);
+
+            List<Account> ride5Passengers = new ArrayList<>();
+            ride5Passengers.add(accountA);
+            ride5.setPassengers(ride5Passengers);
+
+            List<Location> ride5Locations = new ArrayList<>();
+            ride5Locations.add(new Location(20.4500, 44.8100)); // Start location
+            ride5Locations.add(new Location(20.5000, 44.8200)); // End location
+            ride5.setLocations(ride5Locations);
+
+            ride5.setTotalPrice(15.00);
+            LocalDateTime ride5CreationTime = LocalDateTime.now();
+            ride5.setCreationDate(ride5CreationTime);
+            ride5.setScheduledTime(ride5CreationTime.plusDays(2));
+            ride5.setStatus(RideStatus.SCHEDULED);
+            ride5.setPanic(false);
+            ride5.setStartLatitude(20.4500);
+            ride5.setStartLongitude(44.8100);
+            ride5.setEndLatitude(20.5000);
+            ride5.setEndLongitude(44.8200);
+            rideRepository.save(ride5);
+            System.out.println("Created Ride 5 (Account A, Driver 1, SCHEDULED, in 2 days)");
+
             System.out.println("✓ Database population completed successfully!");
         };
     }
