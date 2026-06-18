@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.example.mobile_front_ma.data.network.ApiCallback;
 import com.example.mobile_front_ma.data.network.ApiClient;
 import com.example.mobile_front_ma.data.network.RideApi;
+import com.example.mobile_front_ma.models.dto.RideCancelRequest;
 import com.example.mobile_front_ma.models.dto.RideStopRequest;
 import com.example.mobile_front_ma.models.dto.RideStoppedResponse;
 import com.google.gson.JsonObject;
@@ -48,6 +49,48 @@ public class RideRepository {
                 callback.onError("Cannot reach the server. Make sure the backend is running.");
             }
         });
+    }
+
+    /**
+     * Spec 2.5 – cancel a scheduled ride (PUT /api/ride-cancel/{rideID}). {@code reason} may be
+     * null; it is only meaningful for a driver cancelling, which this app doesn't do.
+     */
+    public void cancelRide(long rideId, String reason, ApiCallback<Void> callback) {
+        api.cancelRide(rideId, new RideCancelRequest(reason)).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(null);
+                } else {
+                    callback.onError(cancelErrorMessage(response));
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                callback.onError("Cannot reach the server. Make sure the backend is running.");
+            }
+        });
+    }
+
+    private String cancelErrorMessage(Response<?> response) {
+        // Prefer the backend's own reason (e.g. "Ride is not scheduled", "Too late to cancel").
+        String backendMessage = backendMessage(response);
+        if (backendMessage != null && !backendMessage.isEmpty()) {
+            return backendMessage;
+        }
+        switch (response.code()) {
+            case 400:
+            case 406:
+            case 409:
+                return "This ride can no longer be canceled.";
+            case 403:
+                return "You're not allowed to cancel this ride.";
+            case 404:
+                return "Ride not found.";
+            default:
+                return "Could not cancel the ride (error " + response.code() + ").";
+        }
     }
 
     private String errorMessage(Response<?> response) {
