@@ -147,18 +147,27 @@ public class RideServiceImpl implements IRideService {
         LocalDateTime now = LocalDateTime.now();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //If not logged in
-        if (auth instanceof AnonymousAuthenticationToken) {
+        if (auth == null || auth instanceof AnonymousAuthenticationToken) {
             validateAndCancelAsAnonymous(ride, rideDTO, now);
             return;
             }
+
+        //An administrator may cancel any scheduled ride (spec 2.5), without the
+        //10-minute restriction that applies to passengers.
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+        if (isAdmin) {
+            return;
+        }
 
         //else if logged in
         try{
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
         Account requester = userDetails.getAccount();
 
-        //check if it is the driver of the ride
-        if(Objects.equals(ride.getDriver().getId(), requester.getId())){
+        //check if it is the driver of the ride (a scheduled ride may not have a driver yet)
+        Driver driver = ride.getDriver();
+        if(driver != null && Objects.equals(driver.getId(), requester.getId())){
             //if it is, allow unless no reason
             if(rideDTO.getReason() == null || rideDTO.getReason().isBlank()){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Reason for cancellation must be provided by the driver");
@@ -206,11 +215,18 @@ public class RideServiceImpl implements IRideService {
     }
 
     private boolean isAtLeastTenMinutesBeforeRide(Ride ride, LocalDateTime timeOfRequest) {
-        LocalDateTime rideStartTime = ride.getStartTime();
-        if (rideStartTime == null) {
-            throw new IllegalStateException("Ride start time is not set");
+        // A scheduled ride that has not started yet has no startTime; its planned start is
+        // scheduledTime. Fall back to that so passengers can actually cancel upcoming rides
+        // (otherwise the check blew up with "start time is not set").
+        LocalDateTime plannedStart = ride.getStartTime() != null
+                ? ride.getStartTime()
+                : ride.getScheduledTime();
+        if (plannedStart == null) {
+            // No planned start at all (e.g. an "order now" ride still waiting for a driver):
+            // allow cancellation while it is only scheduled.
+            return true;
         }
-        return timeOfRequest.isBefore(rideStartTime.minusMinutes(10));
+        return timeOfRequest.isBefore(plannedStart.minusMinutes(10));
 
     }
 
