@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
@@ -54,8 +55,20 @@ public class RideHistoryDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_RIDE_ID = "ride_id";
     public static final String EXTRA_ADMIN = "admin";
+    public static final String EXTRA_STATUS = "status";
     public static final String EXTRA_ROUTE_LATS = "route_lats";
     public static final String EXTRA_ROUTE_LONS = "route_lons";
+
+    /** Result code returned to the history list when a ride was canceled, so it can refresh. */
+    public static final int RESULT_RIDE_CANCELED = RESULT_FIRST_USER;
+
+    /**
+     * Feature flag: whether an administrator may cancel a ride from the detail screen.
+     * The spec (2.5) only grants cancellation to the passenger who ordered the ride, so this
+     * is {@code false} and admins never see the Cancel button. The backend still supports
+     * admin cancellation, so flip this to {@code true} to bring the button back for admins.
+     */
+    private static final boolean ADMIN_CAN_CANCEL = false;
 
     private static final int ROUTE_PADDING_PX = 90;
 
@@ -67,9 +80,11 @@ public class RideHistoryDetailActivity extends AppCompatActivity {
     private TextView passengersText;
     private TextView reportsText;
     private TextView ratingsText;
+    private Button cancelButton;
 
     private long rideId;
     private boolean adminMode;
+    private String rideStatus;
     private List<GeoPoint> waypoints = new ArrayList<>();
 
     @Override
@@ -91,6 +106,7 @@ public class RideHistoryDetailActivity extends AppCompatActivity {
 
         rideId = getIntent().getLongExtra(EXTRA_RIDE_ID, -1);
         adminMode = getIntent().getBooleanExtra(EXTRA_ADMIN, false);
+        rideStatus = getIntent().getStringExtra(EXTRA_STATUS);
 
         progressBar = findViewById(R.id.progressBar);
         driverText = findViewById(R.id.driverText);
@@ -109,13 +125,29 @@ public class RideHistoryDetailActivity extends AppCompatActivity {
         ((Button) findViewById(R.id.reorderNowButton)).setOnClickListener(v -> reorderNow());
         ((Button) findViewById(R.id.reorderLaterButton)).setOnClickListener(v -> reorderLater());
 
+        // Cancel (spec 2.5) only makes sense for a ride that is still scheduled. For any other
+        // status (active/finished/already canceled) the backend would reject it, so hide it.
+        cancelButton = findViewById(R.id.cancelRideButton);
+        cancelButton.setVisibility(isCancellable() ? View.VISIBLE : View.GONE);
+        cancelButton.setOnClickListener(v -> confirmCancel());
+
         setupMap();
         drawRouteFromExtras();
 
         viewModel = new ViewModelProvider(this).get(RideDetailViewModel.class);
         viewModel.getDetails().observe(this, this::renderDetails);
         viewModel.getReorderResult().observe(this, this::renderReorder);
+        viewModel.getCancelResult().observe(this, this::renderCancel);
         viewModel.load(rideId, adminMode);
+    }
+
+    private boolean isCancellable() {
+        // Only scheduled rides can be canceled (spec 2.5).
+        if (!"SCHEDULED".equalsIgnoreCase(rideStatus)) {
+            return false;
+        }
+        // Admins don't get the button unless the feature flag is turned on.
+        return !adminMode || ADMIN_CAN_CANCEL;
     }
 
     private void setupMap() {
@@ -331,6 +363,41 @@ public class RideHistoryDetailActivity extends AppCompatActivity {
         if (resource.status == Resource.Status.SUCCESS) {
             Toast.makeText(this, R.string.hor_reorder_success, Toast.LENGTH_LONG).show();
         } else {
+            Toast.makeText(this, resource.message, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /** Ask for confirmation before cancelling, since it can't be undone (spec 2.5). */
+    private void confirmCancel() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.hor_cancel_confirm_title)
+                .setMessage(R.string.hor_cancel_confirm_message)
+                .setNegativeButton(R.string.hor_cancel_confirm_no, null)
+                .setPositiveButton(R.string.hor_cancel_confirm_yes, (dialog, which) ->
+                        viewModel.cancel(rideId, null))
+                .show();
+    }
+
+    private void renderCancel(Resource<Void> resource) {
+        if (resource == null) {
+            return;
+        }
+        if (resource.status == Resource.Status.LOADING) {
+            // Prevent a double-tap while the request is in flight.
+            cancelButton.setEnabled(false);
+            progressBar.setVisibility(View.VISIBLE);
+            return;
+        }
+        progressBar.setVisibility(View.GONE);
+        if (resource.status == Resource.Status.SUCCESS) {
+            Toast.makeText(this, R.string.hor_cancel_success, Toast.LENGTH_LONG).show();
+            // The ride is no longer scheduled; tell the list to refresh and close this screen.
+            setResult(RESULT_RIDE_CANCELED);
+            finish();
+        } else {
+            // Cancellation failed (too late, not allowed, network, ...): surface why and let
+            // the user try again.
+            cancelButton.setEnabled(true);
             Toast.makeText(this, resource.message, Toast.LENGTH_LONG).show();
         }
     }

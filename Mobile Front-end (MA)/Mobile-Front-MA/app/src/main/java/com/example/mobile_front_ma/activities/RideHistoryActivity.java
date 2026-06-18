@@ -15,6 +15,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -75,6 +77,16 @@ public class RideHistoryActivity extends AppCompatActivity
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private ShakeDetector shakeDetector;
+
+    // The detail screen returns RESULT_RIDE_CANCELED when a ride was canceled there; reload so
+    // the just-canceled ride no longer shows as scheduled.
+    private final ActivityResultLauncher<Intent> detailLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RideHistoryDetailActivity.RESULT_RIDE_CANCELED) {
+                    viewModel.load();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -307,6 +319,8 @@ public class RideHistoryActivity extends AppCompatActivity
         Intent intent = new Intent(this, RideHistoryDetailActivity.class);
         intent.putExtra(RideHistoryDetailActivity.EXTRA_RIDE_ID, ride.rideID);
         intent.putExtra(RideHistoryDetailActivity.EXTRA_ADMIN, adminMode);
+        // Pass the status so the detail screen can offer "Cancel" only for scheduled rides (2.5).
+        intent.putExtra(RideHistoryDetailActivity.EXTRA_STATUS, ride.status);
 
         // Pass the route waypoints so the detail map can draw the route without a refetch.
         List<LocationDto> points = ride.destinations;
@@ -324,7 +338,7 @@ public class RideHistoryActivity extends AppCompatActivity
             intent.putExtra(RideHistoryDetailActivity.EXTRA_ROUTE_LATS, java.util.Arrays.copyOf(lats, n));
             intent.putExtra(RideHistoryDetailActivity.EXTRA_ROUTE_LONS, java.util.Arrays.copyOf(lons, n));
         }
-        startActivity(intent);
+        detailLauncher.launch(intent);
     }
 
     @Override

@@ -84,6 +84,17 @@
                     android:textColor="@color/white" />
             </LinearLayout>
 
+            <!-- Cancel a scheduled ride (spec 2.5). Shown only when the ride is still SCHEDULED. -->
+            <Button
+                android:id="@+id/cancelRideButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/cancelRed"
+                android:text="@string/hor_cancel_ride"
+                android:textColor="@color/white"
+                android:visibility="gone" />
+
             <TextView
                 style="@style/HorSectionHeader"
                 android:text="@string/hor_detail_driver" />
