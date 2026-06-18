@@ -8,23 +8,28 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.mobile_front_ma.data.HistoryRepository;
+import com.example.mobile_front_ma.data.RideRepository;
 import com.example.mobile_front_ma.data.network.ApiCallback;
 import com.example.mobile_front_ma.models.dto.RideDetails;
 import com.example.mobile_front_ma.util.Resource;
 
 /**
  * Backs the ride detail screen (spec 2.9.1 / 2.9.3): loads the driver, passengers,
- * inconsistency reports and ratings for one ride, and re-orders the same route.
+ * inconsistency reports and ratings for one ride, re-orders the same route, and cancels a
+ * scheduled ride (spec 2.5).
  */
 public class RideDetailViewModel extends AndroidViewModel {
 
     private final HistoryRepository repository;
+    private final RideRepository rideRepository;
     private final MutableLiveData<Resource<RideDetails>> details = new MutableLiveData<>();
     private final MutableLiveData<Resource<Void>> reorderResult = new MutableLiveData<>();
+    private final MutableLiveData<Resource<Void>> cancelResult = new MutableLiveData<>();
 
     public RideDetailViewModel(@NonNull Application application) {
         super(application);
         this.repository = new HistoryRepository(application);
+        this.rideRepository = new RideRepository(application);
     }
 
     public LiveData<Resource<RideDetails>> getDetails() {
@@ -33,6 +38,10 @@ public class RideDetailViewModel extends AndroidViewModel {
 
     public LiveData<Resource<Void>> getReorderResult() {
         return reorderResult;
+    }
+
+    public LiveData<Resource<Void>> getCancelResult() {
+        return cancelResult;
     }
 
     public void load(long rideId, boolean adminMode) {
@@ -67,6 +76,22 @@ public class RideDetailViewModel extends AndroidViewModel {
             @Override
             public void onError(String message) {
                 reorderResult.setValue(Resource.error(message));
+            }
+        });
+    }
+
+    /** Cancel a scheduled ride (spec 2.5). The backend authorizes the caller from the JWT. */
+    public void cancel(long rideId, String reason) {
+        cancelResult.setValue(Resource.loading());
+        rideRepository.cancelRide(rideId, reason, new ApiCallback<Void>() {
+            @Override
+            public void onSuccess(Void data) {
+                cancelResult.setValue(Resource.success(null));
+            }
+
+            @Override
+            public void onError(String message) {
+                cancelResult.setValue(Resource.error(message));
             }
         });
     }

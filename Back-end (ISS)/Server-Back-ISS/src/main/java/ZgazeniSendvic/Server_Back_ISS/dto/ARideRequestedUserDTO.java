@@ -20,4 +20,7 @@ public class ARideRequestedUserDTO {
     private LocalDateTime beginning;
     private LocalDateTime ending;
     private LocalDateTime creationTime;
+    // Lets the registered-user history know which rides are still SCHEDULED, so it can offer
+    // cancellation for them (spec 2.5).
+    private RideStatus status;
 }

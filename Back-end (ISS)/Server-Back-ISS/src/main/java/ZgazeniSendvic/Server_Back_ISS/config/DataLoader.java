@@ -221,8 +221,8 @@ public class DataLoader {
             ride3.setPassengers(ride3Passengers);
 
             List<Location> ride3Locations = new ArrayList<>();
-            ride3Locations.add(new Location(20.4600, 44.8300)); // Start location
-            ride3Locations.add(new Location(20.4700, 44.8400)); // End location
+            ride3Locations.add(new Location(44.8300, 20.4600)); // Start location
+            ride3Locations.add(new Location(44.8400, 20.4700)); // End location
             ride3.setLocations(ride3Locations);
 
             ride3.setTotalPrice(18.50);
@@ -232,12 +232,12 @@ public class DataLoader {
             ride3.setEndTime(ride3CreationTime.plusMinutes(35));
             ride3.setStatus(RideStatus.ACTIVE);
             ride3.setPanic(false);
-            ride3.setStartLatitude(20.4600);
-            ride3.setStartLongitude(44.8300);
-            ride3.setEndLatitude(20.4700);
-            ride3.setEndLongitude(44.8400);
-            ride3.setCurrentLatitude(20.4650);
-            ride3.setCurrentLongitude(44.8350);
+            ride3.setStartLatitude(44.8300);
+            ride3.setStartLongitude(20.4600);
+            ride3.setEndLatitude(44.8400);
+            ride3.setEndLongitude(20.4700);
+            ride3.setCurrentLatitude(44.8350);
+            ride3.setCurrentLongitude(20.4650);
             ride3 = rideRepository.save(ride3);
             System.out.println("Created Ride 3 (Account A, Driver 1, ACTIVE, 5 days ago)");
 
@@ -274,8 +274,8 @@ public class DataLoader {
             ride4.setPassengers(ride4Passengers);
 
             List<Location> ride4Locations = new ArrayList<>();
-            ride4Locations.add(new Location(20.4800, 44.8600)); // Start location
-            ride4Locations.add(new Location(20.4900, 44.8700)); // End location
+            ride4Locations.add(new Location(44.8600, 20.4800)); // Start location
+            ride4Locations.add(new Location(44.8700, 20.4900)); // End location
             ride4.setLocations(ride4Locations);
 
             ride4.setTotalPrice(22.00);
@@ -285,12 +285,12 @@ public class DataLoader {
             ride4.setEndTime(ride4CreationTime.plusMinutes(30));
             ride4.setStatus(RideStatus.ACTIVE);
             ride4.setPanic(false);
-            ride4.setStartLatitude(20.4800);
-            ride4.setStartLongitude(44.8600);
-            ride4.setEndLatitude(20.4900);
-            ride4.setEndLongitude(44.8700);
-            ride4.setCurrentLatitude(20.4850);
-            ride4.setCurrentLongitude(44.8650);
+            ride4.setStartLatitude(44.8600);
+            ride4.setStartLongitude(20.4800);
+            ride4.setEndLatitude(44.8700);
+            ride4.setEndLongitude(20.4900);
+            ride4.setCurrentLatitude(44.8650);
+            ride4.setCurrentLongitude(20.4850);
             ride4 = rideRepository.save(ride4);
             System.out.println("Created Ride 4 (Accounts A & B, Driver 1, ACTIVE, 10 days ago)");
 
@@ -337,6 +337,35 @@ public class DataLoader {
             rating4b.setRecordedAt(OffsetDateTime.now().minusDays(10));
             rideDriverRatingRepository.save(rating4b);
             System.out.println("Created RideDriverRating for Ride 4 (Account B)");
+
+            // Ride 5: Account A with Driver 1, SCHEDULED for 2 days from now.
+            // This is the cancellable ride used to exercise spec 2.5 (cancel a scheduled ride):
+            // it is far enough in the future that a passenger is still within the 10-minute window.
+            Ride ride5 = new Ride();
+            ride5.setDriver(driver1);
+            ride5.setCreator(accountA);
+
+            List<Account> ride5Passengers = new ArrayList<>();
+            ride5Passengers.add(accountA);
+            ride5.setPassengers(ride5Passengers);
+
+            List<Location> ride5Locations = new ArrayList<>();
+            ride5Locations.add(new Location(44.8100, 20.4500)); // Start location
+            ride5Locations.add(new Location(44.8200, 20.5000)); // End location
+            ride5.setLocations(ride5Locations);
+
+            ride5.setTotalPrice(15.00);
+            LocalDateTime ride5CreationTime = LocalDateTime.now();
+            ride5.setCreationDate(ride5CreationTime);
+            ride5.setScheduledTime(ride5CreationTime.plusDays(2));
+            ride5.setStatus(RideStatus.SCHEDULED);
+            ride5.setPanic(false);
+            ride5.setStartLatitude(44.8100);
+            ride5.setStartLongitude(20.4500);
+            ride5.setEndLatitude(44.8200);
+            ride5.setEndLongitude(20.5000);
+            rideRepository.save(ride5);
+            System.out.println("Created Ride 5 (Account A, Driver 1, SCHEDULED, in 2 days)");
 
             System.out.println("✓ Database population completed successfully!");
         };

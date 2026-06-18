@@ -120,5 +120,14 @@
     <string name="hor_reorder_later">Order again later</string>
     <string name="hor_reorder_success">Ride ordered. A driver is being assigned.</string>
     <string name="hor_reorder_scheduled">Ride scheduled for %1$s.</string>
+
+    <!-- Cancel a scheduled ride (spec 2.5) -->
+    <string name="hor_cancel_ride">Cancel ride</string>
+    <string name="hor_cancel_confirm_title">Cancel this ride?</string>
+    <string name="hor_cancel_confirm_message">This will cancel the scheduled ride. This can\'t be undone.</string>
+    <string name="hor_cancel_confirm_yes">Cancel ride</string>
+    <string name="hor_cancel_confirm_no">Keep ride</string>
+    <string name="hor_cancel_success">Ride canceled.</string>
+
     <string name="hor_back">Back</string>
 </resources>

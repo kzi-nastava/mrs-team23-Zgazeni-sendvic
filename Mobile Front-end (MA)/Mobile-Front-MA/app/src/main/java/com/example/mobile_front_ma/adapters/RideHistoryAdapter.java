@@ -11,8 +11,12 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mobile_front_ma.R;
+import com.example.mobile_front_ma.models.dto.LocationDto;
 import com.example.mobile_front_ma.models.dto.RideHistoryItem;
 import com.example.mobile_front_ma.util.HistoryFormat;
+import com.example.mobile_front_ma.util.LocationLabeler;
+
+import java.util.Objects;
 
 /**
  * Renders a ride-history row. The admin payload carries extra fields (price, status, panic)
@@ -57,8 +61,7 @@ public class RideHistoryAdapter extends ListAdapter<RideHistoryItem, RideHistory
     public void onBindViewHolder(@NonNull RideViewHolder holder, int position) {
         RideHistoryItem ride = getItem(position);
 
-        holder.routeText.setText(HistoryFormat.point(ride.getStart())
-                + "  →  " + HistoryFormat.point(ride.getEnd()));
+        bindRoute(holder, ride);
         holder.createdText.setText(holder.itemView.getContext()
                 .getString(R.string.hor_created_prefix, HistoryFormat.dateTime(ride.creationTime)));
         holder.timesText.setText(HistoryFormat.dateTime(ride.beginning)
@@ -94,12 +97,50 @@ public class RideHistoryAdapter extends ListAdapter<RideHistoryItem, RideHistory
         });
     }
 
+    /**
+     * Show "start → end" as place names. Coordinates appear first as a placeholder, then each
+     * end is upgraded to a name once reverse geocoding resolves. The async callback checks the
+     * holder is still bound to this ride (it may have been recycled) before touching the view.
+     */
+    private void bindRoute(RideViewHolder holder, RideHistoryItem ride) {
+        LocationDto start = ride.getStart();
+        LocationDto end = ride.getEnd();
+
+        holder.boundRideId = ride.rideID;
+        holder.startLabel = HistoryFormat.point(start);
+        holder.endLabel = HistoryFormat.point(end);
+        renderRoute(holder);
+
+        LocationLabeler.resolve(start, label -> {
+            if (Objects.equals(holder.boundRideId, ride.rideID)) {
+                holder.startLabel = label;
+                renderRoute(holder);
+            }
+        });
+        LocationLabeler.resolve(end, label -> {
+            if (Objects.equals(holder.boundRideId, ride.rideID)) {
+                holder.endLabel = label;
+                renderRoute(holder);
+            }
+        });
+    }
+
+    private void renderRoute(RideViewHolder holder) {
+        holder.routeText.setText(holder.startLabel + "  →  " + holder.endLabel);
+    }
+
     static class RideViewHolder extends RecyclerView.ViewHolder {
         final TextView routeText;
         final TextView createdText;
         final TextView timesText;
         final TextView priceText;
         final TextView statusText;
+
+        // Which ride this holder currently shows, so late geocoding callbacks can tell whether
+        // the row was recycled before updating the route text.
+        Long boundRideId;
+        String startLabel;
+        String endLabel;
 
         RideViewHolder(@NonNull View itemView) {
             super(itemView);
