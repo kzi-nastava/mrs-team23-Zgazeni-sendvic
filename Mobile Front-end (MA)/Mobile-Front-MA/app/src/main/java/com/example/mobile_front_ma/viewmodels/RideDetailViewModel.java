@@ -10,7 +10,6 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.mobile_front_ma.data.HistoryRepository;
 import com.example.mobile_front_ma.data.RideRepository;
 import com.example.mobile_front_ma.data.network.ApiCallback;
-import com.example.mobile_front_ma.models.dto.PanicResponse;
 import com.example.mobile_front_ma.models.dto.RideDetails;
 import com.example.mobile_front_ma.util.Resource;
 
@@ -26,7 +25,6 @@ public class RideDetailViewModel extends AndroidViewModel {
     private final MutableLiveData<Resource<RideDetails>> details = new MutableLiveData<>();
     private final MutableLiveData<Resource<Void>> reorderResult = new MutableLiveData<>();
     private final MutableLiveData<Resource<Void>> cancelResult = new MutableLiveData<>();
-    private final MutableLiveData<Resource<PanicResponse>> panicResult = new MutableLiveData<>();
 
     public RideDetailViewModel(@NonNull Application application) {
         super(application);
@@ -44,10 +42,6 @@ public class RideDetailViewModel extends AndroidViewModel {
 
     public LiveData<Resource<Void>> getCancelResult() {
         return cancelResult;
-    }
-
-    public LiveData<Resource<PanicResponse>> getPanicResult() {
-        return panicResult;
     }
 
     public void load(long rideId, boolean adminMode) {
@@ -98,22 +92,6 @@ public class RideDetailViewModel extends AndroidViewModel {
             @Override
             public void onError(String message) {
                 cancelResult.setValue(Resource.error(message));
-            }
-        });
-    }
-
-    /** Raise the PANIC alarm on an active ride (spec 2.6.3). Backend authorizes from the JWT. */
-    public void panic(long rideId) {
-        panicResult.setValue(Resource.loading());
-        rideRepository.panicRide(rideId, new ApiCallback<PanicResponse>() {
-            @Override
-            public void onSuccess(PanicResponse data) {
-                panicResult.setValue(Resource.success(data));
-            }
-
-            @Override
-            public void onError(String message) {
-                panicResult.setValue(Resource.error(message));
             }
         });
     }

@@ -20,6 +20,7 @@ import com.example.mobile_front_ma.R;
 import com.example.mobile_front_ma.activities.LoginActivity;
 import com.example.mobile_front_ma.data.AuthRepository;
 import com.example.mobile_front_ma.data.DriverRepository;
+import com.example.mobile_front_ma.data.DummyRide;
 import com.example.mobile_front_ma.data.RideRepository;
 import com.example.mobile_front_ma.data.SessionManager;
 import com.example.mobile_front_ma.data.network.ApiCallback;
@@ -35,9 +36,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 
 public class ProfileCardFragment extends Fragment {
-
-    // Dummy ride used by the stop-ride button until the in-progress-ride screen exists.
-    private static final long DUMMY_RIDE_ID = 1L;
 
     private SessionManager session;
     private DriverRepository driverRepository;
@@ -178,7 +176,7 @@ public class ProfileCardFragment extends Fragment {
     /**
      * Stops a ride in progress (spec 2.6.5). The in-progress-ride screen that would
      * supply the real ride id and driven route isn't built yet, so we send dummy
-     * data with ride id 1.
+     * data drawn from the shared {@link DummyRide}.
      */
     private void stopRide() {
         // The backend needs at least two passed locations to build the driven route
@@ -190,7 +188,7 @@ public class ProfileCardFragment extends Fragment {
                         new LocationDto(45.2550, 19.8450)),
                 LocalDateTime.now().toString());
 
-        rideRepository.stopRide(DUMMY_RIDE_ID, request, new ApiCallback<RideStoppedResponse>() {
+        rideRepository.stopRide(DummyRide.RIDE_ID, request, new ApiCallback<RideStoppedResponse>() {
             @Override
             public void onSuccess(RideStoppedResponse data) {
                 if (!isAdded()) return;

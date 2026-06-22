@@ -27,6 +27,20 @@
         android:textColor="@color/white"
         android:visibility="gone" />
 
+    <!-- Participant-only: raise the PANIC alarm on the ride in progress (spec 2.6.3).
+         Shown to a driver/passenger; admins get the alerts screen above instead. -->
+    <Button
+        android:id="@+id/raisePanicButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/panicRed"
+        android:contentDescription="@string/hor_panic_button_desc"
+        android:text="@string/hor_panic_button"
+        android:textColor="@color/white"
+        android:visibility="gone" />
+
     <!-- Main content -->
     <FrameLayout
         android:id="@+id/mainFragmentContainer"
