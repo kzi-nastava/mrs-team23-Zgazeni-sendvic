@@ -129,5 +129,41 @@
     <string name="hor_cancel_confirm_no">Keep ride</string>
     <string name="hor_cancel_success">Ride canceled.</string>
 
+    <!-- PANIC button on an active ride (spec 2.6.3) -->
+    <string name="hor_panic_button">PANIC</string>
+    <string name="hor_panic_button_desc">Raise emergency alarm</string>
+    <string name="hor_panic_confirm_title">Send a panic alert?</string>
+    <string name="hor_panic_confirm_message">This raises the emergency alarm for this ride: the operator and everyone on the ride are notified immediately. Use only in a real emergency.</string>
+    <string name="hor_panic_confirm_yes">Send alert</string>
+    <string name="hor_panic_confirm_no">Cancel</string>
+    <string name="hor_panic_success">Panic alert sent. Help is on the way.</string>
+    <string name="hor_panic_sent">Panic alert sent</string>
+
+    <!-- Admin panic-notifications screen + system notifications (spec 2.6.3) -->
+    <string name="panic_alerts_button">Panic alerts</string>
+    <string name="panic_list_title">Panic alerts</string>
+    <string name="panic_list_empty">No panic alerts.</string>
+    <string name="panic_list_refresh">Refresh</string>
+    <string name="panic_caller_unknown">Unknown caller</string>
+    <string name="panic_ride">Ride #%1$d</string>
+    <string name="panic_status_active">ACTIVE</string>
+    <string name="panic_status_resolved">Resolved</string>
+    <string name="panic_resolve">Resolve</string>
+    <string name="panic_resolve_confirm_title">Resolve this panic?</string>
+    <string name="panic_resolve_confirm_message">Mark this panic alert as handled. Everyone will see it as resolved.</string>
+    <string name="panic_resolve_confirm_yes">Resolve</string>
+    <string name="panic_resolve_confirm_no">Cancel</string>
+    <string name="panic_resolved_toast">Panic resolved.</string>
+    <string name="panic_channel_name">Panic alerts</string>
+    <string name="panic_channel_desc">Emergency panic alerts raised during rides</string>
+    <string name="panic_notif_title">🚨 PANIC alert</string>
+    <string name="panic_notif_body">%1$s raised a panic on ride #%2$s</string>
+    <string name="panic_notif_resolved_title">Panic resolved</string>
+    <string name="panic_notif_resolved_body">%1$s\'s panic on ride #%2$s was resolved</string>
+    <string name="panic_service_channel_name">Panic alert listener</string>
+    <string name="panic_service_channel_desc">Keeps watching for panic alerts in the background</string>
+    <string name="panic_service_title">Panic alerts active</string>
+    <string name="panic_service_text">Listening for emergency alerts</string>
+
     <string name="hor_back">Back</string>
 </resources>

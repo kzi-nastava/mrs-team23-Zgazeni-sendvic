@@ -23,6 +23,7 @@ import com.example.mobile_front_ma.data.DriverRepository;
 import com.example.mobile_front_ma.data.RideRepository;
 import com.example.mobile_front_ma.data.SessionManager;
 import com.example.mobile_front_ma.data.network.ApiCallback;
+import com.example.mobile_front_ma.data.realtime.PanicForegroundService;
 import com.example.mobile_front_ma.models.dto.DriverStatusResponse;
 import com.example.mobile_front_ma.models.dto.LocationDto;
 import com.example.mobile_front_ma.models.dto.RideStopRequest;
@@ -225,6 +226,8 @@ public class ProfileCardFragment extends Fragment {
     private void finishLogout() {
         if (!isAdded()) return;
         session.clear();
+        // Stop the background panic listener so a logged-out device stops getting alerts.
+        PanicForegroundService.stop(requireContext());
         Toast.makeText(requireContext(), R.string.logout_success, Toast.LENGTH_SHORT).show();
 
         // Send the user back to login and clear the back stack so they can't return

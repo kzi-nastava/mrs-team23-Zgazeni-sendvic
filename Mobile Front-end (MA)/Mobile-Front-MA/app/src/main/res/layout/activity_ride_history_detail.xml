@@ -57,7 +57,29 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingLeft="@dimen/hor_detail_h_padding"
+            android:paddingTop="16dp"
+            android:paddingRight="@dimen/hor_detail_h_padding"
+            android:paddingBottom="16dp">
+
+            <!-- PANIC alarm (spec 2.6.3). Shown only while the ride is ACTIVE; placed first so
+                 it's the most reachable control in an emergency. -->
+            <Button
+                android:id="@+id/panicButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="@color/panicRed"
+                android:contentDescription="@string/hor_panic_button_desc"
+                android:letterSpacing="0.15"
+                android:minHeight="64dp"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp"
+                android:text="@string/hor_panic_button"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
 
             <!-- Re-order the same route (spec 2.9.1 / 2.9.3) -->
             <LinearLayout

@@ -5,8 +5,14 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- osmdroid checks connectivity before hitting the tile/route servers -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Spec 2.6.3: show Android system notifications for panic alerts (runtime-requested on 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Spec 2.6.3: keep the panic listener alive in the background for admins -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
+        android:name=".MobileFrontApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -49,8 +55,24 @@
             android:name=".activities.RideHistoryDetailActivity"
             android:exported="false" />
         <activity
+            android:name=".activities.PanicNotificationsActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
+
+        <!-- Keeps the panic WebSocket alive in the background for a logged-in admin (spec 2.6.3).
+             specialUse: it maintains a connection to receive emergency alerts (no other FGS type
+             fits). stopWithTask: swiping the app away stops the listener. -->
+        <service
+            android:name=".data.realtime.PanicForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:stopWithTask="true">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Maintains a connection to receive emergency panic alerts for administrators" />
+        </service>
     </application>
 
 </manifest>

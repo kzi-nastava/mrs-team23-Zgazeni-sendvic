@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.example.mobile_front_ma.data.network.ApiCallback;
 import com.example.mobile_front_ma.data.network.ApiClient;
 import com.example.mobile_front_ma.data.network.RideApi;
+import com.example.mobile_front_ma.models.dto.PanicResponse;
 import com.example.mobile_front_ma.models.dto.RideCancelRequest;
 import com.example.mobile_front_ma.models.dto.RideStopRequest;
 import com.example.mobile_front_ma.models.dto.RideStoppedResponse;
@@ -71,6 +72,50 @@ public class RideRepository {
                 callback.onError("Cannot reach the server. Make sure the backend is running.");
             }
         });
+    }
+
+    /**
+     * Spec 2.6.3 – raise the PANIC alarm on a ride in progress (POST /api/ride-PANIC/{rideID}).
+     * The backend authorizes the caller (driver or passenger of an ACTIVE ride) from the JWT,
+     * so there is no body.
+     */
+    public void panicRide(long rideId, ApiCallback<PanicResponse> callback) {
+        api.panicRide(rideId).enqueue(new Callback<PanicResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<PanicResponse> call,
+                                   @NonNull Response<PanicResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onError(panicErrorMessage(response));
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<PanicResponse> call, @NonNull Throwable t) {
+                callback.onError("Cannot reach the server. Make sure the backend is running.");
+            }
+        });
+    }
+
+    private String panicErrorMessage(Response<?> response) {
+        // Prefer the backend's own reason (e.g. "Only active rides can be panicked",
+        // "Panic has already been activated for this ride").
+        String backendMessage = backendMessage(response);
+        if (backendMessage != null && !backendMessage.isEmpty()) {
+            return backendMessage;
+        }
+        switch (response.code()) {
+            case 400:
+                return "Panic can't be raised for this ride right now.";
+            case 401:
+            case 403:
+                return "You're not allowed to raise panic on this ride.";
+            case 404:
+                return "Ride not found.";
+            default:
+                return "Could not send the panic alert (error " + response.code() + ").";
+        }
     }
 
     private String cancelErrorMessage(Response<?> response) {

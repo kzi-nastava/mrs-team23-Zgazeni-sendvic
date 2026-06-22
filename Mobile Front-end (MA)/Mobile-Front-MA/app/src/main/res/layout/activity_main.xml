@@ -12,12 +12,20 @@
         android:id="@+id/horDriverButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hor_driver_button_text"
-        app:layout_constraintBottom_toTopOf="@+id/textView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.308" />
+        android:layout_gravity="center_horizontal"
+        android:text="@string/hor_driver_button_text" />
+
+    <!-- Admin-only: open the panic-alerts screen (spec 2.6.3). Shown from MainActivity. -->
+    <Button
+        android:id="@+id/panicAlertsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/panicRed"
+        android:text="@string/panic_alerts_button"
+        android:textColor="@color/white"
+        android:visibility="gone" />
 
     <!-- Main content -->
     <FrameLayout

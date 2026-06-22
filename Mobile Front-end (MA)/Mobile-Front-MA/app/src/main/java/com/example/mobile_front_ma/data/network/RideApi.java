@@ -1,11 +1,13 @@
 package com.example.mobile_front_ma.data.network;
 
+import com.example.mobile_front_ma.models.dto.PanicResponse;
 import com.example.mobile_front_ma.models.dto.RideCancelRequest;
 import com.example.mobile_front_ma.models.dto.RideStopRequest;
 import com.example.mobile_front_ma.models.dto.RideStoppedResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
@@ -25,4 +27,12 @@ public interface RideApi {
      */
     @PUT("api/ride-cancel/{rideID}")
     Call<Void> cancelRide(@Path("rideID") long rideID, @Body RideCancelRequest body);
+
+    /**
+     * Spec 2.6.3 – raise the PANIC alarm on a ride in progress. The backend authorizes the
+     * caller (must be the driver or a passenger of an ACTIVE ride) from the JWT and takes no
+     * body. Returns the created panic record.
+     */
+    @POST("api/ride-PANIC/{rideID}")
+    Call<PanicResponse> panicRide(@Path("rideID") long rideID);
 }

@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.mobile_front_ma.R;
 import com.example.mobile_front_ma.data.network.GeoApiClient;
 import com.example.mobile_front_ma.models.dto.AccountDetails;
+import com.example.mobile_front_ma.models.dto.PanicResponse;
 import com.example.mobile_front_ma.models.dto.RideDetails;
 import com.example.mobile_front_ma.models.dto.RideNoteDto;
 import com.example.mobile_front_ma.models.dto.RideRatingDto;
@@ -81,6 +82,7 @@ public class RideHistoryDetailActivity extends AppCompatActivity {
     private TextView reportsText;
     private TextView ratingsText;
     private Button cancelButton;
+    private Button panicButton;
 
     private long rideId;
     private boolean adminMode;
@@ -131,6 +133,12 @@ public class RideHistoryDetailActivity extends AppCompatActivity {
         cancelButton.setVisibility(isCancellable() ? View.VISIBLE : View.GONE);
         cancelButton.setOnClickListener(v -> confirmCancel());
 
+        // PANIC (spec 2.6.3) is only valid while the ride is in progress (ACTIVE); the backend
+        // rejects it otherwise, so show it only then.
+        panicButton = findViewById(R.id.panicButton);
+        panicButton.setVisibility(isPanicable() ? View.VISIBLE : View.GONE);
+        panicButton.setOnClickListener(v -> confirmPanic());
+
         setupMap();
         drawRouteFromExtras();
 
@@ -138,6 +146,7 @@ public class RideHistoryDetailActivity extends AppCompatActivity {
         viewModel.getDetails().observe(this, this::renderDetails);
         viewModel.getReorderResult().observe(this, this::renderReorder);
         viewModel.getCancelResult().observe(this, this::renderCancel);
+        viewModel.getPanicResult().observe(this, this::renderPanic);
         viewModel.load(rideId, adminMode);
     }
 
@@ -148,6 +157,12 @@ public class RideHistoryDetailActivity extends AppCompatActivity {
         }
         // Admins don't get the button unless the feature flag is turned on.
         return !adminMode || ADMIN_CAN_CANCEL;
+    }
+
+    private boolean isPanicable() {
+        // PANIC (spec 2.6.3) only applies to a ride in progress, and only to its participants
+        // (driver/passenger) — never to an admin browsing someone else's history.
+        return "ACTIVE".equalsIgnoreCase(rideStatus) && !adminMode;
     }
 
     private void setupMap() {
@@ -398,6 +413,41 @@ public class RideHistoryDetailActivity extends AppCompatActivity {
             // Cancellation failed (too late, not allowed, network, ...): surface why and let
             // the user try again.
             cancelButton.setEnabled(true);
+            Toast.makeText(this, resource.message, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /** Ask for confirmation before raising the alarm, to avoid accidental panics (spec 2.6.3). */
+    private void confirmPanic() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.hor_panic_confirm_title)
+                .setMessage(R.string.hor_panic_confirm_message)
+                .setNegativeButton(R.string.hor_panic_confirm_no, null)
+                .setPositiveButton(R.string.hor_panic_confirm_yes, (dialog, which) ->
+                        viewModel.panic(rideId))
+                .show();
+    }
+
+    private void renderPanic(Resource<PanicResponse> resource) {
+        if (resource == null) {
+            return;
+        }
+        if (resource.status == Resource.Status.LOADING) {
+            // Block a double-tap while the alarm is being raised.
+            panicButton.setEnabled(false);
+            progressBar.setVisibility(View.VISIBLE);
+            return;
+        }
+        progressBar.setVisibility(View.GONE);
+        if (resource.status == Resource.Status.SUCCESS) {
+            // The ride stays active, so we don't close the screen; instead leave a persistent
+            // confirmation in place of the button so it can't be pressed twice.
+            panicButton.setText(R.string.hor_panic_sent);
+            panicButton.setEnabled(false);
+            Toast.makeText(this, R.string.hor_panic_success, Toast.LENGTH_LONG).show();
+        } else {
+            // Failed (already raised, not active anymore, network, ...): let the user retry.
+            panicButton.setEnabled(true);
             Toast.makeText(this, resource.message, Toast.LENGTH_LONG).show();
         }
     }

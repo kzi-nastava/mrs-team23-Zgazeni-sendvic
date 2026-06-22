@@ -7,4 +7,11 @@
         The project is graded on both phone and tablet.
     -->
     <dimen name="auth_card_max_width">480dp</dimen>
+
+    <!--
+        Horizontal padding for the ride-detail content column. On phones the content fills the
+        width (16dp); on tablets (values-sw600dp) it gets wide side margins so the buttons and
+        text don't stretch edge to edge. Graded on both phone and tablet.
+    -->
+    <dimen name="hor_detail_h_padding">16dp</dimen>
 </resources>
