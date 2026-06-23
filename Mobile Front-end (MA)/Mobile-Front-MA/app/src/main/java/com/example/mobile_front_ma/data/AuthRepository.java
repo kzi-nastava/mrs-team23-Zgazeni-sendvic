@@ -93,12 +93,39 @@ public class AuthRepository {
 
     /**
      * Log the current user out. Goes through the authenticated client so the backend
-     * can identify the user from the JWT. On error we surface the backend message
-     * (e.g. a driver who is still available must go inactive first).
+     * can identify the user from the JWT and (for an active driver) flip them inactive.
+     *
+     * Local logout must be unconditional: the user can never be trapped in a session
+     * they can't leave. So the server call is best-effort and we report success in
+     * every case EXCEPT the one legitimate business veto -- HTTP 400, which the backend
+     * returns only for a still-available driver who must go inactive first. Everything
+     * else (expired/invalid JWT -> the backend's permitAll path returns 200 anyway,
+     * 401/403, 5xx, or an unreachable server) still clears the local session.
+     * See LOGOUT_RESILIENCE.md for the full rationale and truth table.
      */
     public void logout(Context context, ApiCallback<Void> callback) {
         AuthApi authApi = ApiClient.createAuthenticated(context, AuthApi.class);
-        authApi.logout().enqueue(simpleCallback(callback));
+        authApi.logout().enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponseBody> call,
+                                   @NonNull Response<ResponseBody> response) {
+                if (response.isSuccessful() || response.code() != 400) {
+                    // 2xx, or a failure unrelated to the business rule (expired/401,
+                    // 403, 5xx): log out locally anyway -- never trap the user.
+                    callback.onSuccess(null);
+                } else {
+                    // The one real block: an available driver must go inactive first
+                    // (backend returns 400 + a human-readable reason).
+                    callback.onError(codeErrorMessage(response));
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                // Server unreachable: still clear the local session so logout works.
+                callback.onSuccess(null);
+            }
+        });
     }
 
     /**
