@@ -148,9 +148,13 @@ public class MainActivity extends AppCompatActivity
         new RideRepository(this).panicRide(DummyRide.RIDE_ID, new ApiCallback<PanicResponse>() {
             @Override
             public void onSuccess(PanicResponse data) {
-                // Leave a persistent confirmation in place of the button so it can't be pressed twice.
                 raisePanicButton.setText(R.string.hor_panic_sent);
                 Toast.makeText(MainActivity.this, R.string.hor_panic_success, Toast.LENGTH_LONG).show();
+                // Reset the button after 3 seconds so it can be pressed again.
+                raisePanicButton.postDelayed(() -> {
+                    raisePanicButton.setEnabled(true);
+                    raisePanicButton.setText(R.string.hor_panic_button);
+                }, 3000);
             }
 
             @Override
