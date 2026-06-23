@@ -57,7 +57,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingLeft="@dimen/hor_detail_h_padding"
+            android:paddingTop="16dp"
+            android:paddingRight="@dimen/hor_detail_h_padding"
+            android:paddingBottom="16dp">
 
             <!-- Re-order the same route (spec 2.9.1 / 2.9.3) -->
             <LinearLayout

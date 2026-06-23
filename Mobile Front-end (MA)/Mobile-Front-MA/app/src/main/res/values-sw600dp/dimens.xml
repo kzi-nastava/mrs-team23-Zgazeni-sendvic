@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tablet (>= 600dp smallest width): keep the ride-detail content readable and centered
+         instead of stretching its buttons/text edge to edge. -->
+    <dimen name="hor_detail_h_padding">96dp</dimen>
+</resources>
