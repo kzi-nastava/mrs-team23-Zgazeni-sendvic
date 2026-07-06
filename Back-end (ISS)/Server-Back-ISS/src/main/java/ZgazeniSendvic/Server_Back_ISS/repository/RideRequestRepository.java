@@ -22,7 +22,5 @@ public interface RideRequestRepository extends JpaRepository<RideRequest, Long> 
         order by rr.id desc
     """)
     List<RideRequest> findTop10ByCreator_EmailOrderByIdDesc(String email);
-    RideRequest save(CreateRideRequestDTO dto);
-
 }
 

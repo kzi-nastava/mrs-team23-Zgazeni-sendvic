@@ -48,7 +48,7 @@ export class AuthService {
             if (response.user.role === 'DRIVER') {
               this.setDriverActive(true);
             }
-            
+
             // If admin, connect to panic notifications WebSocket immediately
             if (response.user.role === 'ADMIN') {
               this.connectAdminToWebSocket();
@@ -60,11 +60,13 @@ export class AuthService {
   }
 
   logout(): Observable<string> {
-    return this.http.post(`${this.apiUrl}/logout`, {}, { responseType: 'text' })
-      .pipe(
-        tap(response => console.log('Logout response:', response)),
-        catchError(this.handleError)
-      );
+    return this.http.post(
+        `${this.apiUrl}/logout`,
+        {},
+        { responseType: 'text' }
+    ).pipe(
+        tap(() => this.clearToken())
+    );
   }
 
   private connectAdminToWebSocket(): void {
@@ -192,7 +194,7 @@ export class AuthService {
         console.error('Failed to disconnect admin WebSocket:', err);
       });
     }
-    
+
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userIdKey);
     localStorage.removeItem(this.roleKey);
@@ -209,7 +211,29 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+
+    if (!token) {
+        return false;
+    }
+
+    if (this.isTokenExpired(token)) {
+        this.clearToken();
+        return false;
+    }
+
+    return true;
+  }
+
+  isTokenExpired(token: string): boolean {
+    const payload = this.decodeJwtPayload(token);
+
+    if (!payload || !payload['exp']) {
+        return true;
+    }
+
+    const expirationTime = Number(payload['exp']) * 1000;
+    return Date.now() >= expirationTime;
   }
 
   getCurrentUserId(): number | null {

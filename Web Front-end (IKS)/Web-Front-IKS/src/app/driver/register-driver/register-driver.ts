@@ -71,12 +71,13 @@ export class RegisterDriver implements OnInit {
         this.loadingVehicles = false;
         this.cdr.markForCheck();
       })
-    ).subscribe((list: any) => {
-      this.vehicles = (list ?? []).map((v: any) => ({
+    ).subscribe((list) => {
+      this.vehicles = list.map(v => ({
         id: Number(v.id),
         model: v.model,
-        licensePlate: v.licensePlate ?? v.registration ?? v.plate ?? ''
+        licensePlate: v.licensePlate
       }));
+
       this.cdr.markForCheck();
     });
   }

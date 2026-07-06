@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Map, VehiclePosition } from '../../map/map';
 import { RouteEstimationPanel } from '../../route-estimation-panel/route-estimation-panel';
-import { RouteEstimationService } from '../../service/route.estimation.serivce';
+import { RouteEstimationService } from '../../service/route.estimation.service';
 
 interface VehiclePositionsResponse {
   vehiclePositions: VehiclePosition[];
@@ -52,13 +52,17 @@ export class Home implements AfterViewInit {
       });
   }
 
-  private applyEstimatedRoute(path: number[][] | null): void {
-    if (!path || path.length < 2) {
+  private applyEstimatedRoute(path: (number | undefined)[][] | null): void {
+    const valid = path?.filter(
+      (p) => Array.isArray(p) && p.length >= 2 && p[0] != null && p[1] != null
+    ) as number[][] | undefined;
+
+    if (!valid || valid.length < 2) {
       this.mapComponent?.setRouteLine(null);
       return;
     }
 
-    const latLngs = path.map(([lng, lat]) => [lat, lng] as [number, number]);
+    const latLngs = valid.map(([lng, lat]) => [lat as number, lng as number] as [number, number]);
     this.mapComponent?.setRouteLine(latLngs);
     this.mapComponent?.fitToBounds(latLngs);
   }

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -54,7 +55,7 @@ public class RideRequestServiceImpl implements IRideRequestService {
 
         RideRequest rr = new RideRequest();
         rr.setCreator(creator);
-        rr.setLocations(dto.getLocations());
+        rr.setLocations(new ArrayList<>(dto.getLocations()));
         rr.setVehicleType(dto.getVehicleType());
         rr.setBabiesAllowed(dto.isBabiesAllowed());
         rr.setPetsAllowed(dto.isPetsAllowed());

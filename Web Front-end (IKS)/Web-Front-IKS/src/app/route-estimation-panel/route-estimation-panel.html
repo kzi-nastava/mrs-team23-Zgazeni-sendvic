@@ -10,12 +10,7 @@
       <mat-label>Starting Location</mat-label>
       <input
         matInput
-        [ngModel]="beginningDestination()"
         (ngModelChange)="onBeginningInput($event)"
-        [matAutocomplete]="startAuto"
-        (focus)="onBeginningFocus()"
-        (blur)="onInputBlur()"
-        #startTrigger="matAutocompleteTrigger"
       />
       <mat-autocomplete
         #startAuto="matAutocomplete"
@@ -33,12 +28,7 @@
       <mat-label>Ending Location</mat-label>
       <input
         matInput
-        [ngModel]="endingDestination()"
         (ngModelChange)="onEndingInput($event)"
-        [matAutocomplete]="endAuto"
-        (focus)="onEndingFocus()"
-        (blur)="onInputBlur()"
-        #endTrigger="matAutocompleteTrigger"
       />
       <mat-autocomplete
         #endAuto="matAutocomplete"

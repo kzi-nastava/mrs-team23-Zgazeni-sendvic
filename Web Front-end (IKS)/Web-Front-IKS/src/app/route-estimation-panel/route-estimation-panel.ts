@@ -11,9 +11,16 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { RouteEstimationService, RouteResult } from '../service/route.estimation.serivce';
+import { RouteEstimationFacade } from '../service/route-estimation.facade';
+import { RouteResult, RouteEstimationService } from '../service/route.estimation.service';
 import { switchMap } from 'rxjs/operators';
 
+export interface NominatimSuggestion {
+  place_id: number;
+  display_name: string;
+  lat: string;
+  lon: string;
+}
 
 @Component({
   selector: 'app-route-estimation-panel',
@@ -37,9 +44,10 @@ export class RouteEstimationPanel {
 
   estimatedTime = signal<number | null>(null);
   panelVisible = signal<boolean>(true);
-  beginningDestination = signal<string>('');
-  endingDestination = signal<string>('');
   errorMessage = signal<string | null>(null);
+
+  beginningLocation: RoutePoint | null = null;
+  endingLocation: RoutePoint | null = null;
 
   beginningSuggestions: NominatimSuggestion[] = [];
   endingSuggestions: NominatimSuggestion[] = [];
@@ -49,122 +57,74 @@ export class RouteEstimationPanel {
   private endingTimeoutId: number | null = null;
   private lastBeginningQueryId = 0;
   private lastEndingQueryId = 0;
-  private readonly noviSadBounds = {
-    minLon: 19.70,
-    minLat: 45.18,
-    maxLon: 19.98,
-    maxLat: 45.36,
-  };
+
   private activeField: 'beginning' | 'ending' | null = null;
 
   constructor(
+    private routeFacade: RouteEstimationFacade,
     private routeEstimationService: RouteEstimationService,
     private http: HttpClient
   ) {}
 
-  onBeginningInput(value: string) {
-    this.beginningDestination.set(value);
-    this.scheduleSuggestions(value, 'beginning');
-    if (this.beginningSuggestions.length > 0) {
-      this.togglePanel(this.startTrigger, true);
-    }
+  onBeginningInput(value: Event) {
+    this.scheduleSuggestions((value.target as HTMLInputElement).value, 'beginning');
   }
 
-  onEndingInput(value: string) {
-    this.endingDestination.set(value);
-    this.scheduleSuggestions(value, 'ending');
-    if (this.endingSuggestions.length > 0) {
-      this.togglePanel(this.endTrigger, true);
-    }
+  onEndingInput(value: Event) {
+    this.scheduleSuggestions((value.target as HTMLInputElement).value, 'ending');
   }
 
-  onBeginningFocus() {
-    this.activeField = 'beginning';
-    if (this.beginningSuggestions.length > 0) {
-      this.togglePanel(this.startTrigger, true);
-    }
-  }
-
-  onEndingFocus() {
-    this.activeField = 'ending';
-    if (this.endingSuggestions.length > 0) {
-      this.togglePanel(this.endTrigger, true);
-    }
-  }
-
-  onInputBlur() {
-    this.activeField = null;
-  }
-
-  onBeginningOptionSelected(value: string) {
-    this.beginningDestination.set(value);
+  onBeginningOptionSelected(s: NominatimSuggestion) {
+    this.beginningLocation = {
+      lat: Number(s.lat),
+      lon: Number(s.lon),
+      label: s.display_name
+    };
     this.beginningSuggestions = [];
   }
 
-  onEndingOptionSelected(value: string) {
-    this.endingDestination.set(value);
+  onEndingOptionSelected(s: NominatimSuggestion) {
+    this.endingLocation = {
+      lat: Number(s.lat),
+      lon: Number(s.lon),
+      label: s.display_name
+    };
     this.endingSuggestions = [];
   }
 
   estimateRoute() {
-    this.estimatedTime.set(null);
-    this.routeEstimationService.setRoutePath(null);
-    const beginning = this.beginningDestination();
-    const ending = this.endingDestination();
-
-    if (!beginning || !ending) {
-      this.errorMessage.set('Both destinations must be chosen.');
+    if (!this.beginningLocation || !this.endingLocation) {
+      this.errorMessage.set('Both locations must be selected.');
       return;
     }
 
-    this.errorMessage.set(null);
+    const points = [
+      this.beginningLocation,
+      this.endingLocation
+    ];
 
-    this.routeEstimationService.geocode(beginning)
-      .pipe(
-        switchMap((start) => {
-          if (!start) {
-            throw new Error('Start not found');
-          }
-          return this.routeEstimationService.geocode(ending).pipe(
-            switchMap((end) => {
-              if (!end) {
-                throw new Error('End not found');
-              }
-              return this.routeEstimationService.getRoute(start, end);
-            })
-          );
-        })
-      )
+    this.routeFacade.estimateRouteByCoords(points)
       .subscribe({
-        next: (route: RouteResult) => {
+        next: (route) => {
+
+          // convert seconds → minutes
           this.estimatedTime.set(Math.ceil(route.durationSeconds / 60));
-          this.routeEstimationService.setRoutePath(route.pathCoordinates ?? null);
-          this.errorMessage.set(null);
+
+          // push full polyline
+          this.routeEstimationService.setRoutePath(route.coordinates);
         },
-        error: (error) => {
-          console.error('Error estimating route:', error);
-          this.errorMessage.set('Please enter appropriate destinations.');
-          this.estimatedTime.set(null);
-          this.routeEstimationService.setRoutePath(null);
+        error: () => {
+          this.errorMessage.set('Route calculation failed.');
         }
       });
   }
 
   private scheduleSuggestions(query: string, type: 'beginning' | 'ending') {
     const trimmed = query.trim();
-    if (type === 'beginning' && this.beginningTimeoutId) {
-      clearTimeout(this.beginningTimeoutId);
-    }
-    if (type === 'ending' && this.endingTimeoutId) {
-      clearTimeout(this.endingTimeoutId);
-    }
 
     if (trimmed.length < 3) {
-      if (type === 'beginning') {
-        this.beginningSuggestions = [];
-      } else {
-        this.endingSuggestions = [];
-      }
+      if (type === 'beginning') this.beginningSuggestions = [];
+      else this.endingSuggestions = [];
       return;
     }
 
@@ -172,71 +132,48 @@ export class RouteEstimationPanel {
       this.loadSuggestions(trimmed, type);
     }, this.suggestionDelayMs);
 
-    if (type === 'beginning') {
-      this.beginningTimeoutId = timeoutId;
-    } else {
-      this.endingTimeoutId = timeoutId;
-    }
+    if (type === 'beginning') this.beginningTimeoutId = timeoutId;
+    else this.endingTimeoutId = timeoutId;
   }
 
   private loadSuggestions(query: string, type: 'beginning' | 'ending') {
-    const queryId = type === 'beginning' ? ++this.lastBeginningQueryId : ++this.lastEndingQueryId;
-    const { minLon, minLat, maxLon, maxLat } = this.noviSadBounds;
-    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=6&viewbox=${minLon},${maxLat},${maxLon},${minLat}&bounded=1&countrycodes=rs&addressdetails=1`;
+    const queryId =
+      type === 'beginning'
+        ? ++this.lastBeginningQueryId
+        : ++this.lastEndingQueryId;
+
+    const url =
+      `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=6`;
 
     this.http.get<NominatimSuggestion[]>(url)
       .pipe(catchError(() => of([])))
-      .subscribe((results) => {
+      .subscribe(results => {
         if (type === 'beginning' && queryId === this.lastBeginningQueryId) {
           this.beginningSuggestions = results;
-          if (this.activeField === 'beginning') {
-            this.togglePanel(this.startTrigger, results.length > 0);
-          }
         }
+
         if (type === 'ending' && queryId === this.lastEndingQueryId) {
           this.endingSuggestions = results;
-          if (this.activeField === 'ending') {
-            this.togglePanel(this.endTrigger, results.length > 0);
-          }
         }
       });
   }
 
-  private togglePanel(trigger: MatAutocompleteTrigger | undefined, shouldOpen: boolean) {
-    if (!trigger) {
-      return;
-    }
-
-    if (shouldOpen && !trigger.panelOpen) {
-      trigger.openPanel();
-    } else if (!shouldOpen && trigger.panelOpen) {
-      trigger.closePanel();
-    }
+  togglePanel(trigger: MatAutocompleteTrigger | undefined, open: boolean) {
+    if (!trigger) return;
+    open ? trigger.openPanel() : trigger.closePanel();
   }
 
   togglePanelVisibility() {
     this.panelVisible.set(!this.panelVisible());
   }
 
-  onCancel() {
-    console.log('Cancel clicked');
-    // Handle cancel action
-  }
-
-  onStop() {
-    console.log('Stop clicked');
-    // Handle stop action
-  }
-
-  onPanic() {
-    console.log('PANIC clicked');
-    // Handle panic action
-  }
+  onCancel() {}
+  onStop() {}
+  onPanic() {}
 }
 
-interface NominatimSuggestion {
-  place_id: number;
-  display_name: string;
-  lat: string;
-  lon: string;
+interface RoutePoint {
+  lat: number;
+  lon: number;
+  label: string;
 }

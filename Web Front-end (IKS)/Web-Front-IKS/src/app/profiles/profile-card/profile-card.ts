@@ -80,7 +80,7 @@ export class ProfileCard implements OnInit, OnDestroy {
     }
   }
 
-  getRouteLink(): string | null {
+  getHistoryRouteLink(): string | null {
     switch (this.variant) {
       case 'admin': return '/hor-admin';
       case 'driver': return '/hor-driver';

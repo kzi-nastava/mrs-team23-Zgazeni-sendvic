@@ -2,10 +2,12 @@ package ZgazeniSendvic.Server_Back_ISS.dto;
 
 import ZgazeniSendvic.Server_Back_ISS.model.Vehicle;
 import ZgazeniSendvic.Server_Back_ISS.model.VehicleType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record VehicleDTO(
         Long id,
         String model,
+        @JsonProperty("licensePlate")
         String registration,
         VehicleType type,
         int numOfSeats,

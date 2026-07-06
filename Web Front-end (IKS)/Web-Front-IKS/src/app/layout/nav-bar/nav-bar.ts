@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../service/auth.service';
 import { DriverService } from '../../service/driver.service';
-import { RouteEstimationService } from '../../service/route.estimation.serivce';
+import { RouteEstimationService } from '../../service/route.estimation.service';
 import { HttpClient } from '@angular/common/http';
 
 @Component({

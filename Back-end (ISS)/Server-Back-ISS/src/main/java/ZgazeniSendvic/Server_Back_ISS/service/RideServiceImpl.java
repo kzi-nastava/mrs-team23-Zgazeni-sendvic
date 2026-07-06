@@ -24,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -112,13 +113,123 @@ public class RideServiceImpl implements IRideService {
 
         ride.setDriver(driver);
         ride.setCreator(request.getCreator());
-        ride.setPassengers(request.getInvitedPassengers());
-        ride.setLocations(request.getLocations());
+        ride.setPassengers(new ArrayList<>(request.getInvitedPassengers()));
+        ride.setLocations(new ArrayList<>(request.getLocations()));
         ride.setScheduledTime(request.getScheduledTime());
         ride.setTotalPrice(request.getEstimatedPrice());
         ride.setStatus(RideStatus.SCHEDULED);
 
         return allRides.save(ride);
+    }
+
+    @Override
+    public RideReportDTO generateReport(
+            Long userId,
+            LocalDateTime from,
+            LocalDateTime to
+    ) {
+
+        List<Ride> rides;
+
+        if (from == null || to == null) {
+
+            rides = rideRepo.findAllByPassengers_Id(userId);
+
+        } else {
+
+            rides = rideRepo.findAllByPassengers_IdAndStartTimeBetween(
+                    userId,
+                    from,
+                    to.plusDays(1)
+            );
+        }
+
+        List<RideReportItemDTO> rideDtos =
+                rides.stream()
+                        .map(this::mapRide)
+                        .toList();
+
+        RideSummaryDTO summary = createSummary(rides);
+
+        RideReportDTO report = new RideReportDTO();
+
+        report.setRides(rideDtos);
+        report.setSummary(summary);
+
+        return report;
+    }
+
+    private RideReportItemDTO mapRide(Ride ride) {
+
+        RideReportItemDTO dto = new RideReportItemDTO();
+
+        dto.setRideId(ride.getId());
+
+        dto.setStartTime(ride.getStartTime());
+
+        dto.setEndTime(ride.getEndTime());
+
+        dto.setDurationMinutes(
+                ride.getDurationMinutes()
+        );
+
+        dto.setStatus(
+                ride.getStatus()
+        );
+
+        dto.setTotalPrice(
+                ride.getTotalPrice()
+        );
+
+        dto.setDistanceKm(
+                ride.getDistanceKm()
+        );
+
+        if (ride.getDriver() != null) {
+            dto.setDriverName(
+                    ride.getDriver().getName()
+                            + " "
+                            + ride.getDriver().getLastName()
+            );
+        }
+
+        List<Location> locations = ride.getLocations();
+
+        if (!locations.isEmpty()) {
+            dto.setStartLocation(locations.get(0));
+            dto.setDestinationLocation(locations.get(locations.size() - 1));
+        }
+
+        return dto;
+    }
+
+    private RideSummaryDTO createSummary(List<Ride> rides) {
+
+        RideSummaryDTO dto = new RideSummaryDTO();
+
+        dto.setRideCount(
+                rides.size()
+        );
+
+        dto.setTotalDistanceKm(
+                rides.stream()
+                        .mapToDouble(Ride::calculateDistanceKm)
+                        .sum()
+        );
+
+        dto.setTotalPrice(
+                rides.stream()
+                        .mapToDouble(Ride::getTotalPrice)
+                        .sum()
+        );
+
+        dto.setTotalDurationMinutes(
+                rides.stream()
+                        .mapToLong(Ride::getDurationMinutes)
+                        .sum()
+        );
+
+        return dto;
     }
 
     //Sets canceler if there is one

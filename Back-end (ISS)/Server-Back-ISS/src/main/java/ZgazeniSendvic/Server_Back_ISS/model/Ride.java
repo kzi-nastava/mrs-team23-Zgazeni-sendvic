@@ -32,9 +32,13 @@ public class Ride {
     @ManyToMany
     private List<Account> passengers;
 
-    @Getter @Setter
     @ElementCollection
-    @OrderColumn
+    @CollectionTable(
+            name = "ride_locations",
+            joinColumns = @JoinColumn(name = "ride_id")
+    )
+    @OrderColumn(name = "idx")
+    @Getter @Setter
     private List<Location> locations;
 
     @Getter @Setter
@@ -127,6 +131,9 @@ public class Ride {
     @Getter @Setter
     private double totalPrice;
 
+    @Getter @Setter
+    private double distanceKm;
+
     public Ride(Long id, Driver driver, Account creator, List<Account> passengers, List<Location> locations,
                 double price, LocalDateTime startTime, LocalDateTime endTime, RideStatus status, boolean panic) {
         this.id = id;
@@ -171,7 +178,40 @@ public class Ride {
         return Duration.between(startTime, endTime).toMinutes();
     }
 
+    public double calculateDistanceKm() {
+        if (locations == null || locations.size() < 2) return 0;
 
+        double total = 0;
+
+        for (int i = 0; i < locations.size() - 1; i++) {
+            Location a = locations.get(i);
+            Location b = locations.get(i + 1);
+
+            total += haversine(
+                    a.getLatitude(), a.getLongitude(),
+                    b.getLatitude(), b.getLongitude()
+            );
+        }
+
+        return total;
+    }
+
+    private double haversine(double lat1, double lon1, double lat2, double lon2) {
+        final double R = 6371; // Earth radius in km
+
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        double a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                        Math.cos(Math.toRadians(lat1)) *
+                                Math.cos(Math.toRadians(lat2)) *
+                                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c;
+    }
 
     public boolean isThisPassenger(String email) {
         for (Account account : passengers) {

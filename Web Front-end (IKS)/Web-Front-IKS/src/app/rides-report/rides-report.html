@@ -1,0 +1,167 @@
+<div class="page">
+  <mat-card class="card">
+
+    <h2 class="title">Ride Reports</h2>
+
+    <!-- FILTERS -->
+    <div class="filters">
+
+      <mat-form-field appearance="fill">
+        <mat-label>From</mat-label>
+        <input matInput [matDatepicker]="fromPicker" [(ngModel)]="fromDate">
+        <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+        <mat-datepicker #fromPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>To</mat-label>
+        <input matInput [matDatepicker]="toPicker" [(ngModel)]="toDate">
+        <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+        <mat-datepicker #toPicker></mat-datepicker>
+      </mat-form-field>
+
+      <div class="filter-actions">
+        <button mat-raised-button color="primary" (click)="applyFilters()">Apply</button>
+        <button mat-button (click)="clearFilters()">Clear</button>
+      </div>
+
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="summary">
+
+      <div class="summary-card">
+        <div class="label">Total Rides</div>
+        <div class="value">{{ totalRides }}</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Total Distance</div>
+        <div class="value">{{ totalDistance | number:'1.1-1' }} km</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Revenue</div>
+        <div class="value">€ {{ totalRevenue | number:'1.2-2' }}</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Avg Duration</div>
+        <div class="value">{{ avgDuration | number:'1.0-0' }} min</div>
+      </div>
+
+    </div>
+
+    <!-- TABLE -->
+    <div class="list">
+
+      <div class="row header">
+        <div>ID / Driver</div>
+        <div>Distance</div>
+        <div>Duration</div>
+        <div>Price</div>
+        <div>Status</div>
+      </div>
+
+      <div class="row" *ngFor="let r of rides()">
+
+        <div class="info">
+          <div class="email">Ride #{{ r.rideId }}</div>
+          <div class="meta">{{ r.driverName }}</div>
+        </div>
+
+        <div>{{ r.distanceKm }} km</div>
+        <div>{{ r.durationMinutes }} min</div>
+        <div>€ {{ r.totalPrice }}</div>
+
+        <div>
+          <span class="status" [class.banned]="r.status === 'CANCELED'">
+            {{ r.status }}
+          </span>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="charts">
+
+        <div class="chart-box">
+            <h3>Distance per Ride</h3>
+
+            <canvas id="distanceChart"></canvas>
+
+            <!--
+            REAL CHART (Chart.js + ngx-charts alternative)
+
+            1. Install:
+                npm install chart.js
+
+            2. In your component TS:
+                import { Chart } from 'chart.js';
+
+            3. Add canvas:
+
+            done
+
+            4. Init in ngAfterViewInit():
+
+            new Chart('distanceChart', {
+                type: 'bar',
+                data: {
+                labels: this.distanceChartData.map(x => x.rideLabel),
+                datasets: [{
+                    label: 'Distance (km)',
+                    data: this.distanceChartData.map(x => x.distanceKm),
+                    backgroundColor: '#41A79D'
+                }]
+                },
+                options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true }
+                }
+                }
+            });
+
+            -->
+
+            <!-- fallback (debug only) -->
+            <pre>{{ distanceChartData | json }}</pre>
+        </div>
+
+        <div class="chart-box">
+            <h3>Revenue per Ride</h3>
+
+            <canvas id="revenueChart"></canvas>
+
+            <!--
+            REAL CHART (Chart.js)
+
+            new Chart('revenueChart', {
+                type: 'line',
+                data: {
+                labels: this.revenueChartData.map(x => x.rideLabel),
+                datasets: [{
+                    label: 'Revenue',
+                    data: this.revenueChartData.map(x => x.totalPrice),
+                    borderColor: '#E8E839',
+                    tension: 0.3,
+                    fill: false
+                }]
+                },
+                options: {
+                responsive: true
+                }
+            });
+
+            -->
+
+            <!-- fallback (debug only) -->
+            <pre>{{ revenueChartData | json }}</pre>
+        </div>
+
+    </div>
+
+  </mat-card>
+</div>

@@ -30,6 +30,10 @@ export class AccountService {
       );
   }
 
+  get currentAccount(): GetAccountDTO | null {
+    return this.accountSubject.value;
+  }
+
   // Force reload account from backend
   reloadAccount(): Observable<GetAccountDTO> {
     return this.http.get<GetAccountDTO>(`${this.apiUrl}/me`)
@@ -42,5 +46,5 @@ export class AccountService {
   updateAccount(dto: any) {
     return this.http.put(`${this.apiUrl}/me/change-request`, dto, { responseType: 'text' });
   }
-  
+
 }

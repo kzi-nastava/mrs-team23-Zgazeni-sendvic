@@ -10,6 +10,12 @@ public class DistanceCalculator {
 
     public double calculateDistanceKm(Location a, Location b) {
 
+        if (a == null || b == null ||
+                a.getLatitude() == null || a.getLongitude() == null ||
+                b.getLatitude() == null || b.getLongitude() == null) {
+            return Double.MAX_VALUE;
+        }
+
         double latDistance = Math.toRadians(b.getLatitude() - a.getLatitude());
         double lonDistance = Math.toRadians(b.getLongitude() - a.getLongitude());
 

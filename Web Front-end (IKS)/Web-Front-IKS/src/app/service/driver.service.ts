@@ -1,6 +1,9 @@
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { AuthService } from "./auth.service";
+import { Observable } from "rxjs";
+
+type VehicleView = { id: number; model: string; licensePlate: string };
 
 @Injectable({ providedIn: 'root' })
 export class DriverService {
@@ -18,8 +21,8 @@ private readonly apiUrl = 'http://localhost:8080/api/driver';
     return this.http.post(`${this.apiUrl}/vehicle`, data);
   }
 
-  getVehicles() {
-    return this.http.get(`${this.apiUrl}/vehicles`);
+  getVehicles(): Observable<VehicleView[]> {
+    return this.http.get<VehicleView[]>(`${this.apiUrl}/vehicles`);
   }
 
   getRideDecisionInfo(token: string) {

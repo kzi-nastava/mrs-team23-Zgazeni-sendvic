@@ -4,13 +4,19 @@ import {
   OnDestroy,
   Input,
   Output,
-  EventEmitter
+  EventEmitter,
+  effect
 } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import { RouteEstimationService } from '../service/route.estimation.service';
+import { HttpClient } from '@angular/common/http';
+import { map, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { OnChanges, SimpleChanges } from '@angular/core';
+const markerIcon = 'assets/app/marker-icon.png';
+const markerIcon2x = 'assets/app/marker-icon-2x.png';
+const markerShadow = 'assets/app/marker-shadow.png';
 
 // Fix for Leaflet marker icons not loading
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -19,6 +25,12 @@ L.Icon.Default.mergeOptions({
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
 });
+
+export interface MapClickResult {
+  lat: number;
+  lng: number;
+  label?: string;
+}
 
 export interface VehiclePosition {
   latitude: number;
@@ -43,9 +55,9 @@ export interface RouteMetrics {
   selector: 'app-map',
   standalone: true,
   templateUrl: './map.html',
-  styleUrl: './map.css'
+  styleUrls: ['./map.css']
 })
-export class Map implements AfterViewInit, OnDestroy {
+export class Map implements AfterViewInit, OnDestroy, OnChanges {
 
   // MODE CONTROL
   @Input() showMultipleVehicles: boolean = false;
@@ -54,8 +66,10 @@ export class Map implements AfterViewInit, OnDestroy {
   // ROUTE INPUTS (used when showMultipleVehicles = false)
   @Input() pickup?: L.LatLngTuple;
   @Input() destination?: L.LatLngTuple;
+  @Input() markers: L.LatLngTuple[] = [];
+  @Input() route: L.LatLngTuple[] | null = null;
 
-  @Output() mapClicked = new EventEmitter<{ lat: number; lng: number }>();
+  @Output() mapClick = new EventEmitter<{ lat: number; lng: number }>();
 
   private mapInstance: L.Map | null = null;
   private routingControl: any;
@@ -67,15 +81,37 @@ export class Map implements AfterViewInit, OnDestroy {
   private pendingVehicleMarkers: VehiclePosition[] | null = null;
   private pendingRideUpdate: RideMapUpdate | null = null;
   private pendingRouteLine: L.LatLngTuple[] | null = null;
+  private isMapReady = false;
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
 
   ngAfterViewInit(): void {
     this.initializeMap();
+    this.isMapReady = true;
 
     setTimeout(() => {
-      this.mapInstance?.invalidateSize();
-    }, 0);
+      this.mapInstance?.invalidateSize(true);
+      this.mapInstance?.setView(this.mapInstance.getCenter(), this.mapInstance.getZoom());
+    }, 100);
+  }
+
+  ngOnChanges(): void {
+    if (!this.isMapReady) return;
+    if (!this.rideLayer) return;
+
+    this.rideLayer.clearLayers();
+
+    if (this.pickup && this.pickup[0] !== 0 && this.pickup[1] !== 0) {
+      L.marker(this.pickup).addTo(this.rideLayer);
+    }
+
+    if (this.destination && this.destination[0] !== 0 && this.destination[1] !== 0) {
+      L.marker(this.destination).addTo(this.rideLayer);
+    }
+
+    if (this.route && this.route.length > 1) {
+      this.setRouteLine(this.route);
+    }
   }
 
   ngOnDestroy(): void {
@@ -94,8 +130,8 @@ export class Map implements AfterViewInit, OnDestroy {
       zoomControl: false
     });
 
-    this.mapInstance.on('click', (e: L.LeafletMouseEvent) => {
-      this.mapClicked.emit({
+    this.mapInstance.on('click', (e) => {
+      this.mapClick.emit({
         lat: e.latlng.lat,
         lng: e.latlng.lng
       });
@@ -125,6 +161,16 @@ export class Map implements AfterViewInit, OnDestroy {
       this.setRouteLineInternal(this.pendingRouteLine);
       this.pendingRouteLine = null;
     }
+  }
+
+  private reverseGeocode(lat: number, lon: number) {
+    const url =
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+
+    return this.http.get<any>(url).pipe(
+      map(res => res?.display_name ?? null),
+      catchError(() => of(null))
+    );
   }
 
   setVehicleMarkers(vehicles: VehiclePosition[]): void {
@@ -219,47 +265,6 @@ export class Map implements AfterViewInit, OnDestroy {
           .bindPopup('Destination');
       } else {
         this.destinationMarker.setLatLng(update.destination);
-      }
-
-      const routing = (L as any).Routing;
-      if (routing && this.mapInstance) {
-        if (!this.routingControl) {
-          this.routingControl = routing.control({
-            waypoints: [
-              L.latLng(update.current[0], update.current[1]),
-              L.latLng(update.destination[0], update.destination[1]),
-            ],
-            lineOptions: {
-              styles: [{ color: '#1976d2', weight: 4 }],
-              extendToWaypoints: true,
-            },
-            addWaypoints: false,
-            draggableWaypoints: false,
-            fitSelectedRoutes: false,
-            show: false,
-            createMarker: () => null,
-          }).addTo(this.mapInstance);
-
-          this.routingControl.on('routesfound', (event: any) => {
-            const route = event?.routes?.[0];
-            if (route?.summary?.totalDistance) {
-              this.routeMetrics.emit({
-                distanceMeters: route.summary.totalDistance,
-                durationSeconds: route.summary.totalTime,
-              });
-            }
-          });
-        } else {
-          this.routingControl.setWaypoints([
-            L.latLng(update.current[0], update.current[1]),
-            L.latLng(update.destination[0], update.destination[1]),
-          ]);
-        }
-
-        if (this.routeLine) {
-          this.rideLayer.removeLayer(this.routeLine);
-          this.routeLine = null;
-        }
       }
     } else if (this.routingControl && this.mapInstance) {
       this.mapInstance.removeControl(this.routingControl);

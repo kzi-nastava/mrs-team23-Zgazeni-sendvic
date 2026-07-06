@@ -89,7 +89,7 @@ public class DriverAssignmentService {
 
         // Free drivers first
         List<Driver> freeDrivers = drivers.stream()
-                .filter(Driver::isBusy)
+                .filter(d -> !d.isBusy())
                 .toList();
 
         if (!freeDrivers.isEmpty()) {
@@ -127,7 +127,7 @@ public class DriverAssignmentService {
 
         // Scheduled rides can use free drivers first
         List<Driver> freeDrivers = drivers.stream()
-                .filter(Driver::isBusy)
+                .filter(d -> !d.isBusy())
                 .toList();
 
         if (!freeDrivers.isEmpty()) {

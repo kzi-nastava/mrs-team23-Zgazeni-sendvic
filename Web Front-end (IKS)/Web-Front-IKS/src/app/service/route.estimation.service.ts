@@ -9,7 +9,9 @@ import { catchError, map } from 'rxjs/operators';
 })
 export class RouteEstimationService {
   showEstimationPanel = signal(false);
-  routePath = signal<number[][] | null>(null); //for storing route path coordinates
+  private routePathSignal = signal<L.LatLngTuple[] | null>(null);
+
+  routePath = this.routePathSignal.asReadonly(); //for storing route path coordinates
   private readonly noviSadBounds = {
     minLon: 19.70,
     minLat: 45.18,
@@ -35,23 +37,52 @@ export class RouteEstimationService {
     );
   }
 
-  getRoute(start: LatLng, end: LatLng): Observable<RouteResult> {
-    const coords = `${start.lon},${start.lat};${end.lon},${end.lat}`;
-    const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
+  getRoute(points: LatLng[]): Observable<RouteResult> {
+    const coords = points
+      .map(p => `${p.lon},${p.lat}`)
+      .join(';');
+
+    const url =
+      `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
 
     return this.http.get<OsrmRouteResponse>(url).pipe(
-      map((response) => {
-        const route = response?.routes?.[0];
-        if (!route) {
-          throw new Error('No route returned');
-        }
+      map(res => {
+        const route = res.routes[0];
+
+        const coordinates = route.geometry.coordinates.map(
+          ([lng, lat]) => [lat, lng] as [number, number]
+        );
+
         return {
           distanceMeters: route.distance,
           durationSeconds: route.duration,
-          pathCoordinates: route.geometry.coordinates,
+          coordinates
         };
-      }),
-      catchError(this.handleError)
+      })
+    );
+  }
+
+  getRouteMulti(points: LatLng[]): Observable<RouteResult> {
+    const coords = points
+      .map(p => `${p.lon},${p.lat}`)
+      .join(';');
+
+    const url =
+      `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
+
+    return this.http.get<OsrmRouteResponse>(url).pipe(
+      map(res => {
+        const route = res.routes[0];
+
+        const path = route.geometry.coordinates
+          .map(([lng, lat]) => [lat, lng] as [number, number]);
+
+        return {
+          distanceMeters: route.distance,
+          durationSeconds: route.duration,
+          coordinates: path
+        };
+      })
     );
   }
 
@@ -63,9 +94,8 @@ export class RouteEstimationService {
     this.showEstimationPanel.set(false);
   }
 
-  setRoutePath(path: number[][] | null) {
-    this.routePath.set(path);
-    //console.log('Route path set to:', path);
+  setRoutePath(path: L.LatLngTuple[] | null) {
+    this.routePathSignal.set(path);
   }
 
 
@@ -78,6 +108,8 @@ export class RouteEstimationService {
 }
 
 interface NominatimSuggestion {
+  place_id: number;
+  display_name: string;
   lat: string;
   lon: string;
 }
@@ -100,5 +132,5 @@ interface OsrmRouteResponse {
 export interface RouteResult {
   distanceMeters: number;
   durationSeconds: number;
-  pathCoordinates: number[][];
+  coordinates: [number, number][];
 }

@@ -1,10 +1,9 @@
 package ZgazeniSendvic.Server_Back_ISS.controller;
 
-import ZgazeniSendvic.Server_Back_ISS.dto.ARideDetailsRequestedDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.ARideRequestedDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.ARideRequestedUserDTO;
-import ZgazeniSendvic.Server_Back_ISS.dto.URideDetailsRequestedDTO;
+import ZgazeniSendvic.Server_Back_ISS.dto.*;
+import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.service.HistoryOfRidesService;
+import ZgazeniSendvic.Server_Back_ISS.service.IRideService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -13,11 +12,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @RestController
@@ -28,6 +30,8 @@ public class HORController {
     @Autowired
     HistoryOfRidesService historyOfRidesService;
 
+    @Autowired
+    IRideService rideService;
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/admin/{targetID}",
@@ -94,4 +98,26 @@ public class HORController {
 
     }
 
+    @GetMapping("/report")
+    public ResponseEntity<RideReportDTO> report(
+
+            @AuthenticationPrincipal Account account,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDateTime from,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDateTime to
+    ) {
+
+        System.out.println("Entered report endpoint");
+
+        RideReportDTO dto = rideService.generateReport(account.getId(), from, to);
+
+        System.out.println("Ride report generated");
+
+        return ResponseEntity.ok(dto);
+    }
 }

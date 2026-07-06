@@ -7,7 +7,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = authService.getToken();
 
   if (!token) {
-    return next(req);
+      return next(req);
+  }
+
+  if (authService.isTokenExpired(token)) {
+      authService.clearToken();
+      return next(req);
   }
 
   const isApiRequest = req.url.startsWith('http://localhost:8080') || req.url.startsWith('/api/');

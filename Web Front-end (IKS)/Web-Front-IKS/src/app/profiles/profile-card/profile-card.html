@@ -1,7 +1,7 @@
 <div class="card">
   <div class="image-wrapper">
     <img [src]="profileImage || 'assets/profiles/profile-placeholder.jpg'" alt="Profile" />
-    
+
     <button class="edit-btn" (click)="onEditClick()">
       <img src="assets/profiles/pencil-edit-button.svg" alt="Edit Profile" />
     </button>
@@ -41,8 +41,17 @@
   </div>
 
   <div class="action-buttons">
-    <button class="hor-action-btn" [routerLink]="getRouteLink()" *ngIf="variant">
-      <p>History of rides</p>
+    <button
+      class="hor-action-btn"
+      [routerLink]="'/rides-report'">
+      <p>Ride report</p>
+    </button>
+
+    <button
+      class="hor-action-btn"
+      [routerLink]="getHistoryRouteLink()"
+      *ngIf="variant === 'user'">
+      <p>Ride history</p>
     </button>
 
     <button

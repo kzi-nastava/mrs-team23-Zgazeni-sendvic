@@ -1,38 +1,43 @@
 .ride-page {
   position: relative;
   width: 100%;
-  height: 100%; /* fill parent, which now has real height */
+  height: 100vh;
+  overflow: hidden;
 }
 
+/* Map becomes true background */
 .ride-map {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: 100%; /* fills container */
+  height: 100%;
+  z-index: 1;
 }
 
+/* Floating card overlay */
 .ride-card {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  width: 320px;
-  max-height: 90%;
+  top: 24px;
+  right: 24px;
+  width: 420px;
+  max-height: calc(100vh - 48px);
   overflow-y: auto;
-  background-color: rgba(255,255,255,0.95);
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  z-index: 1000;
+
+  z-index: 10;
+
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.85);
 }
 
-
-
-/* Optional: small spacing for stops */
-.location-item {
-  margin-bottom: 10px;
+.ride-page {
+  isolation: isolate;
 }
 
-/* Button styling */
-button {
-  margin-top: 10px;
-  padding: 6px 12px;
-  cursor: pointer;
+.location-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }

@@ -1,6 +1,7 @@
 package ZgazeniSendvic.Server_Back_ISS.repository;
 
 
+import ZgazeniSendvic.Server_Back_ISS.dto.RideReportDTO;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Driver;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
@@ -56,6 +57,13 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
             Pageable pageable
     );
 
+    List<Ride> findAllByPassengers_Id(Long passengerId);
+
+    List<Ride> findAllByPassengers_IdAndStartTimeBetween(
+            Long passengerId,
+            LocalDateTime from,
+            LocalDateTime to
+    );
 }
 
 

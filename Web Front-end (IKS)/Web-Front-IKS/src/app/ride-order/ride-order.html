@@ -6,7 +6,8 @@
     [showMultipleVehicles]="false"
     [pickup]="pickupCoords"
     [destination]="destinationCoords"
-    (mapClicked)="handleMapClick($event)">
+    [route]="routePath()"
+    (mapClick)="onMapClick($any($event))">
   </app-map>
 
   <!-- FLOATING FORM CARD -->
@@ -17,15 +18,35 @@
 
       <!-- Stops -->
       <h3>Stops</h3>
+
       <div formArrayName="locations">
-        <div *ngFor="let loc of locations.controls; let i = index"
-             [formGroupName]="i"
-             class="location-item">
-          <input formControlName="address"
-                 placeholder="Select on map or enter manually" />
+        <div
+          *ngFor="let loc of locations.controls; let i = index"
+          [formGroupName]="i"
+          class="location-item"
+        >
+          <div class="location-row">
+
+            <input
+              formControlName="address"
+              placeholder="Choose on map..."
+              readonly
+            />
+
+            <button type="button" (click)="selectLocationOnMap(i)">
+              📍
+            </button>
+
+            <button
+              *ngIf="i > 0 && i < locations.length - 1"
+              type="button"
+              (click)="removeLocation(i)">
+              ✖
+            </button>
+
+          </div>
         </div>
       </div>
-
       <!-- Add Stop Button -->
       <button type="button" (click)="addLocation()">Add Stop</button>
 
@@ -59,4 +80,3 @@
   </div>
 
 </div>
-
