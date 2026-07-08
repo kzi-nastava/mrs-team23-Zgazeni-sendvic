@@ -5,23 +5,6 @@ export interface Location {
   longitude: number;
 }
 
-export interface RideReportItemDTO {
-  rideId: number;
-  startTime: string;
-  endTime: string;
-
-  driverName: string;
-
-  startLocation: Location;
-  destinationLocation: Location;
-
-  distanceKm: number;
-  durationMinutes: number;
-  totalPrice: number;
-
-  status: RideStatus;
-}
-
 export interface RideSummaryDTO {
   rideCount: number;
   totalDistanceKm: number;
@@ -29,7 +12,14 @@ export interface RideSummaryDTO {
   totalPrice: number;
 }
 
+export interface DailyRideReportDTO {
+  date: string;
+  rideCount: number;
+  distanceKm: number;
+  money: number;
+}
+
 export interface RideReportDTO {
-  rides: RideReportItemDTO[];
-  summary: RideSummaryDTO;
+    dailyReports: DailyRideReportDTO[];
+    summary: RideSummaryDTO;
 }

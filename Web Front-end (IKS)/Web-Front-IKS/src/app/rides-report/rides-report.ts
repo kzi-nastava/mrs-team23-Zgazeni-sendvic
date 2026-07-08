@@ -7,6 +7,21 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { BaseChartDirective } from 'ng2-charts';
+import {
+  Chart,
+  registerables,
+  ChartData,
+  ChartOptions
+} from 'chart.js';
+import { RideReportDTO, DailyRideReportDTO, RideSummaryDTO } from '../models/ride-report.model';
+import { RideReportService } from '../service/ride-report.service';
+import { AuthService } from '../service/auth.service';
+import { AccountService } from '../service/account.service';
+import { AccountAdminViewDTO } from '../models/account.dto';
+import { MatSelectModule } from '@angular/material/select';
+
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-rides-report',
@@ -20,7 +35,9 @@ import { MatNativeDateModule } from '@angular/material/core';
     MatButtonModule,
     MatDatepickerModule,
     MatNativeDateModule,
-  ],
+    BaseChartDirective,
+    MatSelectModule
+],
   templateUrl: './rides-report.html',
   styleUrl: './rides-report.css'
 })
@@ -31,59 +48,120 @@ export class RidesReport {
 
   loading = signal(false);
 
-  // ===== MOCK DATA (replace later with API) =====
-  rides = signal<any[]>([
-    {
-      rideId: 1,
-      startTime: new Date(),
-      driverName: 'John Doe',
-      distanceKm: 12.4,
-      durationMinutes: 22,
-      totalPrice: 9.5,
-      status: 'COMPLETED'
-    },
-    {
-      rideId: 2,
-      startTime: new Date(),
-      driverName: 'Jane Smith',
-      distanceKm: 5.2,
-      durationMinutes: 10,
-      totalPrice: 4.1,
-      status: 'COMPLETED'
-    },
-    {
-      rideId: 3,
-      startTime: new Date(),
-      driverName: 'Mike Johnson',
-      distanceKm: 18.7,
-      durationMinutes: 35,
-      totalPrice: 15.2,
-      status: 'CANCELED'
+  isAdmin = false;
+
+  selectedUserId:number|null = null;
+
+  constructor(
+    private reportService:RideReportService,
+    private authService:AuthService,
+    private accountService: AccountService
+  ){}
+
+  users: AccountAdminViewDTO[] = [];
+
+  dailyReports = signal<DailyRideReportDTO[]>([]);
+  summary: RideSummaryDTO | null = null;
+
+  ngOnInit() {
+    this.isAdmin =
+      this.authService.getRole() === 'ADMIN';
+
+    if (this.isAdmin) {
+        this.loadUsers();
     }
-  ]);
+    
+    this.loadReport();
+  }
+
+  private loadUsers() {
+
+    this.accountService
+        .getAllAccounts()
+        .subscribe({
+          next: page => {
+            this.users = page.content;
+          },
+          error: err => {
+            console.error(err);
+          }
+        });
+  }
+
+  loadReport(){
+
+    this.loading.set(true);
+
+    this.reportService.getReport()
+      .subscribe({
+
+        next: report => {
+
+          this.summary = report.summary;
+
+          this.dailyReports.set(report.dailyReports);
+
+          this.updateCharts();
+
+          this.loading.set(false);
+
+        },
+
+        error: err => {
+
+          console.error(err);
+
+          this.loading.set(false);
+
+        }
+
+      });
+  }
 
   // ===== SUMMARY (computed from rides) =====
   get totalRides() {
-    return this.rides().length;
+      return this.summary?.rideCount ?? 0;
   }
 
   get totalDistance() {
-    return this.rides().reduce((sum, r) => sum + r.distanceKm, 0);
+      return this.summary?.totalDistanceKm ?? 0;
   }
 
   get totalRevenue() {
-    return this.rides().reduce((sum, r) => sum + r.totalPrice, 0);
+      return this.summary?.totalPrice ?? 0;
   }
 
   get avgDuration() {
-    if (!this.rides().length) return 0;
-    return this.rides().reduce((sum, r) => sum + r.durationMinutes, 0) / this.rides().length;
+
+      if (!this.summary || this.summary.rideCount === 0)
+          return 0;
+
+      return this.summary.totalDurationMinutes /
+            this.summary.rideCount;
   }
 
   // ===== FILTER (mock behavior) =====
   applyFilters() {
-    // later: call backend
-    console.log('Filtering from', this.fromDate, 'to', this.toDate);
+    const from =
+        this.fromDate?.toISOString();
+
+    const to =
+        this.toDate?.toISOString();
+
+    this.loading.set(true);
+
+    this.reportService
+    .getReport(
+        from,
+        to,
+        this.selectedUserId ?? undefined
+    )
+    .subscribe(report => {
+        this.summary = report.summary;
+        this.dailyReports.set(report.dailyReports);
+        this.updateCharts();
+        this.loading.set(false);
+    });
   }
 
   clearFilters() {
@@ -92,23 +170,71 @@ export class RidesReport {
   }
 
   // ===== CHART DATA =====
-  get distanceChartData() {
-    return {
-      labels: this.rides().map(r => `Ride ${r.rideId}`),
-      datasets: [{
+  distanceChartData: ChartData<'bar'> = {
+    labels: [],
+    datasets: [
+      {
         label: 'Distance (km)',
-        data: this.rides().map(r => r.distanceKm)
-      }]
-    };
-  }
+        data: []
+      }
+    ]
+  };
 
-  get revenueChartData() {
-    return {
-      labels: this.rides().map(r => `Ride ${r.rideId}`),
-      datasets: [{
-        label: 'Revenue (€)',
-        data: this.rides().map(r => r.totalPrice)
-      }]
+  distanceChartOptions: ChartOptions<'bar'> = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true
+      }
+    }
+  };
+
+  revenueChartData: ChartData<'line'> = {
+    labels: [],
+    datasets: [
+      {
+        label: 'Price',
+        data: [],
+        tension: 0.3
+      }
+    ]
+  };
+
+  revenueChartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true
+      }
+    }
+  };
+
+  private updateCharts(){
+    const data = this.dailyReports();
+
+    this.distanceChartData = {
+        labels:
+          data.map(x => x.date),
+        datasets:[
+          {
+            label:'Distance (km)',
+            data:
+              data.map(x => x.distanceKm)
+          }
+        ]
+    };
+
+    this.revenueChartData = {
+        labels:
+          data.map(x => x.date),
+        datasets:[
+          {
+            label:'Price (RSD)',
+            data:
+              data.map(x => x.money),
+            tension:0.3
+          }
+        ]
     };
   }
 }

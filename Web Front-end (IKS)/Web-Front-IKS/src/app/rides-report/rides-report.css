@@ -25,8 +25,17 @@
 .filters {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 20px;
+  align-items: center;
+}
+
+.admin-filter {
+  margin-bottom: 20px;
+}
+
+.admin-filter mat-form-field {
+  width: 350px;
 }
 
 .filter-actions {
@@ -37,10 +46,11 @@
 
 /* summary cards */
 .summary {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
+  display:grid;
+  grid-template-columns:
+    repeat(auto-fit,minmax(180px,1fr));
+  gap:16px;
+  margin-bottom:24px;
 }
 
 .summary-card {
@@ -69,12 +79,18 @@
 }
 
 .row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-  padding: 12px;
-  border-radius: 14px;
-  background: white;
-  border: 1px solid rgba(0,0,0,0.1);
+  display:grid;
+  grid-template-columns:
+      2fr
+      1fr
+      1fr
+      1fr;
+  gap:12px;
+
+  padding:12px;
+  border-radius:14px;
+  background:white;
+  border:1px solid rgba(0,0,0,.1);
 }
 
 .row.header {
@@ -82,28 +98,24 @@
   background: #f3f3f3;
 }
 
-/* status */
-.status {
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  background: rgba(46,125,50,0.15);
-}
-
-.status.banned {
-  background: rgba(211,47,47,0.15);
-}
-
 /* charts */
 .charts {
-  margin-top: 20px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  margin-top:24px;
+  display:grid;
+  grid-template-columns:
+    repeat(auto-fit,minmax(350px,1fr));
+  gap:20px;
 }
 
 .chart-box {
-  background: white;
-  padding: 12px;
-  border-radius: 16px;
+  background:white;
+  padding:16px;
+  border-radius:16px;
+
+  height:420px;
+}
+
+.chart-box canvas {
+  width:100% !important;
+  height:330px !important;
 }

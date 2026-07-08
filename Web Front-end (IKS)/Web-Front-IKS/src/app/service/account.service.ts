@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, filter } from 'rxjs';
-import { GetAccountDTO } from '../models/account.dto';
+import { GetAccountDTO, AccountAdminViewDTO } from '../models/account.dto';
+import { Page } from '../models/page.dto';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {
@@ -32,6 +33,12 @@ export class AccountService {
 
   get currentAccount(): GetAccountDTO | null {
     return this.accountSubject.value;
+  }
+
+  getAllAccounts(): Observable<Page<AccountAdminViewDTO>> {
+    return this.http.get<Page<AccountAdminViewDTO>>(
+      `${this.apiUrl}/all?size=1000`
+    );
   }
 
   // Force reload account from backend

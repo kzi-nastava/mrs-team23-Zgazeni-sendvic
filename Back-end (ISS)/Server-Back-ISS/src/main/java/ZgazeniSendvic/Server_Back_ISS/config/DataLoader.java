@@ -42,7 +42,7 @@ public class DataLoader {
 
             // ============ CREATE ACCOUNTS ============
             Account accountA = new User();
-            accountA.setEmail("user1@gmail.com");
+            accountA.setEmail("marko28082004+user1@gmail.com");
             accountA.setPassword(passwordEncoder.encode("password123"));
             accountA.setName("John");
             accountA.setLastName("Doe");
@@ -52,7 +52,7 @@ public class DataLoader {
             accountA = accountRepository.save(accountA);
 
             Account accountB = new User();
-            accountB.setEmail("user2@gmail.com");
+            accountB.setEmail("marko28082004+user2@gmail.com");
             accountB.setPassword(passwordEncoder.encode("password123"));
             accountB.setName("Jane");
             accountB.setLastName("Smith");
@@ -62,7 +62,7 @@ public class DataLoader {
             accountB = accountRepository.save(accountB);
 
             Admin adminA = new Admin();
-            adminA.setEmail("admina@gmail.com");
+            adminA.setEmail("marko28082004@gmail.com");
             adminA.setPassword(passwordEncoder.encode("password123"));
             adminA.setName("Alice");
             adminA.setLastName("Admin");
@@ -96,7 +96,7 @@ public class DataLoader {
 
             // ============ CREATE DRIVERS ============
             Driver driver1 = new Driver(vehicle1);
-            driver1.setEmail("driver1@gmail.com");
+            driver1.setEmail("marko28082004+driver1@gmail.com");
             driver1.setPassword(passwordEncoder.encode("password123"));
             driver1.setName("Michael");
             driver1.setLastName("Johnson");
@@ -110,7 +110,7 @@ public class DataLoader {
             driver1 = accountRepository.save(driver1);
 
             Driver driver2 = new Driver(vehicle2);
-            driver2.setEmail("driver2@gmail.com");
+            driver2.setEmail("marko28082004+driver2@gmail.com");
             driver2.setPassword(passwordEncoder.encode("password123"));
             driver2.setName("Robert");
             driver2.setLastName("Williams");
@@ -225,7 +225,7 @@ public class DataLoader {
             ride3Locations.add(new Location(44.8400, 20.4700)); // End location
             ride3.setLocations(ride3Locations);
 
-            ride3.setTotalPrice(18.50);
+            ride3.setTotalPrice(1200.0);
             LocalDateTime ride3CreationTime = LocalDateTime.now().minusDays(5);
             ride3.setCreationDate(ride3CreationTime);
             ride3.setStartTime(ride3CreationTime.plusMinutes(15));
@@ -278,7 +278,7 @@ public class DataLoader {
             ride4Locations.add(new Location(44.8700, 20.4900)); // End location
             ride4.setLocations(ride4Locations);
 
-            ride4.setTotalPrice(22.00);
+            ride4.setTotalPrice(1500.0);
             LocalDateTime ride4CreationTime = LocalDateTime.now().minusDays(10);
             ride4.setCreationDate(ride4CreationTime);
             ride4.setStartTime(ride4CreationTime.plusMinutes(10));
@@ -366,6 +366,95 @@ public class DataLoader {
             ride5.setEndLongitude(20.5000);
             rideRepository.save(ride5);
             System.out.println("Created Ride 5 (Account A, Driver 1, SCHEDULED, in 2 days)");
+
+            // ============ REPORT TEST RIDES (FINISHED) ============
+
+            // Ride 6: Account A with Driver 1, FINISHED 3 days ago
+            Ride ride6 = new Ride();
+
+            ride6.setDriver(driver1);
+            ride6.setCreator(accountA);
+
+            List<Account> ride6Passengers = new ArrayList<>();
+            ride6Passengers.add(accountA);
+            ride6.setPassengers(ride6Passengers);
+
+            List<Location> ride6Locations = new ArrayList<>();
+            ride6Locations.add(new Location(44.7900, 20.4300));
+            ride6Locations.add(new Location(44.8100, 20.4500));
+            ride6.setLocations(ride6Locations);
+
+            LocalDateTime ride6Start = LocalDateTime.now()
+                    .minusDays(3)
+                    .minusHours(2);
+
+            ride6.setCreationDate(ride6Start.minusMinutes(30));
+            ride6.setStartTime(ride6Start);
+            ride6.setEndTime(ride6Start.plusMinutes(25));
+
+            ride6.setTotalPrice(850.0);
+            ride6.setStatus(RideStatus.FINISHED);
+            ride6.setPanic(false);
+
+            ride6.setStartLatitude(44.7900);
+            ride6.setStartLongitude(20.4300);
+            ride6.setEndLatitude(44.8100);
+            ride6.setEndLongitude(20.4500);
+
+            ride6.setCurrentLatitude(44.8100);
+            ride6.setCurrentLongitude(20.4500);
+
+            rideRepository.save(ride6);
+
+            System.out.println(
+                    "Created Ride 6 (Account A, Driver 1, FINISHED, 3 days ago)"
+            );
+
+            // Ride 7: Account A + Account B with Driver 2, FINISHED 1 day ago
+            Ride ride7 = new Ride();
+
+            ride7.setDriver(driver2);
+            ride7.setCreator(accountA);
+
+            List<Account> ride7Passengers = new ArrayList<>();
+            ride7Passengers.add(accountA);
+            ride7Passengers.add(accountB);
+            ride7.setPassengers(ride7Passengers);
+
+
+            List<Location> ride7Locations = new ArrayList<>();
+            ride7Locations.add(new Location(44.8200, 20.4600));
+            ride7Locations.add(new Location(44.8500, 20.4900));
+            ride7.setLocations(ride7Locations);
+
+
+            LocalDateTime ride7Start = LocalDateTime.now()
+                    .minusDays(1)
+                    .minusHours(5);
+
+            ride7.setCreationDate(ride7Start.minusMinutes(20));
+            ride7.setStartTime(ride7Start);
+            ride7.setEndTime(ride7Start.plusMinutes(40));
+
+            ride7.setTotalPrice(1600.0);
+            ride7.setStatus(RideStatus.FINISHED);
+            ride7.setPanic(false);
+
+
+            ride7.setStartLatitude(44.8200);
+            ride7.setStartLongitude(20.4600);
+            ride7.setEndLatitude(44.8500);
+            ride7.setEndLongitude(20.4900);
+
+            ride7.setCurrentLatitude(44.8500);
+            ride7.setCurrentLongitude(20.4900);
+
+
+            rideRepository.save(ride7);
+
+            System.out.println(
+                    "Created Ride 7 (Account A+B, Driver 2, FINISHED, 1 day ago)"
+            );
 
             System.out.println("✓ Database population completed successfully!");
         };

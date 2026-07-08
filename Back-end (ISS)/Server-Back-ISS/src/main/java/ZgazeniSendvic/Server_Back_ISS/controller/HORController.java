@@ -2,6 +2,7 @@ package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 import ZgazeniSendvic.Server_Back_ISS.model.Account;
+import ZgazeniSendvic.Server_Back_ISS.security.CustomUserDetails;
 import ZgazeniSendvic.Server_Back_ISS.service.HistoryOfRidesService;
 import ZgazeniSendvic.Server_Back_ISS.service.IRideService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,26 +99,31 @@ public class HORController {
 
     }
 
+    @PreAuthorize("hasAnyRole('DRIVER','ADMIN','USER')")
     @GetMapping("/report")
     public ResponseEntity<RideReportDTO> report(
 
             @AuthenticationPrincipal Account account,
 
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            Long targetUserId,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             LocalDateTime from,
 
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             LocalDateTime to
+
     ) {
 
-        System.out.println("Entered report endpoint");
-
-        RideReportDTO dto = rideService.generateReport(account.getId(), from, to);
-
-        System.out.println("Ride report generated");
-
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(
+                rideService.generateReport(
+                        targetUserId,
+                        from,
+                        to
+                )
+        );
     }
 }

@@ -39,9 +39,6 @@ class AuthController {
     DriverServiceImpl driverService;
 
 
-
-
-
     @PostMapping(path = "register", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody RegisterRequestDTO body) throws Exception{

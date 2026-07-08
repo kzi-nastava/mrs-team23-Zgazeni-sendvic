@@ -10,10 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class RideReportDTO {
-
-    private List<RideReportItemDTO> rides;
-
+    private List<DailyRideReportDTO> dailyReports;
     private RideSummaryDTO summary;
 }

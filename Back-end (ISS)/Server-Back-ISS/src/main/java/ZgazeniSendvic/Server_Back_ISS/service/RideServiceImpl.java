@@ -27,6 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class RideServiceImpl implements IRideService {
@@ -34,7 +35,7 @@ public class RideServiceImpl implements IRideService {
     @Autowired
     RideRepository allRides;
     @Autowired
-    AccountRepository allAccounts;
+    AccountServiceImpl accountService;
     @Autowired
     RideRepository rideRepo;
     @Autowired
@@ -126,79 +127,45 @@ public class RideServiceImpl implements IRideService {
     public RideReportDTO generateReport(
             Long userId,
             LocalDateTime from,
-            LocalDateTime to
-    ) {
+            LocalDateTime to) {
 
         List<Ride> rides;
 
-        if (from == null || to == null) {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
 
-            rides = rideRepo.findAllByPassengers_Id(userId);
+        boolean isAdmin =
+                authentication.getAuthorities()
+                        .stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (isAdmin && userId == null) {
+
+            rides = rideRepo.findReportRides(from, to);
 
         } else {
 
-            rides = rideRepo.findAllByPassengers_IdAndStartTimeBetween(
-                    userId,
+            CustomUserDetails userDetails =
+                    (CustomUserDetails) authentication.getPrincipal();
+
+            Long actualUserId =
+                    userId != null
+                            ? userId
+                            : userDetails.getAccount().getId();
+
+            rides = rideRepo.findUserReportRides(
+                    actualUserId,
                     from,
-                    to.plusDays(1)
+                    to
             );
+
         }
 
-        List<RideReportItemDTO> rideDtos =
-                rides.stream()
-                        .map(this::mapRide)
-                        .toList();
+        RideReportDTO dto = new RideReportDTO();
 
-        RideSummaryDTO summary = createSummary(rides);
+        dto.setSummary(createSummary(rides));
 
-        RideReportDTO report = new RideReportDTO();
-
-        report.setRides(rideDtos);
-        report.setSummary(summary);
-
-        return report;
-    }
-
-    private RideReportItemDTO mapRide(Ride ride) {
-
-        RideReportItemDTO dto = new RideReportItemDTO();
-
-        dto.setRideId(ride.getId());
-
-        dto.setStartTime(ride.getStartTime());
-
-        dto.setEndTime(ride.getEndTime());
-
-        dto.setDurationMinutes(
-                ride.getDurationMinutes()
-        );
-
-        dto.setStatus(
-                ride.getStatus()
-        );
-
-        dto.setTotalPrice(
-                ride.getTotalPrice()
-        );
-
-        dto.setDistanceKm(
-                ride.getDistanceKm()
-        );
-
-        if (ride.getDriver() != null) {
-            dto.setDriverName(
-                    ride.getDriver().getName()
-                            + " "
-                            + ride.getDriver().getLastName()
-            );
-        }
-
-        List<Location> locations = ride.getLocations();
-
-        if (!locations.isEmpty()) {
-            dto.setStartLocation(locations.get(0));
-            dto.setDestinationLocation(locations.get(locations.size() - 1));
-        }
+        dto.setDailyReports(createDailyReports(rides));
 
         return dto;
     }
@@ -207,29 +174,96 @@ public class RideServiceImpl implements IRideService {
 
         RideSummaryDTO dto = new RideSummaryDTO();
 
+        if (rides == null || rides.isEmpty()) {
+            dto.setRideCount(0);
+            dto.setTotalDistanceKm(0);
+            dto.setTotalDurationMinutes(0);
+            dto.setTotalPrice(0);
+            return dto;
+        }
+
         dto.setRideCount(
                 rides.size()
         );
 
         dto.setTotalDistanceKm(
                 rides.stream()
+                        .filter(Objects::nonNull)
                         .mapToDouble(Ride::calculateDistanceKm)
                         .sum()
         );
 
+
         dto.setTotalPrice(
                 rides.stream()
+                        .filter(Objects::nonNull)
                         .mapToDouble(Ride::getTotalPrice)
                         .sum()
         );
 
+
         dto.setTotalDurationMinutes(
                 rides.stream()
-                        .mapToLong(Ride::getDurationMinutes)
+                        .filter(Objects::nonNull)
+                        .mapToLong(r ->
+                                r.getDurationMinutes() != null
+                                        ? r.getDurationMinutes()
+                                        : 0
+                        )
                         .sum()
         );
 
+        System.out.println("REPORT RIDES:");
+        for(Ride r : rides){
+            System.out.println(
+                    "Ride ID: " + r.getId() +
+                            " price: " + r.getTotalPrice() +
+                            " status: " + r.getStatus()
+            );
+        }
+
         return dto;
+    }
+
+    private List<DailyRideReportDTO> createDailyReports(List<Ride> rides){
+
+        return rides.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(
+                        ride -> ride.getStartTime().toLocalDate(),
+                        TreeMap::new,
+                        Collectors.toList()
+                ))
+                .entrySet()
+                .stream()
+                .map(entry -> {
+
+                    LocalDate date = entry.getKey();
+
+                    List<Ride> dailyRides = entry.getValue();
+
+
+                    double distance =
+                            dailyRides.stream()
+                                    .mapToDouble(Ride::calculateDistanceKm)
+                                    .sum();
+
+
+                    double money =
+                            dailyRides.stream()
+                                    .mapToDouble(Ride::getTotalPrice)
+                                    .sum();
+
+
+                    return new DailyRideReportDTO(
+                            date,
+                            dailyRides.size(),
+                            distance,
+                            money
+                    );
+
+                })
+                .toList();
     }
 
     //Sets canceler if there is one
@@ -597,6 +631,4 @@ public class RideServiceImpl implements IRideService {
     public void deleteAll() {
 
     }
-
-
 }

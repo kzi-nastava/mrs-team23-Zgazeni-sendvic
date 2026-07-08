@@ -32,7 +32,7 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     SELECT r FROM Ride r
     WHERE r.driver = :driver
     AND r.status = 'ACTIVE'
-""")
+    """)
     Ride findActiveRideByDriver(@Param("driver") Driver driver);
 
     List<Ride> findByStatus(RideStatus status);
@@ -57,12 +57,44 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
             Pageable pageable
     );
 
-    List<Ride> findAllByPassengers_Id(Long passengerId);
+    @Query("""
+    SELECT DISTINCT r
+    FROM Ride r
+    LEFT JOIN r.passengers p
+    WHERE
+        r.status = 'FINISHED'
+    AND
+        (
+            r.creator.id = :userId
+            OR p.id = :userId
+            OR r.driver.id = :userId
+        )
+    AND
+        (CAST(:from AS timestamp) IS NULL OR r.startTime >= :from)
+    AND
+        (CAST(:to AS timestamp) IS NULL OR r.startTime <= :to)
+    ORDER BY r.startTime DESC
+    """)
+    List<Ride> findUserReportRides(
+            @Param("userId") Long userId,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to
+    );
 
-    List<Ride> findAllByPassengers_IdAndStartTimeBetween(
-            Long passengerId,
-            LocalDateTime from,
-            LocalDateTime to
+    @Query("""
+    SELECT r
+    FROM Ride r
+    WHERE
+        r.status = 'FINISHED'
+    AND
+        (CAST(:from AS timestamp) IS NULL OR r.startTime >= :from)
+    AND
+        (CAST(:to AS timestamp) IS NULL OR r.startTime <= :to)
+    ORDER BY r.startTime DESC
+    """)
+    List<Ride> findReportRides(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to
     );
 }
 
