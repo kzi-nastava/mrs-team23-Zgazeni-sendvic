@@ -1,16 +1,70 @@
 <div class="rides-overview">
-  <h1 class="rides-title">Active and Scheduled Rides</h1>
+  <div class="rides-header">
+    <h1 class="rides-title">Active and Scheduled Rides</h1>
+
+    <div class="rides-controls-row">
+      <div class="rides-price-editor" aria-label="Ride price editor" style="flex: 1; min-width: 420px;">
+
+        <label class="rides-price-label">
+          Vehicle type:
+          <select class="rides-price-select" [(ngModel)]="selectedVehicleType" (ngModelChange)="onVehicleTypeChange($event)">
+            <option *ngFor="let vt of vehicleTypes" [value]="vt">{{ vt }}</option>
+          </select>
+        </label>
+
+        <label class="rides-price-label">
+          Price:
+          <input class="rides-price-input" type="text" [(ngModel)]="priceInput" inputmode="numeric" />
+        </label>
+
+        <button class="rides-set-price-button" type="button" (click)="setPrice()" [disabled]="pricingLoading">
+          Set price
+        </button>
+
+        @if (priceUpdateError) {
+          <p class="rides-price-error">{{ priceUpdateError }}</p>
+        }
+      </div>
+    
+
+      <div class="rides-search" style="flex: 1; min-width: 320px; justify-content: flex-end;">
+        <input
+          type="text"
+          class="rides-search-input"
+          placeholder="Search by driver"
+          [(ngModel)]="searchDriverName"
+          (keyup.enter)="onSearch()"
+          aria-label="Search rides by driver first name"
+        />
+        <button class="rides-search-button" type="button" (click)="onSearch()">Search</button>
+      </div>
+    </div>
+  </div>
+
+
   <div class="overview-list">
+
     <ul>
       @for (ride of rides; track ride.trackId) {
         <li>
           <div class="ride-entry">
-            <span class="ride-driver">{{ ride.driverLabel }}</span>
+            <span class="ride-driver">
+              <span class="ride-driver-name">{{ ride.driverFirstName }}</span>
+              <span class="ride-driver-email">{{ ride.driverEmail }}</span>
+
+            </span>
+
             <span class="ride-date">{{ ride.date }}</span>
-            <span class="ride-time-start">{{ ride.timeStart }}</span>
-            <span class="ride-time-end">{{ ride.timeEnd }}</span>
-            <span class="ride-origin">{{ ride.originAddress }}</span>
-            <span class="ride-destination">{{ ride.destinationAddress }}</span>
+            <span class="ride-time">
+              <span class="ride-time-start">{{ ride.timeStart }}</span>
+              <span class="ride-time-end">{{ ride.timeEnd }}</span>
+            </span>
+
+            <span class="ride-location">
+              <span class="ride-origin">{{ ride.originAddress }}</span>
+              <span class="ride-destination">{{ ride.destinationAddress }}</span>
+            </span>
+
             <span class="ride-price">{{ ride.price }}</span>
             <span class="ride-status">{{ ride.status }}</span>
           </div>

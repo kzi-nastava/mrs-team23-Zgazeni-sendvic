@@ -24,11 +24,13 @@ public class ActiveRideDTO {
     @Getter @Setter
     private String driverEmail;
     @Getter @Setter
+    private String driverFirstName;
+    @Getter @Setter
     private String date;
 
     public ActiveRideDTO() {}
 
-    public ActiveRideDTO(Long id, Location origin, Location destination, String departureTime, String arrivalTime, boolean panic, String status, double price, String driverEmail, String date) {
+    public ActiveRideDTO(Long id, Location origin, Location destination, String departureTime, String arrivalTime, boolean panic, String status, double price, String driverEmail, String driverFirstName, String date) {
         this.id = id;
         this.origin = origin;
         this.destination = destination;
@@ -38,6 +40,7 @@ public class ActiveRideDTO {
         this.status = status;
         this.price = price;
         this.driverEmail = driverEmail;
+        this.driverFirstName = driverFirstName;
         this.date = date;
     }
 }

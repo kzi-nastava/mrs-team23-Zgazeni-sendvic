@@ -22,6 +22,9 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
     @Query("SELECT a FROM Account a WHERE TYPE(a) = Driver AND a.active = true")
     List<Driver> findAllActiveDrivers();
 
+    @Query("SELECT a FROM Account a WHERE TYPE(a) = Driver AND a.available = true")
+    List<Driver> findAllAvailableDrivers();
+
     List<Account> findByEmailIn(Collection<String> emails);
 
     @Query("SELECT a FROM Admin a")

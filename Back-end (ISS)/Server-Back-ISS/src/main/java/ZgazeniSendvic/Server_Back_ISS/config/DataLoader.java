@@ -29,9 +29,12 @@ public class DataLoader {
                                       RideNoteRepository rideNoteRepository,
                                       RideDriverRatingRepository rideDriverRatingRepository,
                                       RouteRepository routeRepository,
-                                      RideRequestRepository rideRequestRepository) {
+                                      RideRequestRepository rideRequestRepository,
+                                      PriceRepository priceRepository) {
 
         return args -> {
+            seedPrices(priceRepository);
+
             // Check if data already exists to avoid duplication
             if (accountRepository.count() > 0) {
                 System.out.println("Database already populated, skipping data load");
@@ -61,6 +64,16 @@ public class DataLoader {
             accountB.setConfirmed(true);
             accountB = accountRepository.save(accountB);
 
+            Account instantRideUser = new User();
+            instantRideUser.setEmail("instant.ride.user@gmail.com");
+            instantRideUser.setPassword(passwordEncoder.encode("password123"));
+            instantRideUser.setName("Marko");
+            instantRideUser.setLastName("Markovic");
+            instantRideUser.setAddress("12 Ready Now St, Test City");
+            instantRideUser.setPhoneNumber("0641234567");
+            instantRideUser.setConfirmed(true);
+            instantRideUser = accountRepository.save(instantRideUser);
+
             Admin adminA = new Admin();
             adminA.setEmail("admina@gmail.com");
             adminA.setPassword(passwordEncoder.encode("password123"));
@@ -71,7 +84,7 @@ public class DataLoader {
             adminA.setConfirmed(true);
             adminA = accountRepository.save(adminA);
 
-            System.out.println("Created accounts: " + accountA.getEmail() + ", " + accountB.getEmail() + ", " + adminA.getEmail());
+            System.out.println("Created accounts: " + accountA.getEmail() + ", " + accountB.getEmail() + ", " + instantRideUser.getEmail() + ", " + adminA.getEmail());
 
             // ============ CREATE VEHICLES ============
             Vehicle vehicle1 = new Vehicle(
@@ -367,7 +380,50 @@ public class DataLoader {
             rideRepository.save(ride5);
             System.out.println("Created Ride 5 (Account A, Driver 1, SCHEDULED, in 2 days)");
 
+            // Ride 6: verified user with Driver 2, scheduled for now so driver2 can start it immediately.
+            Ride ride6 = new Ride();
+            ride6.setDriver(driver2);
+            ride6.setCreator(instantRideUser);
+
+            List<Account> ride6Passengers = new ArrayList<>();
+            ride6Passengers.add(instantRideUser);
+            ride6.setPassengers(ride6Passengers);
+
+            List<Location> ride6Locations = new ArrayList<>();
+            ride6Locations.add(new Location(44.8120, 20.4610)); // Start location
+            ride6Locations.add(new Location(44.8215, 20.4505)); // End location
+            ride6.setLocations(ride6Locations);
+
+            ride6.setTotalPrice(13.50);
+            LocalDateTime ride6CreationTime = LocalDateTime.now();
+            ride6.setCreationDate(ride6CreationTime);
+            ride6.setScheduledTime(ride6CreationTime);
+            ride6.setStartTime(ride6CreationTime);
+            ride6.setDurationMinutes(0L);
+            ride6.setStatus(RideStatus.SCHEDULED);
+            ride6.setPanic(false);
+            ride6.setStartLatitude(44.8120);
+            ride6.setStartLongitude(20.4610);
+            ride6.setEndLatitude(44.8215);
+            ride6.setEndLongitude(20.4505);
+            ride6.setCurrentLatitude(44.8120);
+            ride6.setCurrentLongitude(20.4610);
+            rideRepository.save(ride6);
+            System.out.println("Created Ride 6 (instant.ride.user@gmail.com, Driver 2, SCHEDULED, ready to start)");
+
             System.out.println("✓ Database population completed successfully!");
         };
+    }
+
+    private void seedPrices(PriceRepository priceRepository) {
+        createPriceIfMissing(priceRepository, VehicleType.STANDARD, 300);
+        createPriceIfMissing(priceRepository, VehicleType.VAN, 500);
+        createPriceIfMissing(priceRepository, VehicleType.LUXURY, 800);
+    }
+
+    private void createPriceIfMissing(PriceRepository priceRepository, VehicleType vehicleType, double price) {
+        if (!priceRepository.existsByVehicleType(vehicleType)) {
+            priceRepository.save(new Price(vehicleType, price));
+        }
     }
 }

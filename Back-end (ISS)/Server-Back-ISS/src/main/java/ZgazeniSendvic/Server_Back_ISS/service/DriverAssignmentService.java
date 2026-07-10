@@ -7,6 +7,7 @@ import ZgazeniSendvic.Server_Back_ISS.repository.RideRequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -30,6 +31,7 @@ public class DriverAssignmentService {
     @Autowired
     DistanceCalculator distanceCalculator;
 
+    @Transactional
     public void tryAssignDriver(Long requestId) {
 
         RideRequest request = rideRequestRepository.findById(requestId)
@@ -40,15 +42,15 @@ public class DriverAssignmentService {
             return;
         }
 
-        List<Driver> activeDrivers = accountRepository.findAllActiveDrivers();
+        List<Driver> availableDrivers = accountRepository.findAllAvailableDrivers();
 
-        if (activeDrivers.isEmpty()) {
+        if (availableDrivers.isEmpty()) {
             return; // don't reject immediately — cron will retry
         }
 
         // 8-hour rule
-        List<Driver> eligibleDrivers = activeDrivers.stream()
-                .filter(d -> d.getWorkedMinutesLast24h() < 480)
+        List<Driver> eligibleDrivers = availableDrivers.stream()
+                .filter(d -> d.getWorkedMinutesLast24h() == null || d.getWorkedMinutesLast24h() < 480)
                 .toList();
 
         if (eligibleDrivers.isEmpty()) {
@@ -77,8 +79,7 @@ public class DriverAssignmentService {
         selectedDriver.setAvailable(false);
         accountRepository.save(selectedDriver);
 
-        notificationService.sendRideAcceptedEmail(request.getCreator(), ride);
-        notificationService.sendNewRideForDriverEmail(selectedDriver, ride);
+        sendAssignmentNotifications(request, selectedDriver, ride);
     }
 
     private Driver findBestImmediateDriver(
@@ -89,7 +90,7 @@ public class DriverAssignmentService {
 
         // Free drivers first
         List<Driver> freeDrivers = drivers.stream()
-                .filter(Driver::isBusy)
+                .filter(d -> !d.isBusy())
                 .toList();
 
         if (!freeDrivers.isEmpty()) {
@@ -127,7 +128,7 @@ public class DriverAssignmentService {
 
         // Scheduled rides can use free drivers first
         List<Driver> freeDrivers = drivers.stream()
-                .filter(Driver::isBusy)
+                .filter(d -> !d.isBusy())
                 .toList();
 
         if (!freeDrivers.isEmpty()) {
@@ -144,6 +145,20 @@ public class DriverAssignmentService {
                         distanceCalculator.calculateDistanceKm(start, d.getLocation())
                 ))
                 .orElse(null);
+    }
+
+    private void sendAssignmentNotifications(RideRequest request, Driver selectedDriver, Ride ride) {
+        try {
+            notificationService.sendRideAcceptedEmail(request.getCreator(), ride);
+        } catch (Exception ex) {
+            System.err.println("Failed to send ride accepted email for request " + request.getId() + ": " + ex.getMessage());
+        }
+
+        try {
+            notificationService.sendNewRideForDriverEmail(selectedDriver, ride);
+        } catch (Exception ex) {
+            System.err.println("Failed to send new ride email to driver " + selectedDriver.getId() + ": " + ex.getMessage());
+        }
     }
 }
 

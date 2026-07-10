@@ -29,6 +29,7 @@ import java.util.*;
 
 @Service
 public class RideServiceImpl implements IRideService {
+    private static final String RIDE_TRACKING_URL = "http://localhost:4200/ride-tracking";
 
     @Autowired
     RideRepository allRides;
@@ -109,16 +110,47 @@ public class RideServiceImpl implements IRideService {
     public Ride convertToRide(RideRequest request, Driver driver) {
 
         Ride ride = new Ride();
+        LocalDateTime plannedStart = request.getScheduledTime() != null
+                ? request.getScheduledTime()
+                : LocalDateTime.now();
 
         ride.setDriver(driver);
         ride.setCreator(request.getCreator());
-        ride.setPassengers(request.getInvitedPassengers());
-        ride.setLocations(request.getLocations());
+        ride.setPassengers(buildRidePassengers(request));
+        ride.setLocations(new ArrayList<>(request.getLocations()));
         ride.setScheduledTime(request.getScheduledTime());
+        ride.setStartTime(plannedStart);
+        ride.setEndTime(null);
+        ride.setDurationMinutes(0L);
         ride.setTotalPrice(request.getEstimatedPrice());
         ride.setStatus(RideStatus.SCHEDULED);
 
         return allRides.save(ride);
+    }
+
+    private List<Account> buildRidePassengers(RideRequest request) {
+        List<Account> passengers = new ArrayList<>();
+        Set<Long> addedIds = new HashSet<>();
+
+        addPassengerIfAbsent(passengers, addedIds, request.getCreator());
+
+        if (request.getInvitedPassengers() != null) {
+            for (Account passenger : request.getInvitedPassengers()) {
+                addPassengerIfAbsent(passengers, addedIds, passenger);
+            }
+        }
+
+        return passengers;
+    }
+
+    private void addPassengerIfAbsent(List<Account> passengers, Set<Long> addedIds, Account account) {
+        if (account == null) {
+            return;
+        }
+
+        if (account.getId() == null || addedIds.add(account.getId())) {
+            passengers.add(account);
+        }
     }
 
     //Sets canceler if there is one
@@ -281,6 +313,51 @@ public class RideServiceImpl implements IRideService {
         ride.setStatus(RideStatus.ACTIVE);
         ride.setStartTime(LocalDateTime.now());
         allRides.save(ride);
+
+        sendRideTrackingEmails(ride);
+    }
+
+    private void sendRideTrackingEmails(Ride ride) {
+        Set<String> notifiedRecipients = new HashSet<>();
+
+        sendRideTrackingEmail(ride.getCreator(), ride, notifiedRecipients);
+
+        List<Account> passengers = ride.getPassengers();
+        if (passengers == null || passengers.isEmpty()) {
+            return;
+        }
+
+        for (Account passenger : passengers) {
+            sendRideTrackingEmail(passenger, ride, notifiedRecipients);
+        }
+    }
+
+    private void sendRideTrackingEmail(Account account, Ride ride, Set<String> notifiedRecipients) {
+        if (account == null || account.getEmail() == null || account.getEmail().isBlank()) {
+            return;
+        }
+
+        String recipient = account.getEmail().trim();
+        String recipientKey = account.getId() != null
+                ? "id:" + account.getId()
+                : "email:" + recipient.toLowerCase(Locale.ROOT);
+
+        if (!notifiedRecipients.add(recipientKey)) {
+            return;
+        }
+
+        try {
+            EmailDetails details = new EmailDetails();
+            details.setRecipient(recipient);
+            details.setSubject("Your ride has started");
+            details.setMsgBody(
+                    "Your ride (ID: " + ride.getId() + ") has started.\n\n" +
+                            "Track your ride here: " + RIDE_TRACKING_URL
+            );
+            emailService.sendSimpleMail(details);
+        } catch (Exception ex) {
+            System.err.println("Failed to send ride-tracking email to " + recipient + ": " + ex.getMessage());
+        }
     }
 
     public RideStoppedDTO stopRide(Long rideID, RideStopDTO stopReq){
@@ -406,7 +483,7 @@ public class RideServiceImpl implements IRideService {
                 if (passenger == null || passenger.getEmail() == null) continue;
                 try {
                     EmailDetails details = new EmailDetails();
-                    details.setRecipient("aleksanen04@gmail.com");
+                    details.setRecipient(passenger.getEmail());
                     details.setSubject("Ride ended");
                     details.setMsgBody("Your ride (ID: " + ride.getId() + ") has ended. Final price: " + ride.getTotalPrice());
                     emailService.sendSimpleMail(details);
@@ -436,11 +513,21 @@ public class RideServiceImpl implements IRideService {
     }
 
     public RidesOverviewDTO getRidesOverview() {
+        return getRidesOverview("");
+    }
+
+    public RidesOverviewDTO getRidesOverview(String driverName) {
         List<Ride> rides = allRides.findAll();
         List<ActiveRideDTO> activeRidesList = new ArrayList<>();
+        String normalizedDriverName = driverName == null ? "" : driverName.trim().toLowerCase(Locale.ROOT);
 
         for (Ride ride : rides) {
             if (ride.getStatus() == RideStatus.SCHEDULED || ride.getStatus() == RideStatus.ACTIVE) {
+                Driver driver = ride.getDriver();
+                if (!matchesDriverName(driver, normalizedDriverName)) {
+                    continue;
+                }
+
                 ActiveRideDTO dto = new ActiveRideDTO();
                 dto.setId(ride.getId());
 
@@ -462,8 +549,11 @@ public class RideServiceImpl implements IRideService {
                 dto.setStatus(ride.getStatus().toString());
                 dto.setPrice(ride.getTotalPrice());
 
-                if (ride.getDriver() != null && ride.getDriver().getEmail() != null) {
-                    dto.setDriverEmail(ride.getDriver().getEmail());
+                if (driver != null) {
+                    if (driver.getEmail() != null) {
+                        dto.setDriverEmail(driver.getEmail());
+                    }
+                    dto.setDriverFirstName(driver.getName());
                 }
 
                 if (ride.getStartTime() != null) {
@@ -475,6 +565,22 @@ public class RideServiceImpl implements IRideService {
         }
 
         return new RidesOverviewDTO(activeRidesList);
+    }
+
+    private boolean matchesDriverName(Driver driver, String normalizedDriverName) {
+        if (normalizedDriverName.isBlank()) {
+            return true;
+        }
+        if (driver == null) {
+            return false;
+        }
+        String firstName = driver.getName() == null ? "" : driver.getName();
+        String lastName = driver.getLastName() == null ? "" : driver.getLastName();
+        String fullName = (firstName + " " + lastName).trim();
+
+        return firstName.toLowerCase(Locale.ROOT).contains(normalizedDriverName)
+                || lastName.toLowerCase(Locale.ROOT).contains(normalizedDriverName)
+                || fullName.toLowerCase(Locale.ROOT).contains(normalizedDriverName);
     }
 
     @Override

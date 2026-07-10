@@ -5,6 +5,7 @@ import ZgazeniSendvic.Server_Back_ISS.model.Account;
 import ZgazeniSendvic.Server_Back_ISS.model.Driver;
 import ZgazeniSendvic.Server_Back_ISS.model.Ride;
 import ZgazeniSendvic.Server_Back_ISS.model.RideStatus;
+import ZgazeniSendvic.Server_Back_ISS.model.VehicleType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.domain.Page;
@@ -36,6 +37,19 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
 
     List<Ride> findByStatus(RideStatus status);
     List<Ride> findByDriverAndStatus(Driver driver, RideStatus status);
+    Optional<Ride> findFirstByDriverIdAndStatusOrderByScheduledTimeAscIdAsc(Long driverId, RideStatus status);
+
+    @Query("""
+        SELECT r FROM Ride r
+        JOIN r.driver d
+        JOIN d.vehicle v
+        WHERE r.status IN :statuses
+          AND v.type = :vehicleType
+    """)
+    List<Ride> findByStatusInAndDriverVehicleType(
+            @Param("statuses") List<RideStatus> statuses,
+            @Param("vehicleType") VehicleType vehicleType
+    );
 
 
 

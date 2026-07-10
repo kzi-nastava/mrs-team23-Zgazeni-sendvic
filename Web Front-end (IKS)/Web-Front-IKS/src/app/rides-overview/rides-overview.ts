@@ -4,8 +4,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../service/auth.service';
+import { FormsModule } from '@angular/forms';
+
 
 type RideLocation = { latitude: number; longitude: number };
+
+type VehicleType = 'STANDARD' | 'VAN' | 'LUXURY';
+
 
 interface ActiveRideDTO {
   id: number;
@@ -17,8 +22,10 @@ interface ActiveRideDTO {
   status: string;
   price: number;
   driverEmail: string;
+  driverFirstName: string;
   date: string;
 }
+
 
 type RideOverviewRow = {
   trackId: string;
@@ -31,14 +38,17 @@ type RideOverviewRow = {
   destinationAddress: string;
   price: string;
   status: string;
-  driverLabel: string;
+  driverEmail: string;
+  driverFirstName: string;
   originNeedsLookup: boolean;
+
   destinationNeedsLookup: boolean;
 };
 
+
 @Component({
   selector: 'rides-overview',
-  imports: [RouterModule, CommonModule],
+  imports: [RouterModule, CommonModule, FormsModule],
   templateUrl: './rides-overview.html',
   styleUrl: './rides-overview.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,19 +58,38 @@ export class RidesOverview implements OnInit {
   loading = false;
   error = '';
 
+  searchDriverName = '';
+  private activeGeocodeRequestId = 0;
+  private geocodeLock = false;
+
+  vehicleTypes: VehicleType[] = ['STANDARD', 'VAN', 'LUXURY'];
+  selectedVehicleType: VehicleType = 'STANDARD';
+  priceInput = '';
+  pricingLoading = false;
+  priceUpdateError = '';
+
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private authService: AuthService
   ) {}
 
-  ngOnInit(): void {
+
+  async ngOnInit(): Promise<void> {
     this.fetchRides();
+    await this.loadCurrentPrice(this.selectedVehicleType);
   }
 
-  fetchRides(): void {
+
+  onSearch(): void {
+    this.fetchRides(this.searchDriverName);
+  }
+
+  fetchRides(driverName?: string): void {
     this.loading = true;
     this.error = '';
+    this.geocodeLock = true;
+
 
     const authToken = this.authService.getToken();
     if (!authToken) {
@@ -72,62 +101,69 @@ export class RidesOverview implements OnInit {
 
     const headers = new HttpHeaders({ Authorization: `Bearer ${authToken}` });
 
-    this.http.get<{ activeRides: ActiveRideDTO[] }>('http://localhost:8080/api/rides-overview', { headers })
+    const trimmed = (driverName ?? '').trim();
+    const url = trimmed
+      ? `http://localhost:8080/api/rides-overview?driverName=${encodeURIComponent(trimmed)}`
+      : 'http://localhost:8080/api/rides-overview';
+
+    const geocodeRequestId = ++this.activeGeocodeRequestId;
+
+    this.http.get<{ activeRides: ActiveRideDTO[] }>(url, { headers })
       .subscribe({
         next: (response) => {
-          console.log('Rides overview response:', response);
-          console.log('Response type:', typeof response);
-          console.log('Is array?', Array.isArray(response));
-          
           const rawRides = response.activeRides ?? [];
-
-          console.log('Raw rides:', rawRides);
-          console.log('Raw rides length:', rawRides.length);
-          
           const filtered = this.filterActiveScheduled(rawRides);
-          console.log('Filtered rides:', filtered);
-          console.log('Filtered rides length:', filtered.length);
-          
+
           this.rides = filtered.map((ride, index) => this.toViewModel(ride, index));
-          console.log('View model rides:', this.rides);
 
           this.rides.forEach((ride, idx) => {
             // Add delay to respect Nominatim rate limit (1 req/sec)
             if (ride.originNeedsLookup && ride.origin) {
-              console.log('Fetching address for origin:', ride.origin);
               setTimeout(() => {
+                if (this.activeGeocodeRequestId !== geocodeRequestId) return;
+
+                // Prevent race where a new search starts while old timeouts are still running.
+                if (this.geocodeLock && this.activeGeocodeRequestId !== geocodeRequestId) return;
+
                 this.getAddressFromCoordinates(ride.origin!).then(address => {
-                  console.log('Received origin address:', address);
+                  if (this.activeGeocodeRequestId !== geocodeRequestId) return;
                   ride.originAddress = this.shortenAddress(address);
                   this.cdr.markForCheck();
-                }).catch(err => {
-                  console.error('Failed to geocode origin:', err);
+                }).catch(() => {
+                  if (this.activeGeocodeRequestId !== geocodeRequestId) return;
                   ride.originAddress = this.formatCoords(ride.origin!);
                   this.cdr.markForCheck();
                 });
               }, idx * 1100);
             }
+
             if (ride.destinationNeedsLookup && ride.destination) {
-              console.log('Fetching address for destination:', ride.destination);
               setTimeout(() => {
+                if (this.activeGeocodeRequestId !== geocodeRequestId) return;
+
+                if (this.geocodeLock && this.activeGeocodeRequestId !== geocodeRequestId) return;
+
                 this.getAddressFromCoordinates(ride.destination!).then(address => {
-                  console.log('Received destination address:', address);
+                  if (this.activeGeocodeRequestId !== geocodeRequestId) return;
                   ride.destinationAddress = this.shortenAddress(address);
                   this.cdr.markForCheck();
-                }).catch(err => {
-                  console.error('Failed to geocode destination:', err);
+                }).catch(() => {
+                  if (this.activeGeocodeRequestId !== geocodeRequestId) return;
                   ride.destinationAddress = this.formatCoords(ride.destination!);
                   this.cdr.markForCheck();
                 });
               }, (idx * 1100) + 550);
             }
+
+
           });
 
           this.loading = false;
+          this.geocodeLock = false;
           this.cdr.markForCheck();
         },
         error: (err) => {
-          console.error('Error fetching rides overview:', err);
+
           this.error = err.status === 403 
             ? 'Access denied. Admin privileges required.'
             : 'Failed to load rides overview.';
@@ -137,8 +173,8 @@ export class RidesOverview implements OnInit {
       });
   }
 
+
   private filterActiveScheduled(rides: ActiveRideDTO[]): ActiveRideDTO[] {
-    // ActiveRideDTO always has a 'status' field
     return rides.filter(ride => {
       const rawStatus = String(ride.status ?? '').toUpperCase();
       return rawStatus === 'ACTIVE' || rawStatus === 'SCHEDULED';
@@ -166,7 +202,8 @@ export class RidesOverview implements OnInit {
       destinationAddress: destination ? this.formatCoords(destination) : 'Unknown',
       price: `${ride.price} RSD`,
       status: this.formatStatus(ride.status),
-      driverLabel: ride.driverEmail,
+      driverEmail: ride.driverEmail,
+      driverFirstName: ride.driverFirstName,
       originNeedsLookup: Boolean(origin),
       destinationNeedsLookup: Boolean(destination),
     };
@@ -195,6 +232,114 @@ export class RidesOverview implements OnInit {
     return address.split(',').slice(0, 2).join(',');
   }
 
+  private async loadCurrentPrice(vehicleType: VehicleType): Promise<void> {
+    this.priceUpdateError = '';
+    this.pricingLoading = true;
+    this.cdr.markForCheck();
+
+    const authToken = this.authService.getToken();
+    if (!authToken) {
+      this.priceUpdateError = 'You must be logged in as an admin to edit prices.';
+      this.priceInput = '';
+      this.pricingLoading = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const headers = new HttpHeaders({ Authorization: `Bearer ${authToken}` });
+
+    try {
+      const res = await firstValueFrom(
+        this.http.put<any>('http://localhost:8080/api/ride-prices', {
+          vehicleType,
+          price: null,
+        }, { headers })
+      );
+
+      const currentPrice = typeof res === 'number'
+        ? res
+        : (typeof res?.price === 'number' ? res.price : null);
+
+      if (currentPrice === null) {
+        this.priceUpdateError = 'Failed to read current price from server.';
+        this.priceInput = '';
+        return;
+      }
+
+      this.priceInput = String(currentPrice);
+    } catch (err: any) {
+      this.priceUpdateError = err?.status === 403
+        ? 'Access denied. Admin privileges required.'
+        : 'Failed to load current price.';
+    } finally {
+      this.pricingLoading = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  async onVehicleTypeChange(type: VehicleType): Promise<void> {
+    this.selectedVehicleType = type;
+    await this.loadCurrentPrice(type);
+  }
+
+  async setPrice(): Promise<void> {
+    if (this.pricingLoading) return;
+
+    this.priceUpdateError = '';
+
+    const parsed = Number(this.priceInput);
+    if (!Number.isFinite(parsed)) {
+      this.priceUpdateError = 'Please enter a valid number.';
+      return;
+    }
+
+    if (parsed < 0) {
+      this.priceUpdateError = 'Price cannot be negative.';
+      return;
+    }
+
+    const confirm = window.confirm(`Are you sure you want to set the price for '${this.selectedVehicleType}' to '${parsed}'?`);
+    if (!confirm) {
+      return;
+    }
+
+    const authToken = this.authService.getToken();
+    if (!authToken) {
+      this.priceUpdateError = 'You must be logged in as an admin to edit prices.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const headers = new HttpHeaders({ Authorization: `Bearer ${authToken}` });
+
+    this.pricingLoading = true;
+    this.cdr.markForCheck();
+
+    try {
+      await firstValueFrom(
+        this.http.put<any>('http://localhost:8080/api/ride-prices', {
+          vehicleType: this.selectedVehicleType,
+          price: parsed,
+        }, { headers })
+      );
+
+      await this.loadCurrentPrice(this.selectedVehicleType);
+      this.fetchRides(this.searchDriverName);
+
+      alert(`the price for '${this.selectedVehicleType}' is set to '${parsed}'`);
+    } catch (err: any) {
+      this.priceUpdateError = err?.status === 403
+        ? 'Access denied. Admin privileges required.'
+        : 'Failed to update price.';
+
+      this.pricingLoading = false;
+      this.cdr.markForCheck();
+
+      alert('failed to change the price');
+    }
+  }
+
+
   private async getAddressFromCoordinates(coords: RideLocation): Promise<string> {
     try {
       const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.latitude}&lon=${coords.longitude}`;
@@ -217,3 +362,4 @@ export class RidesOverview implements OnInit {
     }
   }
 }
+

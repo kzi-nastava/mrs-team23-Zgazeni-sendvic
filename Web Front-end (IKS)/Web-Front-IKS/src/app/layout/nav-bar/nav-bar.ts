@@ -112,7 +112,38 @@ export class NavBar {
     return this.authService.isAuthenticated();
   }
 
-  startRide() {
-    return this.http.put(`http://localhost:8080/api/ride-start`, {});
+  startRide(): void {
+    const driverId = localStorage.getItem('user_id');
+
+    if (!driverId) {
+      alert('Driver id not found. Please login again.');
+      return;
+    }
+
+    this.http
+      .get<number>(`http://localhost:8080/api/check-assigned-ride`, {
+        params: { driverId },
+      })
+      .subscribe({
+        next: (rideId) => {
+          this.http
+            .put(`http://localhost:8080/api/ride-start`, { rideId })
+            .subscribe({
+              next: () => alert('Ride started'),
+              error: (err) => {
+                console.error('Ride start failed:', err);
+                alert('Unable to start ride.');
+              },
+            });
+        },
+        error: (err: any) => {
+          if (err?.status === 404) {
+            alert('No assigned ride found for this driver.');
+            return;
+          }
+          console.error('Check assigned ride failed:', err);
+          alert('Unable to check assigned ride.');
+        },
+      });
   }
 }

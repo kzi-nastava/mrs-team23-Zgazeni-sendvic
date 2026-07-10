@@ -3,6 +3,9 @@ package ZgazeniSendvic.Server_Back_ISS.controller;
 
 import ZgazeniSendvic.Server_Back_ISS.dto.*;
 
+import ZgazeniSendvic.Server_Back_ISS.model.Ride;
+import ZgazeniSendvic.Server_Back_ISS.model.RideStatus;
+import ZgazeniSendvic.Server_Back_ISS.repository.RideRepository;
 import ZgazeniSendvic.Server_Back_ISS.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -48,6 +51,10 @@ class RideController {
     HistoryOfRidesService historyOfRidesService;
     @Autowired
     PanicNotificationService panicNotificationService;
+    @Autowired
+    RideRepository rideRepository;
+    @Autowired
+    PriceService priceService;
 
     @PutMapping(path = "ride-cancel/{rideID}",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -136,7 +143,7 @@ class RideController {
 
     @PreAuthorize("hasRole('DRIVER')")
     @GetMapping(value = "history-of-rides/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @CrossOrigin(origins = "http://localhost:4200")
+    @CrossOrigin(origins = {"http://localhost:4200"})
     public ResponseEntity<HistoryOfRidesDTO> HistoryOfRidesController( @PathVariable Long userId) {
         HistoryOfRidesDTO historyOfRidesDTO = historyOfRidesService.getHistoryOfRides(userId);
         return ResponseEntity.ok(historyOfRidesDTO);
@@ -151,7 +158,7 @@ class RideController {
 
     @PreAuthorize("hasRole('USER')")
     @PostMapping(value="ride-driver-rating/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @CrossOrigin(origins = "http://localhost:4200")
+    @CrossOrigin(origins = {"http://localhost:4200"})
     public ResponseEntity<String> rideDriverRating(@PathVariable("userId") Long userId, @RequestBody RideDriverRatingDTO rideDriverRatingDTO) {
         try {
             if (rideDriverRatingDTO.getUserId() == null) {
@@ -177,6 +184,16 @@ class RideController {
 
         rideService.startRide(rsDTO.getRideId());
         return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasRole('DRIVER')")
+    @GetMapping(value = "check-assigned-ride", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Long> checkAssignedRide(@RequestParam Long driverId) {
+        return rideRepository
+                .findFirstByDriverIdAndStatusOrderByScheduledTimeAscIdAsc(driverId, RideStatus.SCHEDULED)
+                .map(Ride::getId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('DRIVER')")
@@ -235,9 +252,17 @@ class RideController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "rides-overview", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RidesOverviewDTO> getRidesOverview() {
-        RidesOverviewDTO ridesOverview = rideService.getRidesOverview();
+    public ResponseEntity<RidesOverviewDTO> getRidesOverview(
+            @RequestParam(required = false, defaultValue = "") String driverName
+    ) {
+        RidesOverviewDTO ridesOverview = rideService.getRidesOverview(driverName);
         return new ResponseEntity<>(ridesOverview, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping(value = "ride-prices", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedPriceDTO> updateRidePrice(@RequestBody UpdatePriceDTO updatePriceDTO) {
+        return ResponseEntity.ok(priceService.updatePrice(updatePriceDTO));
     }
 
 }

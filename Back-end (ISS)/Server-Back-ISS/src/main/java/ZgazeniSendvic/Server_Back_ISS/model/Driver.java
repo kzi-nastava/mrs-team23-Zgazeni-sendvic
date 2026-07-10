@@ -75,7 +75,7 @@ public class Driver extends Account {
     }
 
     public boolean isBusy() {
-        return busy;
+        return busy != null && busy;
     }
 }
 

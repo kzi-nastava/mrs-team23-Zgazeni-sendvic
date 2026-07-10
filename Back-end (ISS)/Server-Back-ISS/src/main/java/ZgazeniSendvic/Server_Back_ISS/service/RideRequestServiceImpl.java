@@ -29,7 +29,7 @@ public class RideRequestServiceImpl implements IRideRequestService {
     @Autowired
     AccountServiceImpl accountService;
     @Autowired
-    PricingService pricingService;
+    PriceService priceService;
     @Autowired
     DriverAssignmentService driverAssignmentService;
 
@@ -65,7 +65,7 @@ public class RideRequestServiceImpl implements IRideRequestService {
         );
         rr.setInvitedPassengers(invited);
 
-        double price = pricingService.calculatePrice(
+        double price = priceService.calculatePrice(
                 dto.getVehicleType(),
                 dto.getEstimatedDistanceKm()
         );
