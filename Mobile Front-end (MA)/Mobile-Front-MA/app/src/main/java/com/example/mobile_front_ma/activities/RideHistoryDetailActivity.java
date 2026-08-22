@@ -2,7 +2,6 @@ package com.example.mobile_front_ma.activities;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -29,7 +28,6 @@ import com.example.mobile_front_ma.models.dto.RideRatingDto;
 import com.example.mobile_front_ma.util.Resource;
 import com.example.mobile_front_ma.viewmodels.RideDetailViewModel;
 
-import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
@@ -90,11 +88,6 @@ public class RideHistoryDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        Context ctx = getApplicationContext();
-        Configuration.getInstance().load(ctx,
-                ctx.getSharedPreferences("osmdroid", Context.MODE_PRIVATE));
-        Configuration.getInstance().setUserAgentValue(ctx.getPackageName());
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_ride_history_detail);
