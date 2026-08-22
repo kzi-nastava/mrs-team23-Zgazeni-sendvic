@@ -9,7 +9,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.example.mobile_front_ma"
+        applicationId "rs.ac.uns.ftn.zgazenisendvic"
         minSdk 33
         targetSdk 36
         versionCode 1

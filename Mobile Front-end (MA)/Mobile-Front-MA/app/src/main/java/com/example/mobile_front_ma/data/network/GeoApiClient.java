@@ -17,8 +17,9 @@ public final class GeoApiClient {
     private static final String NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org/";
     private static final String OSRM_BASE_URL = "https://router.project-osrm.org/";
 
-    // Nominatim's usage policy requires an identifying User-Agent on every request.
-    private static final String USER_AGENT = "ZgazeniSendvicMA/1.0 (SIIT student project)";
+    // OSM's services (Nominatim, OSRM and the tile servers) all require an identifying
+    // User-Agent. Shared with MobileFrontApp, which applies it to osmdroid's tile requests.
+    public static final String USER_AGENT = "ZgazeniSendvicMA/1.0 (SIIT student project)";
 
     private static OkHttpClient httpClient;
     private static NominatimApi nominatimApi;

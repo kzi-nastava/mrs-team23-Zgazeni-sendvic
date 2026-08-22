@@ -1,6 +1,5 @@
 package com.example.mobile_front_ma.ui.map;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +19,6 @@ import com.example.mobile_front_ma.models.RouteEstimate;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
-import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
@@ -56,16 +54,6 @@ public class MapFragment extends Fragment
     private Polyline routeLine;
     private Marker startMarker;
     private Marker endMarker;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // osmdroid needs an identifying user agent set before any tile/map request.
-        Context ctx = requireContext().getApplicationContext();
-        Configuration.getInstance().load(ctx,
-                ctx.getSharedPreferences("osmdroid", Context.MODE_PRIVATE));
-        Configuration.getInstance().setUserAgentValue(ctx.getPackageName());
-    }
 
     @Nullable
     @Override
