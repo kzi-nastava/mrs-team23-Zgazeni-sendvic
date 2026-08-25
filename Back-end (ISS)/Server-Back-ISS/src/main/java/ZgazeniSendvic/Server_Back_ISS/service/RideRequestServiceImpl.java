@@ -41,6 +41,17 @@ public class RideRequestServiceImpl implements IRideRequestService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
         }
 
+        long activeRides =
+                rideRepository.countActiveRidesForPassenger(creator.getId());
+
+        if (activeRides > 0) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "You cannot order a new ride while you are on an active ride"
+            );
+        }
+
         // basic validation
         if (dto.getLocations() == null || dto.getLocations().size() < 2) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least start and destination are required");
@@ -90,6 +101,17 @@ public class RideRequestServiceImpl implements IRideRequestService {
         // and rebuild a fresh request from it (spec 2.9.1 / 2.9.3 "order the same route again").
         Ride ride = rideRepository.findById(rideID)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found"));
+
+        long activeRides =
+                rideRepository.countActiveRidesForPassenger(ride.getCreator().getId());
+
+        if (activeRides > 0) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "You cannot order a new ride while you are on an active ride"
+            );
+        }
 
         // The Ride doesn't store the original vehicle type / distance, so we fall back to a
         // sensible default and a 0 distance. Only the route (locations) is preserved.

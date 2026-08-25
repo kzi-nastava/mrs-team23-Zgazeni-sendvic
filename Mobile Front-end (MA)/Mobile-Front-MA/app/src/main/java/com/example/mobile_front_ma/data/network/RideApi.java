@@ -1,12 +1,17 @@
 package com.example.mobile_front_ma.data.network;
 
+import com.example.mobile_front_ma.models.dto.DriverRideResponse;
 import com.example.mobile_front_ma.models.dto.PanicResponse;
 import com.example.mobile_front_ma.models.dto.RideCancelRequest;
+import com.example.mobile_front_ma.models.dto.RideStartRequest;
 import com.example.mobile_front_ma.models.dto.RideStopRequest;
 import com.example.mobile_front_ma.models.dto.RideStoppedResponse;
 
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
@@ -35,4 +40,10 @@ public interface RideApi {
      */
     @POST("api/ride-PANIC/{rideID}")
     Call<PanicResponse> panicRide(@Path("rideID") long rideID);
+
+    @PUT("api/ride-start")
+    Call<Void> startRide(@Body RideStartRequest request);
+
+    @GET("api/driver-rides")
+    Call<List<DriverRideResponse>> getDriverRides();
 }

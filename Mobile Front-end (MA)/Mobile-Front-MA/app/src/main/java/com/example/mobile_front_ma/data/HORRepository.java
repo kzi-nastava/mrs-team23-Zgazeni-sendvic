@@ -1,18 +1,72 @@
 package com.example.mobile_front_ma.data;
 
+import android.content.Context;
+
+import androidx.annotation.NonNull;
+
+import com.example.mobile_front_ma.data.network.ApiCallback;
+import com.example.mobile_front_ma.data.network.ApiClient;
+import com.example.mobile_front_ma.data.network.RideApi;
 import com.example.mobile_front_ma.models.Ride;
+import com.example.mobile_front_ma.models.dto.DriverRideResponse;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class HORRepository {
 
-    public List<Ride> getTestRides() {
-        List<Ride> rides = new ArrayList<>();
-        rides.add(new Ride("Bulevar Oslobodjenja 68", "Mikole Koscica 2", "1250", "2026-01-20"));
-        rides.add(new Ride("Milosa Crnjanskog 6", "Doza Djerdja 43", "800", "2026-01-19"));
-        rides.add(new Ride("Branka Bajica 25", "Berislava Berica 16", "2500", "2026-01-18"));
-        rides.add(new Ride("Lukijana Musickog 77", "Stevana Branovackog 13", "675", "2026-01-17"));
-        return rides;
+    private final RideApi api;
+
+    public HORRepository(Context context) {
+        api = ApiClient.createAuthenticated(
+                context,
+                RideApi.class
+        );
+    }
+
+    public void getDriverRides(
+            ApiCallback<List<DriverRideResponse>> callback
+    ) {
+
+        api.getDriverRides().enqueue(
+                new Callback<List<DriverRideResponse>>() {
+
+                    @Override
+                    public void onResponse(
+                            @NonNull Call<List<DriverRideResponse>> call,
+                            @NonNull Response<List<DriverRideResponse>> response
+                    ) {
+
+                        if (response.isSuccessful() &&
+                                response.body() != null) {
+
+                            callback.onSuccess(
+                                    response.body()
+                            );
+
+                        } else {
+
+                            callback.onError(
+                                    "Could not load driver rides."
+                            );
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            @NonNull Call<List<DriverRideResponse>> call,
+                            @NonNull Throwable t
+                    ) {
+
+                        callback.onError(
+                                "Cannot reach the server."
+                        );
+                    }
+                }
+        );
     }
 }

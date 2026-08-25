@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -13,50 +14,102 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mobile_front_ma.R;
+import com.example.mobile_front_ma.adapters.DriverRidesAdapter;
 import com.example.mobile_front_ma.adapters.RidesAdapter;
 import com.example.mobile_front_ma.viewmodels.HORDriverViewModel;
 
 public class HORDriverActivity extends AppCompatActivity {
 
-    private RidesAdapter ridesAdapter;
+    private DriverRidesAdapter ridesAdapter;
     private HORDriverViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_hor_driver);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(
+                findViewById(R.id.main),
+                (v, insets) -> {
+                    Insets systemBars =
+                            insets.getInsets(
+                                    WindowInsetsCompat.Type.systemBars()
+                            );
+
+                    v.setPadding(
+                            systemBars.left,
+                            systemBars.top,
+                            systemBars.right,
+                            systemBars.bottom
+                    );
+
+                    return insets;
+                }
+        );
+
+        viewModel = new ViewModelProvider(this)
+                .get(HORDriverViewModel.class);
 
         configureMainButton();
         setupRecyclerView();
-        addRidesToList();
+        observeRides();
+
+        viewModel.loadRides();
     }
 
     private void setupRecyclerView() {
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        ridesAdapter = new RidesAdapter();
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        RecyclerView recyclerView =
+                findViewById(R.id.recyclerView);
+
+        ridesAdapter =
+                new DriverRidesAdapter(
+                        this::showStartRideConfirmation
+                );
+
+        recyclerView.setLayoutManager(
+                new LinearLayoutManager(this)
+        );
+
         recyclerView.setAdapter(ridesAdapter);
     }
 
-    private void addRidesToList() {
-        viewModel = new ViewModelProvider(this).get(HORDriverViewModel.class);
+    private void showStartRideConfirmation(long rideId) {
+
+        new AlertDialog.Builder(this)
+                .setTitle("Start ride")
+                .setMessage(
+                        "Are you sure you want to start this ride?"
+                )
+                .setNegativeButton(
+                        "Cancel",
+                        null
+                )
+                .setPositiveButton(
+                        "Start",
+                        (dialog, which) -> viewModel.startRide(rideId)
+                )
+                .show();
+    }
+
+    private void observeRides() {
+
         viewModel.getRidesLiveData().observe(this, rides -> {
+
             if (rides != null) {
                 ridesAdapter.submitList(rides);
             }
+
         });
     }
 
     private void configureMainButton() {
-        Button horMainButton = findViewById(R.id.horDriverHomeButton);
-        horMainButton.setOnClickListener(v -> {
-            finish();
-        });
+
+        Button horMainButton =
+                findViewById(R.id.horDriverHomeButton);
+
+        horMainButton.setOnClickListener(v -> finish());
     }
 }

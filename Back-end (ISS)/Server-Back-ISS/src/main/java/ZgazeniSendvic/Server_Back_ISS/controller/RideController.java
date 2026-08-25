@@ -240,4 +240,16 @@ class RideController {
         return new ResponseEntity<>(ridesOverview, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
+    @GetMapping(
+            value = "driver-rides",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<List<NextRideDTO>> getDriverRides() {
+
+        return ResponseEntity.ok(
+                rideService.getDriverRides()
+        );
+    }
+
 }

@@ -12,6 +12,10 @@ public class NextRideDTO {
     private String endLocation;
     @Getter @Setter
     private String departureTime;
+    @Getter @Setter
+    private String status;
+    @Getter @Setter
+    private Double price;
 
     public NextRideDTO() {
     }
