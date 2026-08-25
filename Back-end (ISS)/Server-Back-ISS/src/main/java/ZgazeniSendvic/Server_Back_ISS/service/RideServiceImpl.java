@@ -321,7 +321,7 @@ public class RideServiceImpl implements IRideService {
 
         }
         //now check if passenger, if it is compare dates using the the 10 min func
-            boolean isPassenger = false;
+            boolean isPassenger = ride.getCreator() != null && Objects.equals(ride.getCreator().getId(), requester.getId());
             for(Account passenger : ride.getPassengers()){
                 if(Objects.equals(passenger.getId(), requester.getId())){
                     isPassenger = true;
