@@ -263,7 +263,7 @@ public class DataLoader {
             rideDriverRatingRepository.save(rating3);
             System.out.println("Created RideDriverRating for Ride 3");
 
-            // Ride 4: Accounts A & B with Driver 1 (created 10 days ago, ACTIVE status)
+            // Ride 4: Accounts A & B with Driver 1 (created 10 days ago, FINISHED status)
             Ride ride4 = new Ride();
             ride4.setDriver(driver1);
             ride4.setCreator(accountA);
@@ -283,7 +283,7 @@ public class DataLoader {
             ride4.setCreationDate(ride4CreationTime);
             ride4.setStartTime(ride4CreationTime.plusMinutes(10));
             ride4.setEndTime(ride4CreationTime.plusMinutes(30));
-            ride4.setStatus(RideStatus.ACTIVE);
+            ride4.setStatus(RideStatus.FINISHED);
             ride4.setPanic(false);
             ride4.setStartLatitude(44.8600);
             ride4.setStartLongitude(20.4800);
@@ -292,7 +292,7 @@ public class DataLoader {
             ride4.setCurrentLatitude(44.8650);
             ride4.setCurrentLongitude(20.4850);
             ride4 = rideRepository.save(ride4);
-            System.out.println("Created Ride 4 (Accounts A & B, Driver 1, ACTIVE, 10 days ago)");
+            System.out.println("Created Ride 4 (Accounts A & B, Driver 1, FINISHED, 10 days ago)");
 
             // Create RideNote for Ride 4 (from Account A)
             RideNote note4a = new RideNote(

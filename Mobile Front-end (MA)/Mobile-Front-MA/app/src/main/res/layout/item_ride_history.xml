@@ -33,6 +33,17 @@
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
+            <ImageButton
+                android:id="@+id/favoriteButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Save route as favorite"
+                android:padding="6dp"
+                android:src="@drawable/ic_star_outline"
+                app:tint="@color/bluack" />
+
             <TextView
                 android:id="@+id/priceTextView"
                 android:layout_width="wrap_content"
@@ -43,6 +54,7 @@
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:visibility="gone" />
+
         </LinearLayout>
 
         <TextView

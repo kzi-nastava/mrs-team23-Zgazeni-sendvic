@@ -22,6 +22,7 @@ import com.example.mobile_front_ma.adapters.AccountAdapter;
 import com.example.mobile_front_ma.models.dto.AccountListItem;
 import com.example.mobile_front_ma.util.Resource;
 import com.example.mobile_front_ma.viewmodels.AccountSearchViewModel;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
@@ -111,10 +112,43 @@ public class AdminHistoryEntryActivity extends AppCompatActivity
         if (account.id == null) {
             return;
         }
-        Intent intent = new Intent(this, RideHistoryActivity.class);
-        intent.putExtra(RideHistoryActivity.EXTRA_MODE, RideHistoryActivity.MODE_ADMIN);
-        intent.putExtra(RideHistoryActivity.EXTRA_TARGET_ID, account.id);
-        intent.putExtra(RideHistoryActivity.EXTRA_TARGET_NAME, account.fullName());
-        startActivity(intent);
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(account.fullName())
+                .setMessage(account.email + "\n\nWhat would you like to do?")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("View Ride History", (dialog, which) -> {
+                    Intent intent = new Intent(this, RideHistoryActivity.class);
+                    intent.putExtra(
+                            RideHistoryActivity.EXTRA_MODE,
+                            RideHistoryActivity.MODE_ADMIN
+                    );
+                    intent.putExtra(
+                            RideHistoryActivity.EXTRA_TARGET_ID,
+                            account.id
+                    );
+                    intent.putExtra(
+                            RideHistoryActivity.EXTRA_TARGET_NAME,
+                            account.fullName()
+                    );
+                    startActivity(intent);
+                })
+                .setNeutralButton("Ban Account", (dialog, which) -> {
+                    Intent intent = new Intent(this, BanAccountActivity.class);
+                    intent.putExtra(
+                            BanAccountActivity.EXTRA_ACCOUNT_ID,
+                            account.id
+                    );
+                    intent.putExtra(
+                            BanAccountActivity.EXTRA_ACCOUNT_NAME,
+                            account.fullName()
+                    );
+                    intent.putExtra(
+                            BanAccountActivity.EXTRA_ACCOUNT_EMAIL,
+                            account.email
+                    );
+                    startActivity(intent);
+                })
+                .show();
     }
 }

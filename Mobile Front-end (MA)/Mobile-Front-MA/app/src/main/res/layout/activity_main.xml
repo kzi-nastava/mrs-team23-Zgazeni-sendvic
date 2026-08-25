@@ -21,6 +21,13 @@
             android:layout_height="wrap_content"
             android:text="@string/hor_driver_button_text" />
 
+        <Button
+            android:id="@+id/favoriteRoutesButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/favorite_routes_main" />
+
         <!-- Admin-only: open the panic-alerts screen (spec 2.6.3). Shown from MainActivity. -->
         <Button
             android:id="@+id/panicAlertsButton"
@@ -43,6 +50,16 @@
             android:contentDescription="@string/hor_panic_button_desc"
             android:text="@string/hor_panic_button"
             android:textColor="@color/white"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/registerDriverButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_primary_button"
+            android:text="@string/register_driver_button"
+            android:textColor="@android:color/white"
             android:visibility="gone" />
     </LinearLayout>
 

@@ -66,10 +66,10 @@ public class AccountController {
     @PreAuthorize("hasAnyRole('DRIVER','ADMIN','USER')")
     @PutMapping(value = "/me/change-request",
                 consumes = MediaType.APPLICATION_JSON_VALUE,
-                produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> updateAccount(@RequestBody UpdateAccountDTO dto) {
         Account updated = accountService.updateAccount(dto);
-        return ResponseEntity.ok("Account updated: " + updated);
+        return ResponseEntity.ok("Account updated successfully.");
     }
 
     @PreAuthorize("hasRole('ADMIN')")

@@ -15,6 +15,9 @@ import com.example.mobile_front_ma.models.dto.RegisterRequest;
 import com.example.mobile_front_ma.models.dto.RegisterResponse;
 import com.example.mobile_front_ma.models.dto.ResetPasswordRequest;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 import okhttp3.MediaType;
@@ -46,7 +49,7 @@ public class AuthRepository {
                 if (response.isSuccessful() && response.body() != null) {
                     callback.onSuccess(response.body());
                 } else {
-                    callback.onError(loginErrorMessage(response.code()));
+                    callback.onError(loginErrorMessage(response));
                 }
             }
 
@@ -189,14 +192,67 @@ public class AuthRepository {
         });
     }
 
-    private String loginErrorMessage(int code) {
-        if (code == 401 || code == 403) {
+    private String loginErrorMessage(Response<?> response) {
+
+        int code = response.code();
+
+        // Always inspect the backend error body first.
+        String body = readErrorBody(response);
+
+        if (body != null && !body.isBlank()) {
+
+            String message = extractMessage(body);
+
+            // Spring ResponseStatusException:
+            // {
+            //   "timestamp": "...",
+            //   "status": 403,
+            //   "error": "Forbidden",
+            //   "message": "Account is banned: Some reason",
+            //   "path": "..."
+            // }
+            if (message != null && !message.isBlank()) {
+
+                // Specifically recognize a ban response.
+                if (message.toLowerCase().contains("account is banned")) {
+                    return message;
+                }
+
+                // For other backend messages, return the message as well.
+                return message;
+            }
+
+            // Fallback if backend sends plain text rather than JSON.
+            String plainBody = body.trim().replace("\"", "");
+
+            if (!plainBody.isBlank()) {
+                return plainBody;
+            }
+        }
+
+        // Normal authentication failure.
+        if (code == 401) {
             return "Invalid email or password, or your account hasn't been activated yet.";
         }
+
         if (code == 400) {
             return "Please enter a valid email and password.";
         }
+
+        if (code == 403) {
+            return "Your account has been banned.";
+        }
+
         return "Login failed (error " + code + ").";
+    }
+
+    private String extractMessage(String body) {
+        try {
+            JSONObject json = new JSONObject(body);
+            return json.optString("message", null);
+        } catch (JSONException e) {
+            return null;
+        }
     }
 
     private String registerErrorMessage(Response<?> response) {

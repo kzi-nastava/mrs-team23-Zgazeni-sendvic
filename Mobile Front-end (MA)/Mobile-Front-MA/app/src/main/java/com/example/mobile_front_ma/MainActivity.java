@@ -19,6 +19,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.mobile_front_ma.activities.AdminHistoryEntryActivity;
+import com.example.mobile_front_ma.activities.DriverRegistrationActivity;
+import com.example.mobile_front_ma.activities.FavoriteRoutesActivity;
 import com.example.mobile_front_ma.activities.HORDriverActivity;
 import com.example.mobile_front_ma.activities.PanicNotificationsActivity;
 import com.example.mobile_front_ma.activities.RideHistoryActivity;
@@ -30,6 +32,7 @@ import com.example.mobile_front_ma.data.realtime.PanicForegroundService;
 import com.example.mobile_front_ma.models.dto.PanicResponse;
 import com.example.mobile_front_ma.ui.map.MapFragment;
 import com.example.mobile_front_ma.ui.navbar.NavBarFragment;
+import com.example.mobile_front_ma.ui.profile.ProfileFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavBarFragment.NavBarListener {
@@ -52,7 +55,8 @@ public class MainActivity extends AppCompatActivity
         configureHORDriverButton();
         configurePanicButton();
         configureRaisePanicButton();
-
+        configureRegisterDriverButton();
+        configureFavoriteRoutesButton();
 
         if (savedInstanceState == null) {
             // Load default fragments
@@ -71,7 +75,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onProfileClicked() {
-        navigateTo(new com.example.mobile_front_ma.ui.profile.ProfileCardFragment());
+        navigateTo(new ProfileFragment());
     }
 
     private void navigateTo(Fragment fragment) {
@@ -80,6 +84,60 @@ public class MainActivity extends AppCompatActivity
                 .replace(R.id.mainFragmentContainer, fragment)
                 .addToBackStack(null)
                 .commit();
+    }
+
+    private void configureFavoriteRoutesButton() {
+
+        Button favoriteRoutesButton =
+                findViewById(R.id.favoriteRoutesButton);
+
+        String role =
+                new SessionManager(this).getRole();
+
+        if ("ADMIN".equalsIgnoreCase(role)
+                || "DRIVER".equalsIgnoreCase(role)) {
+
+            favoriteRoutesButton.setVisibility(View.GONE);
+            return;
+        }
+
+        favoriteRoutesButton.setVisibility(View.VISIBLE);
+
+        favoriteRoutesButton.setOnClickListener(v ->
+                startActivity(
+                        new Intent(
+                                this,
+                                FavoriteRoutesActivity.class
+                        )
+                )
+        );
+    }
+
+    private void configureRegisterDriverButton() {
+
+        Button registerDriverButton =
+                findViewById(R.id.registerDriverButton);
+
+        boolean isAdmin =
+                "ADMIN".equalsIgnoreCase(
+                        new SessionManager(this).getRole()
+                );
+
+        if (!isAdmin) {
+            registerDriverButton.setVisibility(View.GONE);
+            return;
+        }
+
+        registerDriverButton.setVisibility(View.VISIBLE);
+
+        registerDriverButton.setOnClickListener(v -> {
+            startActivity(
+                    new Intent(
+                            this,
+                            DriverRegistrationActivity.class
+                    )
+            );
+        });
     }
     
     private void configureHORDriverButton() {

@@ -58,6 +58,24 @@
             android:name=".activities.PanicNotificationsActivity"
             android:exported="false" />
         <activity
+            android:name=".activities.EditProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.DriverRegistrationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.RideOrderActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.FavoriteRoutesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.BanAccountActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.ReportsActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
 

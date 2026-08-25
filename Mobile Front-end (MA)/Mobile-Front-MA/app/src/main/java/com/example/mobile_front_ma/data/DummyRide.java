@@ -1,5 +1,7 @@
 package com.example.mobile_front_ma.data;
 
+import com.example.mobile_front_ma.ui.profile.ProfileFragment;
+
 /**
  * Dummy "current ride" info for the logged-in mobile user.
  *
@@ -8,7 +10,7 @@ package com.example.mobile_front_ma.data;
  * back to this one shared dummy ride:
  * <ul>
  *     <li>Stop a ride in progress (spec 2.6.5) –
- *         {@link com.example.mobile_front_ma.ui.profile.ProfileCardFragment}</li>
+ *         {@link ProfileFragment}</li>
  *     <li>Raise the PANIC alarm (spec 2.6.3) –
  *         {@link com.example.mobile_front_ma.MainActivity}</li>
  * </ul>
