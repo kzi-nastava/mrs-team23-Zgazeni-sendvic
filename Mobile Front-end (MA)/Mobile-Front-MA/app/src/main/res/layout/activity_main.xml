@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main"
     android:layout_width="match_parent"
@@ -7,74 +8,132 @@
     android:orientation="vertical"
     android:background="@drawable/bg_gradient">
 
-
+    <!-- Compact top button area -->
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp">
 
-        <Button
-            android:id="@+id/rideTrackingButton"
-            android:layout_width="wrap_content"
+        <!-- Row 1 -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/ride_tracking_button" />
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/activeRidesButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="Active Rides"
-            android:visibility="gone" />
+            <Button
+                android:id="@+id/rideTrackingButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="@string/ride_tracking_button"
+                android:textSize="12sp" />
 
-        <Button
-            android:id="@+id/horDriverButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/hor_driver_button_text" />
+            <Button
+                android:id="@+id/activeRidesButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="Active Rides"
+                android:textSize="12sp"
+                android:visibility="gone" />
 
-        <Button
-            android:id="@+id/favoriteRoutesButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="@string/favorite_routes_main" />
+            <Button
+                android:id="@+id/horDriverButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="@string/hor_driver_button_text"
+                android:textSize="12sp" />
 
-        <!-- Admin-only: open the panic-alerts screen (spec 2.6.3). Shown from MainActivity. -->
-        <Button
-            android:id="@+id/panicAlertsButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:backgroundTint="@color/panicRed"
-            android:text="@string/panic_alerts_button"
-            android:textColor="@color/white"
-            android:visibility="gone" />
+        </LinearLayout>
 
-        <!-- Participant-only: raise the PANIC alarm on the ride in progress (spec 2.6.3).
-             Shown to a driver/passenger; admins get the alerts screen above instead. -->
-        <Button
-            android:id="@+id/raisePanicButton"
-            android:layout_width="wrap_content"
+        <!-- Row 2 -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:backgroundTint="@color/panicRed"
-            android:contentDescription="@string/hor_panic_button_desc"
-            android:text="@string/hor_panic_button"
-            android:textColor="@color/white"
-            android:visibility="gone" />
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/registerDriverButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:background="@drawable/bg_primary_button"
-            android:text="@string/register_driver_button"
-            android:textColor="@android:color/white"
-            android:visibility="gone" />
+            <Button
+                android:id="@+id/favoriteRoutesButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="@string/favorite_routes_main"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/panicAlertsButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:backgroundTint="@color/panicRed"
+                android:text="@string/panic_alerts_button"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/raisePanicButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:backgroundTint="@color/panicRed"
+                android:contentDescription="@string/hor_panic_button_desc"
+                android:text="@string/hor_panic_button"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/registerDriverButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:background="@drawable/bg_primary_button"
+                android:text="@string/register_driver_button"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
     <!-- Main content -->
