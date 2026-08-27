@@ -540,7 +540,7 @@ public class RideServiceImpl implements IRideService {
                 if (passenger == null || passenger.getEmail() == null) continue;
                 try {
                     EmailDetails details = new EmailDetails();
-                    details.setRecipient("aleksanen04@gmail.com");
+                    details.setRecipient(passenger.getEmail());
                     details.setSubject("Ride ended");
                     details.setMsgBody("Your ride (ID: " + ride.getId() + ") has ended. Final price: " + ride.getTotalPrice());
                     emailService.sendSimpleMail(details);
@@ -604,7 +604,7 @@ public class RideServiceImpl implements IRideService {
                 if (passenger == null || passenger.getEmail() == null) continue;
                 try {
                     EmailDetails details = new EmailDetails();
-                    details.setRecipient("aleksanen04@gmail.com");
+                    details.setRecipient(passenger.getEmail());
                     details.setSubject("Ride ended");
                     details.setMsgBody("Your ride (ID: " + ride.getId() + ") has ended. Final price: " + ride.getTotalPrice());
                     emailService.sendSimpleMail(details);
