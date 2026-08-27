@@ -2,6 +2,9 @@ package com.example.mobile_front_ma.models.dto;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * Matches backend RideNoteDTO for adding a note/report to a ride.
+ */
 public class RideNoteDTO {
     @SerializedName("rideId")
     public Long rideId;

@@ -2,15 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
-// The backend address differs per machine: the emulator reaches the host PC at
-// 10.0.2.2, while a physical phone needs the PC's LAN IP. Rather than editing a
-// shared source file (and committing it by accident), override it in
-// local.properties, which is git-ignored:
-//
-//     backendUrl=http://192.168.1.113:8080/
-//
-// Any address used here must also be listed in res/xml/network_security_config.xml,
-// because the backend speaks plain HTTP and Android blocks cleartext by default.
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -20,19 +11,17 @@ def backendUrl = localProperties.getProperty('backendUrl') ?: 'http://10.0.2.2:8
 
 android {
     namespace 'com.example.mobile_front_ma'
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk 35
 
     defaultConfig {
+        // Changed back from com.example to a unique ID to follow OSM policy
         applicationId "rs.ac.uns.ftn.zgazenisendvic"
-        minSdk 33
-        targetSdk 36
+        minSdk 26
+        targetSdk 35
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
         buildConfigField "String", "BACKEND_URL", "\"${backendUrl}\""
     }
 

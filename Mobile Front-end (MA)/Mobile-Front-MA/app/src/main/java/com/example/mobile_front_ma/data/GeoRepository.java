@@ -43,7 +43,7 @@ public class GeoRepository {
 
     /** Autocomplete: addresses in Novi Sad matching the typed text. */
     public void searchPlaces(String query, ApiCallback<List<Place>> callback) {
-        nominatimApi.search(query, "jsonv2", 1, 10, "rs",
+        nominatimApi.search(query, "jsonv2", 1, 6, "rs",
                         NOVI_SAD_VIEWBOX, 1, "sr,en")
                 .enqueue(new Callback<List<NominatimPlace>>() {
                     @Override
@@ -67,12 +67,31 @@ public class GeoRepository {
     /** Estimation: driving route + time/distance between the two chosen points. */
     public void estimateRoute(Place start, Place destination,
                               ApiCallback<RouteEstimate> callback) {
-        // OSRM expects lon,lat;lon,lat
-        String coordinates = String.format(Locale.US, "%f,%f;%f,%f",
-                start.getLon(), start.getLat(),
-                destination.getLon(), destination.getLat());
+        List<Place> points = new ArrayList<>();
+        points.add(start);
+        points.add(destination);
+        estimateRoute(points, callback);
+    }
 
-        osrmApi.route(coordinates, "full", "geojson")
+    /**
+     * Estimation: driving route + time/distance through a sequence of points (waypoints).
+     */
+    public void estimateRoute(List<Place> points, ApiCallback<RouteEstimate> callback) {
+        if (points == null || points.size() < 2) {
+            callback.onError("At least two points are required for a route.");
+            return;
+        }
+
+        StringBuilder coords = new StringBuilder();
+        for (int i = 0; i < points.size(); i++) {
+            if (i > 0) {
+                coords.append(';');
+            }
+            Place p = points.get(i);
+            coords.append(String.format(Locale.US, "%f,%f", p.getLon(), p.getLat()));
+        }
+
+        osrmApi.route(coords.toString(), "full", "geojson")
                 .enqueue(new Callback<OsrmRouteResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<OsrmRouteResponse> call,
@@ -94,70 +113,27 @@ public class GeoRepository {
                 });
     }
 
-    public void estimateRoute(
-            List<Place> locations,
-            ApiCallback<RouteEstimate> callback) {
+    /**
+     * Reverse geocoding: turns coordinates into a human-readable address.
+     */
+    public void getAddress(double lat, double lon, ApiCallback<String> callback) {
+        nominatimApi.reverse(lat, lon, "jsonv2", 18, 1)
+                .enqueue(new Callback<NominatimPlace>() {
+                    @Override
+                    public void onResponse(@NonNull Call<NominatimPlace> call,
+                                           @NonNull Response<NominatimPlace> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            callback.onSuccess(shortLabel(response.body().displayName));
+                        } else {
+                            callback.onError("Could not resolve address.");
+                        }
+                    }
 
-        if (locations == null || locations.size() < 2) {
-            callback.onError("At least a start and destination are required.");
-            return;
-        }
-
-        StringBuilder coordinates = new StringBuilder();
-
-        for (int i = 0; i < locations.size(); i++) {
-
-            if (i > 0) {
-                coordinates.append(";");
-            }
-
-            Place place = locations.get(i);
-
-            coordinates.append(
-                    String.format(
-                            Locale.US,
-                            "%f,%f",
-                            place.getLon(),
-                            place.getLat()
-                    )
-            );
-        }
-
-        osrmApi.route(
-                coordinates.toString(),
-                "full",
-                "geojson"
-        ).enqueue(new Callback<OsrmRouteResponse>() {
-
-            @Override
-            public void onResponse(
-                    @NonNull Call<OsrmRouteResponse> call,
-                    @NonNull Response<OsrmRouteResponse> response) {
-
-                OsrmRouteResponse body = response.body();
-
-                if (response.isSuccessful()
-                        && body != null
-                        && body.routes != null
-                        && !body.routes.isEmpty()) {
-
-                    callback.onSuccess(toEstimate(body.routes.get(0)));
-
-                } else {
-                    callback.onError(
-                            "Couldn't calculate the route. Try different points."
-                    );
-                }
-            }
-
-            @Override
-            public void onFailure(
-                    @NonNull Call<OsrmRouteResponse> call,
-                    @NonNull Throwable t) {
-
-                callback.onError(networkErrorMessage());
-            }
-        });
+                    @Override
+                    public void onFailure(@NonNull Call<NominatimPlace> call, @NonNull Throwable t) {
+                        callback.onError(networkErrorMessage());
+                    }
+                });
     }
 
     private List<Place> toPlaces(List<NominatimPlace> raw) {
