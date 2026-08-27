@@ -321,7 +321,7 @@ public class RideServiceImpl implements IRideService {
 
         }
         //now check if passenger, if it is compare dates using the the 10 min func
-            boolean isPassenger = false;
+            boolean isPassenger = ride.getCreator() != null && Objects.equals(ride.getCreator().getId(), requester.getId());
             for(Account passenger : ride.getPassengers()){
                 if(Objects.equals(passenger.getId(), requester.getId())){
                     isPassenger = true;
@@ -412,20 +412,73 @@ public class RideServiceImpl implements IRideService {
     }
 
     public void startRide(Long rideId) {
+
         Ride ride = allRides.findById(rideId)
-                .orElseThrow(() -> new RuntimeException("Ride not found"));
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Ride not found"
+                        )
+                );
 
-        if (ride.isCanceled()) {
-            throw new RuntimeException("Cannot start a canceled ride");
+        // The ride must actually be scheduled.
+        if (ride.getStatus() != RideStatus.SCHEDULED) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Only scheduled rides can be started"
+            );
         }
 
-        if (ride.isStarted()) {
-            throw new RuntimeException("Ride already started");
+        // Make sure the authenticated driver is actually the driver
+        // assigned to this ride.
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null ||
+                !(auth.getPrincipal() instanceof CustomUserDetails)) {
+
+            throw new AccessDeniedException(
+                    "Driver authentication required"
+            );
         }
 
+        CustomUserDetails userDetails =
+                (CustomUserDetails) auth.getPrincipal();
+
+        Account account =
+                userDetails.getAccount();
+
+        if (ride.getDriver() == null ||
+                !Objects.equals(
+                        ride.getDriver().getId(),
+                        account.getId()
+                )) {
+
+            throw new AccessDeniedException(
+                    "Only the assigned driver can start this ride"
+            );
+        }
+
+        Driver driver = ride.getDriver();
+
+        // IMPORTANT:
+        // Check whether this driver already has an active ride.
+        Ride activeRide =
+                allRides.findActiveRideByDriver(driver);
+
+        if (activeRide != null) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Driver already has an active ride"
+            );
+        }
+
+        // Everything is valid.
         ride.setStatus(RideStatus.ACTIVE);
         ride.setStartTime(LocalDateTime.now());
-        allRides.save(ride);
+
+        allRides.saveAndFlush(ride);
     }
 
     public RideStoppedDTO stopRide(Long rideID, RideStopDTO stopReq){
@@ -686,6 +739,68 @@ public class RideServiceImpl implements IRideService {
         return firstName.toLowerCase(Locale.ROOT).contains(normalizedDriverName)
                 || lastName.toLowerCase(Locale.ROOT).contains(normalizedDriverName)
                 || fullName.toLowerCase(Locale.ROOT).contains(normalizedDriverName);
+    }
+
+    public List<NextRideDTO> getDriverRides() {
+
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        CustomUserDetails userDetails =
+                (CustomUserDetails) auth.getPrincipal();
+
+        Driver driver =
+                (Driver) userDetails.getAccount();
+
+        List<Ride> rides =
+                allRides.findByDriverOrderByScheduledTimeDesc(driver);
+
+        return rides.stream()
+                .map(this::convertToNextRideDTO)
+                .toList();
+    }
+
+    private NextRideDTO convertToNextRideDTO(Ride ride) {
+
+        NextRideDTO dto = new NextRideDTO();
+
+        dto.setRideId(ride.getId());
+
+        if (ride.getLocations() != null &&
+                !ride.getLocations().isEmpty()) {
+
+            dto.setStartLocation(
+                    ride.getLocations()
+                            .get(0)
+                            .toString()
+            );
+
+            if (ride.getLocations().size() > 1) {
+
+                dto.setEndLocation(
+                        ride.getLocations()
+                                .get(ride.getLocations().size() - 1)
+                                .toString()
+                );
+            }
+        }
+
+        if (ride.getScheduledTime() != null) {
+
+            dto.setDepartureTime(
+                    ride.getScheduledTime().toString()
+            );
+        }
+
+        dto.setStatus(
+                ride.getStatus() != null
+                        ? ride.getStatus().name()
+                        : null
+        );
+
+        dto.setPrice(ride.getTotalPrice());
+
+        return dto;
     }
 
     @Override

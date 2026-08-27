@@ -1,5 +1,6 @@
 package com.example.mobile_front_ma.ui.map;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.mobile_front_ma.R;
+import com.example.mobile_front_ma.activities.RideOrderActivity;
 import com.example.mobile_front_ma.data.GeoRepository;
 import com.example.mobile_front_ma.data.RideRepository;
 import com.example.mobile_front_ma.data.network.ApiCallback;
@@ -52,6 +54,7 @@ public class MapFragment extends Fragment
 
     private MapView map;
     private ExtendedFloatingActionButton estimateFab;
+    private ExtendedFloatingActionButton orderRideFab;
     private MaterialCardView resultCard;
     private TextView resultEndpoints;
     private TextView resultTime;
@@ -93,6 +96,10 @@ public class MapFragment extends Fragment
 
         estimateFab = view.findViewById(R.id.estimateFab);
         estimateFab.setOnClickListener(v -> openEstimateForm());
+
+        orderRideFab = view.findViewById(R.id.orderRideFab);
+        orderRideFab.setOnClickListener(v -> openRideOrder());
+
         view.findViewById(R.id.resultClose).setOnClickListener(v -> clearRoute());
 
         fetchAndShowVehicles();
@@ -142,6 +149,11 @@ public class MapFragment extends Fragment
     private void openEstimateForm() {
         new RideEstimateBottomSheetFragment()
                 .show(getChildFragmentManager(), "ride_estimate");
+    }
+
+    private void openRideOrder() {
+        Intent intent = new Intent(requireContext(), RideOrderActivity.class);
+        startActivity(intent);
     }
 
     @Override

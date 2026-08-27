@@ -1,16 +1,32 @@
 package com.example.mobile_front_ma.models;
 
 public class Ride {
-    private final String pickup;
-    private final String destination;
-    private final String fare;
-    private final String date;
 
-    public Ride(String pickup, String destination, String fare, String date) {
+    private Long rideId;
+    private String pickup;
+    private String destination;
+    private String fare;
+    private String date;
+    private String status;
+
+    public Ride(
+            Long rideId,
+            String pickup,
+            String destination,
+            String fare,
+            String date,
+            String status
+    ) {
+        this.rideId = rideId;
         this.pickup = pickup;
         this.destination = destination;
         this.fare = fare;
         this.date = date;
+        this.status = status;
+    }
+
+    public Long getRideId() {
+        return rideId;
     }
 
     public String getPickup() {
@@ -27,5 +43,9 @@ public class Ride {
 
     public String getDate() {
         return date;
+    }
+
+    public String getStatus() {
+        return status;
     }
 }

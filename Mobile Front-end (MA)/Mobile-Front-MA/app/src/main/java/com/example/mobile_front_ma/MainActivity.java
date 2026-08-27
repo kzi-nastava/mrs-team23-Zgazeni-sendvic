@@ -19,6 +19,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.mobile_front_ma.activities.AdminHistoryEntryActivity;
+import com.example.mobile_front_ma.activities.DriverRegistrationActivity;
+import com.example.mobile_front_ma.activities.FavoriteRoutesActivity;
 import com.example.mobile_front_ma.activities.HORDriverActivity;
 import com.example.mobile_front_ma.activities.PanicNotificationsActivity;
 import com.example.mobile_front_ma.activities.RideHistoryActivity;
@@ -32,6 +34,7 @@ import com.example.mobile_front_ma.ui.admin.ActiveRidesFragment;
 import com.example.mobile_front_ma.ui.map.MapFragment;
 import com.example.mobile_front_ma.ui.map.RideTrackingFragment;
 import com.example.mobile_front_ma.ui.navbar.NavBarFragment;
+import com.example.mobile_front_ma.ui.profile.ProfileFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavBarFragment.NavBarListener {
@@ -57,6 +60,8 @@ public class MainActivity extends AppCompatActivity
         configureRideTrackingButton();
         configureActiveRidesButton();
 
+        configureRegisterDriverButton();
+        configureFavoriteRoutesButton();
 
         if (savedInstanceState == null) {
             // Load default fragments
@@ -77,7 +82,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onProfileClicked() {
-        navigateTo(new com.example.mobile_front_ma.ui.profile.ProfileCardFragment());
+        navigateTo(new ProfileFragment());
     }
 
     private void navigateTo(Fragment fragment) {
@@ -113,7 +118,61 @@ public class MainActivity extends AppCompatActivity
             if (horDriverButton != null) horDriverButton.setVisibility(View.VISIBLE);
         }
     }
-    
+
+    private void configureFavoriteRoutesButton() {
+
+        Button favoriteRoutesButton =
+                findViewById(R.id.favoriteRoutesButton);
+
+        String role =
+                new SessionManager(this).getRole();
+
+        if ("ADMIN".equalsIgnoreCase(role)
+                || "DRIVER".equalsIgnoreCase(role)) {
+
+            favoriteRoutesButton.setVisibility(View.GONE);
+            return;
+        }
+
+        favoriteRoutesButton.setVisibility(View.VISIBLE);
+
+        favoriteRoutesButton.setOnClickListener(v ->
+                startActivity(
+                        new Intent(
+                                this,
+                                FavoriteRoutesActivity.class
+                        )
+                )
+        );
+    }
+
+    private void configureRegisterDriverButton() {
+
+        Button registerDriverButton =
+                findViewById(R.id.registerDriverButton);
+
+        boolean isAdmin =
+                "ADMIN".equalsIgnoreCase(
+                        new SessionManager(this).getRole()
+                );
+
+        if (!isAdmin) {
+            registerDriverButton.setVisibility(View.GONE);
+            return;
+        }
+
+        registerDriverButton.setVisibility(View.VISIBLE);
+
+        registerDriverButton.setOnClickListener(v -> {
+            startActivity(
+                    new Intent(
+                            this,
+                            DriverRegistrationActivity.class
+                    )
+            );
+        });
+    }
+
     private void configureHORDriverButton() {
         // The "History of Rides" button opens the screen matching the logged-in role:
         //  - registered user -> own history (spec 2.9.1)
@@ -170,12 +229,12 @@ public class MainActivity extends AppCompatActivity
 
         String role = new SessionManager(this).getRole();
         boolean isUserOrDriver = "USER".equalsIgnoreCase(role) || "DRIVER".equalsIgnoreCase(role);
-        
+
         if (!isUserOrDriver) {
             rideTrackingButton.setVisibility(View.GONE);
             return;
         }
-        
+
         rideTrackingButton.setVisibility(View.VISIBLE);
         rideTrackingButton.setOnClickListener(v -> navigateTo(new RideTrackingFragment()));
     }

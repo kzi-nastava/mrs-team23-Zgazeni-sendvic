@@ -3,6 +3,7 @@ package com.example.mobile_front_ma.data.network;
 import com.example.mobile_front_ma.models.dto.PageResponse;
 import com.example.mobile_front_ma.models.dto.RideDetails;
 import com.example.mobile_front_ma.models.dto.RideHistoryItem;
+import com.example.mobile_front_ma.models.dto.RideReport;
 
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -56,4 +57,10 @@ public interface HistoryApi {
             @Path("rideId") long rideId,
             @Query("fromDate") String fromDate,
             @Body RequestBody emptyBody);
+
+    @GET("api/HOR/report")
+    Call<RideReport> getReport(
+            @Query("targetUserId") Long targetUserId,
+            @Query("from") String from,
+            @Query("to") String to);
 }

@@ -7,8 +7,12 @@ import androidx.annotation.NonNull;
 import com.example.mobile_front_ma.data.network.ApiCallback;
 import com.example.mobile_front_ma.data.network.ApiClient;
 import com.example.mobile_front_ma.data.network.DriverApi;
+import com.example.mobile_front_ma.models.dto.CreateDriverRequest;
+import com.example.mobile_front_ma.models.dto.CreatedDriverResponse;
 import com.example.mobile_front_ma.models.dto.DriverChangeStatusRequest;
 import com.example.mobile_front_ma.models.dto.DriverStatusResponse;
+import com.example.mobile_front_ma.models.dto.RegisterVehicleRequest;
+import com.example.mobile_front_ma.models.dto.RegisteredVehicleResponse;
 
 import java.io.IOException;
 
@@ -66,5 +70,85 @@ public class DriverRepository {
             // fall through to the generic message
         }
         return "Could not change status (error " + response.code() + ").";
+    }
+
+    public void registerVehicle(
+            RegisterVehicleRequest request,
+            ApiCallback<RegisteredVehicleResponse> callback
+    ) {
+        api.registerVehicle(request).enqueue(
+                new Callback<RegisteredVehicleResponse>() {
+
+                    @Override
+                    public void onResponse(
+                            @NonNull Call<RegisteredVehicleResponse> call,
+                            @NonNull Response<RegisteredVehicleResponse> response
+                    ) {
+
+                        if (response.isSuccessful()
+                                && response.body() != null) {
+
+                            callback.onSuccess(response.body());
+
+                        } else {
+
+                            callback.onError(
+                                    errorMessage(response)
+                            );
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            @NonNull Call<RegisteredVehicleResponse> call,
+                            @NonNull Throwable t
+                    ) {
+
+                        callback.onError(
+                                "Cannot reach the server. Make sure the backend is running."
+                        );
+                    }
+                }
+        );
+    }
+
+    public void createDriver(
+            CreateDriverRequest request,
+            ApiCallback<CreatedDriverResponse> callback
+    ) {
+        api.createDriver(request).enqueue(
+                new Callback<CreatedDriverResponse>() {
+
+                    @Override
+                    public void onResponse(
+                            @NonNull Call<CreatedDriverResponse> call,
+                            @NonNull Response<CreatedDriverResponse> response
+                    ) {
+
+                        if (response.isSuccessful()
+                                && response.body() != null) {
+
+                            callback.onSuccess(response.body());
+
+                        } else {
+
+                            callback.onError(
+                                    errorMessage(response)
+                            );
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            @NonNull Call<CreatedDriverResponse> call,
+                            @NonNull Throwable t
+                    ) {
+
+                        callback.onError(
+                                "Cannot reach the server. Make sure the backend is running."
+                        );
+                    }
+                }
+        );
     }
 }

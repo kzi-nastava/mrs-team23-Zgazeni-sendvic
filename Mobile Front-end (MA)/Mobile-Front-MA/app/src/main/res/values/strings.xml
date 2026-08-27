@@ -209,4 +209,10 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+    <string name="register_driver_button">Register Driver</string>
+    <string name="order_ride_fab">Order Ride</string>
+    <string name="delete_fav_route">Delete</string>
+    <string name="order_fav_route">Order again</string>
+    <string name="favorite_routes_main">Favorite Routes</string>
+    <string name="reports_prof_button">Reports</string>
 </resources>

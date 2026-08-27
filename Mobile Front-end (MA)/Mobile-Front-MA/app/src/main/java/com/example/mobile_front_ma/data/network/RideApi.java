@@ -1,15 +1,19 @@
 package com.example.mobile_front_ma.data.network;
 
 import com.example.mobile_front_ma.models.dto.ActiveRideDTO;
+import com.example.mobile_front_ma.models.dto.DriverRideResponse;
 import com.example.mobile_front_ma.models.dto.PanicResponse;
 import com.example.mobile_front_ma.models.dto.RideCancelRequest;
 import com.example.mobile_front_ma.models.dto.RideDriverRatingDTO;
 import com.example.mobile_front_ma.models.dto.RideEndDto;
 import com.example.mobile_front_ma.models.dto.RideNoteDTO;
+import com.example.mobile_front_ma.models.dto.RideStartRequest;
 import com.example.mobile_front_ma.models.dto.RideStopRequest;
 import com.example.mobile_front_ma.models.dto.RideStoppedResponse;
 import com.example.mobile_front_ma.models.dto.RidesOverviewDTO;
 import com.example.mobile_front_ma.models.dto.VehiclePositionsDto;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -61,4 +65,10 @@ public interface RideApi {
 
     @GET("api/ride/{rideId}")
     Call<ActiveRideDTO> getRideById(@Path("rideId") long rideId);
+
+    @PUT("api/ride-start")
+    Call<Void> startRide(@Body RideStartRequest request);
+
+    @GET("api/driver-rides")
+    Call<List<DriverRideResponse>> getDriverRides();
 }

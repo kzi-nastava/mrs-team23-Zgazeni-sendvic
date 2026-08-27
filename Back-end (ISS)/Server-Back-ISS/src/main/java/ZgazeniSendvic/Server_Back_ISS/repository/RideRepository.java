@@ -38,7 +38,17 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     List<Ride> findByStatus(RideStatus status);
     List<Ride> findByDriverAndStatus(Driver driver, RideStatus status);
 
+    @Query("""
+    SELECT r
+    FROM Ride r
+    WHERE r.driver.id = :driverId
+    ORDER BY r.scheduledTime ASC
+    """)
+    List<Ride> findAllDriverRides(
+            @Param("driverId") Long driverId
+    );
 
+    List<Ride> findByDriverOrderByScheduledTimeDesc(Driver driver);
 
 
     //for HOR
@@ -95,6 +105,20 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     List<Ride> findReportRides(
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to
+    );
+
+    @Query("""
+    SELECT COUNT(DISTINCT r)
+    FROM Ride r
+    LEFT JOIN r.passengers p
+    WHERE r.status = 'ACTIVE'
+      AND (
+          r.creator.id = :accountId
+          OR p.id = :accountId
+      )
+    """)
+    long countActiveRidesForPassenger(
+            @Param("accountId") Long accountId
     );
 }
 

@@ -43,7 +43,7 @@ public class GeoRepository {
 
     /** Autocomplete: addresses in Novi Sad matching the typed text. */
     public void searchPlaces(String query, ApiCallback<List<Place>> callback) {
-        nominatimApi.search(query, "jsonv2", 1, 6, "rs",
+        nominatimApi.search(query, "jsonv2", 1, 10, "rs",
                         NOVI_SAD_VIEWBOX, 1, "sr,en")
                 .enqueue(new Callback<List<NominatimPlace>>() {
                     @Override
@@ -92,6 +92,72 @@ public class GeoRepository {
                         callback.onError(networkErrorMessage());
                     }
                 });
+    }
+
+    public void estimateRoute(
+            List<Place> locations,
+            ApiCallback<RouteEstimate> callback) {
+
+        if (locations == null || locations.size() < 2) {
+            callback.onError("At least a start and destination are required.");
+            return;
+        }
+
+        StringBuilder coordinates = new StringBuilder();
+
+        for (int i = 0; i < locations.size(); i++) {
+
+            if (i > 0) {
+                coordinates.append(";");
+            }
+
+            Place place = locations.get(i);
+
+            coordinates.append(
+                    String.format(
+                            Locale.US,
+                            "%f,%f",
+                            place.getLon(),
+                            place.getLat()
+                    )
+            );
+        }
+
+        osrmApi.route(
+                coordinates.toString(),
+                "full",
+                "geojson"
+        ).enqueue(new Callback<OsrmRouteResponse>() {
+
+            @Override
+            public void onResponse(
+                    @NonNull Call<OsrmRouteResponse> call,
+                    @NonNull Response<OsrmRouteResponse> response) {
+
+                OsrmRouteResponse body = response.body();
+
+                if (response.isSuccessful()
+                        && body != null
+                        && body.routes != null
+                        && !body.routes.isEmpty()) {
+
+                    callback.onSuccess(toEstimate(body.routes.get(0)));
+
+                } else {
+                    callback.onError(
+                            "Couldn't calculate the route. Try different points."
+                    );
+                }
+            }
+
+            @Override
+            public void onFailure(
+                    @NonNull Call<OsrmRouteResponse> call,
+                    @NonNull Throwable t) {
+
+                callback.onError(networkErrorMessage());
+            }
+        });
     }
 
     private List<Place> toPlaces(List<NominatimPlace> raw) {

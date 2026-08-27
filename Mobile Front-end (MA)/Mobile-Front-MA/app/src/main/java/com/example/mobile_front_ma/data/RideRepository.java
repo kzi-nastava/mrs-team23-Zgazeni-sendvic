@@ -8,11 +8,13 @@ import com.example.mobile_front_ma.data.network.ApiCallback;
 import com.example.mobile_front_ma.data.network.ApiClient;
 import com.example.mobile_front_ma.data.network.RideApi;
 import com.example.mobile_front_ma.models.dto.ActiveRideDTO;
+import com.example.mobile_front_ma.models.dto.DriverRideResponse;
 import com.example.mobile_front_ma.models.dto.PanicResponse;
 import com.example.mobile_front_ma.models.dto.RideCancelRequest;
 import com.example.mobile_front_ma.models.dto.RideDriverRatingDTO;
 import com.example.mobile_front_ma.models.dto.RideEndDto;
 import com.example.mobile_front_ma.models.dto.RideNoteDTO;
+import com.example.mobile_front_ma.models.dto.RideStartRequest;
 import com.example.mobile_front_ma.models.dto.RideStopRequest;
 import com.example.mobile_front_ma.models.dto.RideStoppedResponse;
 import com.example.mobile_front_ma.models.dto.RidesOverviewDTO;
@@ -21,6 +23,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.io.IOException;
+import java.util.List;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -213,6 +216,48 @@ public class RideRepository {
         });
     }
 
+    public void startRide(
+            long rideId,
+            ApiCallback<Void> callback
+    ) {
+
+        api.startRide(
+                new RideStartRequest(rideId)
+        ).enqueue(
+                new Callback<Void>() {
+
+                    @Override
+                    public void onResponse(
+                            @NonNull Call<Void> call,
+                            @NonNull Response<Void> response
+                    ) {
+
+                        if (response.isSuccessful()) {
+
+                            callback.onSuccess(null);
+
+                        } else {
+
+                            callback.onError(
+                                    backendMessage(response)
+                            );
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            @NonNull Call<Void> call,
+                            @NonNull Throwable t
+                    ) {
+
+                        callback.onError(
+                                "Cannot reach the server. Make sure the backend is running."
+                        );
+                    }
+                }
+        );
+    }
+
     private String panicErrorMessage(Response<?> response) {
         // Prefer the backend's own reason (e.g. "Only active rides can be panicked",
         // "Panic has already been activated for this ride").
@@ -263,13 +308,13 @@ public class RideRepository {
         // clear, ride-specific message instead of a bare "403 Forbidden".
         switch (response.code()) {
             case 400:
-                return "Action could not be completed. Check if the ride is still active.";
+                return "This ride can't be stopped – it may have already finished.";
             case 403:
-                return "You are not authorized for this action.";
+                return "You are not the driver of this ride.";
             case 404:
                 return "Ride not found.";
             default:
-                return "Action failed (error " + response.code() + ").";
+                return "Could not stop the ride (error " + response.code() + ").";
         }
     }
 
@@ -305,5 +350,45 @@ public class RideRepository {
         } catch (IOException ignored) {
             return null;
         }
+    }
+
+    public void getDriverRides(
+            ApiCallback<List<DriverRideResponse>> callback
+    ) {
+
+        api.getDriverRides().enqueue(
+                new Callback<List<DriverRideResponse>>() {
+
+                    @Override
+                    public void onResponse(
+                            @NonNull Call<List<DriverRideResponse>> call,
+                            @NonNull Response<List<DriverRideResponse>> response
+                    ) {
+
+                        if (response.isSuccessful() &&
+                                response.body() != null) {
+
+                            callback.onSuccess(response.body());
+
+                        } else {
+
+                            callback.onError(
+                                    "Could not load driver rides."
+                            );
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            @NonNull Call<List<DriverRideResponse>> call,
+                            @NonNull Throwable t
+                    ) {
+
+                        callback.onError(
+                                "Cannot reach the server. Make sure the backend is running."
+                        );
+                    }
+                }
+        );
     }
 }

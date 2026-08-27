@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -27,8 +28,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mobile_front_ma.R;
 import com.example.mobile_front_ma.adapters.RideHistoryAdapter;
+import com.example.mobile_front_ma.data.RouteRepository;
+import com.example.mobile_front_ma.data.network.ApiCallback;
 import com.example.mobile_front_ma.models.dto.LocationDto;
 import com.example.mobile_front_ma.models.dto.RideHistoryItem;
+import com.example.mobile_front_ma.models.dto.RouteResponse;
 import com.example.mobile_front_ma.util.Resource;
 import com.example.mobile_front_ma.util.ShakeDetector;
 import com.example.mobile_front_ma.viewmodels.RideHistoryViewModel;
@@ -50,7 +54,9 @@ import java.util.Locale;
  * detail view.
  */
 public class RideHistoryActivity extends AppCompatActivity
-        implements RideHistoryAdapter.OnRideClickListener, ShakeDetector.OnShakeListener {
+        implements RideHistoryAdapter.OnRideClickListener,
+        RideHistoryAdapter.OnFavoriteClickListener,
+        ShakeDetector.OnShakeListener {
 
     public static final String EXTRA_MODE = "mode";
     public static final String EXTRA_TARGET_ID = "target_id";
@@ -60,6 +66,7 @@ public class RideHistoryActivity extends AppCompatActivity
 
     private RideHistoryViewModel viewModel;
     private RideHistoryAdapter adapter;
+    private RouteRepository routeRepository;
 
     private ProgressBar progressBar;
     private TextView emptyText;
@@ -108,6 +115,7 @@ public class RideHistoryActivity extends AppCompatActivity
         fromDateButton = findViewById(R.id.fromDateButton);
         toDateButton = findViewById(R.id.toDateButton);
 
+        routeRepository = new RouteRepository(this);
         viewModel = new ViewModelProvider(this).get(RideHistoryViewModel.class);
         viewModel.getRides().observe(this, this::render);
 
@@ -142,7 +150,11 @@ public class RideHistoryActivity extends AppCompatActivity
 
     private void setupRecyclerView() {
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        adapter = new RideHistoryAdapter(this);
+        adapter = new RideHistoryAdapter(
+                this,
+                this::onFavoriteClick
+        );
+        adapter.setAdminMode(adminMode);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
     }
@@ -356,5 +368,57 @@ public class RideHistoryActivity extends AppCompatActivity
         if (sensorManager != null) {
             sensorManager.unregisterListener(shakeDetector);
         }
+    }
+
+    @Override
+    public void onFavoriteClick(
+            RideHistoryItem ride,
+            ImageButton button
+    ) {
+        if (adminMode) {
+            return;
+        }
+
+        if (ride.rideID == null) {
+            return;
+        }
+
+        button.setEnabled(false);
+
+        routeRepository.saveFromRide(
+                ride.rideID,
+                new ApiCallback<RouteResponse>() {
+
+                    @Override
+                    public void onSuccess(RouteResponse data) {
+                        runOnUiThread(() -> {
+                            button.setImageResource(
+                                    R.drawable.ic_star_filled
+                            );
+
+                            button.setEnabled(false);
+
+                            Toast.makeText(
+                                    RideHistoryActivity.this,
+                                    "Route saved to favorites.",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        });
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        runOnUiThread(() -> {
+                            button.setEnabled(true);
+
+                            Toast.makeText(
+                                    RideHistoryActivity.this,
+                                    message,
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        });
+                    }
+                }
+        );
     }
 }

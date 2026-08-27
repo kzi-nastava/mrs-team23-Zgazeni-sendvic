@@ -10,6 +10,7 @@ import com.example.mobile_front_ma.data.network.HistoryApi;
 import com.example.mobile_front_ma.models.dto.PageResponse;
 import com.example.mobile_front_ma.models.dto.RideDetails;
 import com.example.mobile_front_ma.models.dto.RideHistoryItem;
+import com.example.mobile_front_ma.models.dto.RideReport;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -124,5 +125,64 @@ public class HistoryRepository {
 
     private String networkError() {
         return "Cannot reach the server. Make sure the backend is running and the address is correct.";
+    }
+
+    public void getReport(
+            Long targetUserId,
+            String from,
+            String to,
+            ApiCallback<RideReport> callback) {
+
+        Call<RideReport> call;
+
+        if (targetUserId == null) {
+
+            call = api.getReport(
+                    null,
+                    from,
+                    to
+            );
+
+        } else {
+
+            call = api.getReport(
+                    targetUserId,
+                    from,
+                    to
+            );
+        }
+
+        call.enqueue(new Callback<RideReport>() {
+
+            @Override
+            public void onResponse(
+                    @NonNull Call<RideReport> call,
+                    @NonNull Response<RideReport> response) {
+
+                if (response.isSuccessful() &&
+                        response.body() != null) {
+
+                    callback.onSuccess(
+                            response.body()
+                    );
+
+                } else {
+
+                    callback.onError(
+                            errorMessage(response.code())
+                    );
+                }
+            }
+
+            @Override
+            public void onFailure(
+                    @NonNull Call<RideReport> call,
+                    @NonNull Throwable t) {
+
+                callback.onError(
+                        networkError()
+                );
+            }
+        });
     }
 }
