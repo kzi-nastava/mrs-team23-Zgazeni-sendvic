@@ -85,6 +85,10 @@ public class DriverAssignmentService {
             RideRequest request,
             List<Driver> drivers) {
 
+        if (request.getLocations() == null || request.getLocations().isEmpty()) {
+            return null;
+        }
+
         Location start = request.getLocations().get(0);
 
         // Free drivers first
@@ -122,6 +126,10 @@ public class DriverAssignmentService {
     }
 
     private Driver findBestScheduledDriver(RideRequest request, List<Driver> drivers) {
+
+        if (request.getLocations() == null || request.getLocations().isEmpty()) {
+            return null;
+        }
 
         Location startLocation = request.getLocations().get(0);
 

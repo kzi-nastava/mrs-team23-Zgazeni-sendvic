@@ -1,15 +1,23 @@
 package com.example.mobile_front_ma.data.network;
 
+import com.example.mobile_front_ma.models.dto.ActiveRideDTO;
 import com.example.mobile_front_ma.models.dto.PanicResponse;
 import com.example.mobile_front_ma.models.dto.RideCancelRequest;
+import com.example.mobile_front_ma.models.dto.RideDriverRatingDTO;
+import com.example.mobile_front_ma.models.dto.RideEndDto;
+import com.example.mobile_front_ma.models.dto.RideNoteDTO;
 import com.example.mobile_front_ma.models.dto.RideStopRequest;
 import com.example.mobile_front_ma.models.dto.RideStoppedResponse;
+import com.example.mobile_front_ma.models.dto.RidesOverviewDTO;
+import com.example.mobile_front_ma.models.dto.VehiclePositionsDto;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * Ride lifecycle endpoints (backend RideController). Behind JWT/DRIVER auth.
@@ -35,4 +43,22 @@ public interface RideApi {
      */
     @POST("api/ride-PANIC/{rideID}")
     Call<PanicResponse> panicRide(@Path("rideID") long rideID);
+
+    @GET("api/vehicle-positions")
+    Call<VehiclePositionsDto> getVehiclePositions();
+
+    @PUT("api/ride-end")
+    Call<Void> endRide(@Body RideEndDto body);
+
+    @POST("api/ride-driver-rating/{userId}")
+    Call<Void> rateRide(@Path("userId") long userId, @Body RideDriverRatingDTO body);
+
+    @POST("api/ride-noting-user/{userId}")
+    Call<Void> addNote(@Path("userId") long userId, @Body RideNoteDTO body);
+
+    @GET("api/rides-overview")
+    Call<RidesOverviewDTO> getRidesOverview(@Query("driverName") String driverName);
+
+    @GET("api/ride/{rideId}")
+    Call<ActiveRideDTO> getRideById(@Path("rideId") long rideId);
 }

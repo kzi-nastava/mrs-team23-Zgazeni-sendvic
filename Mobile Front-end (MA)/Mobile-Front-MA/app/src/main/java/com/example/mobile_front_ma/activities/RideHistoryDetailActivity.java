@@ -23,7 +23,7 @@ import com.example.mobile_front_ma.R;
 import com.example.mobile_front_ma.data.network.GeoApiClient;
 import com.example.mobile_front_ma.models.dto.AccountDetails;
 import com.example.mobile_front_ma.models.dto.RideDetails;
-import com.example.mobile_front_ma.models.dto.RideNoteDto;
+import com.example.mobile_front_ma.models.dto.RideNoteDTO;
 import com.example.mobile_front_ma.models.dto.RideRatingDto;
 import com.example.mobile_front_ma.util.Resource;
 import com.example.mobile_front_ma.viewmodels.RideDetailViewModel;
@@ -300,13 +300,13 @@ public class RideHistoryDetailActivity extends AppCompatActivity {
         passengersText.setText(sb.toString());
     }
 
-    private void bindReports(List<RideNoteDto> notes) {
+    private void bindReports(List<RideNoteDTO> notes) {
         if (notes == null || notes.isEmpty()) {
             reportsText.setText(R.string.hor_detail_no_reports);
             return;
         }
         StringBuilder sb = new StringBuilder();
-        for (RideNoteDto n : notes) {
+        for (RideNoteDTO n : notes) {
             if (sb.length() > 0) {
                 sb.append('\n');
             }

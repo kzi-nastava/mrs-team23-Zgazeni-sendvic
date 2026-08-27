@@ -580,12 +580,18 @@ public class RideServiceImpl implements IRideService {
         }
     }
 
-    public RidesOverviewDTO getRidesOverview() {
+    public RidesOverviewDTO getRidesOverview(String driverName) {
         List<Ride> rides = allRides.findAll();
         List<ActiveRideDTO> activeRidesList = new ArrayList<>();
+        String normalizedDriverName = driverName == null ? "" : driverName.trim().toLowerCase(Locale.ROOT);
 
         for (Ride ride : rides) {
             if (ride.getStatus() == RideStatus.SCHEDULED || ride.getStatus() == RideStatus.ACTIVE) {
+                Driver driver = ride.getDriver();
+                if (!matchesDriverName(driver, normalizedDriverName)) {
+                    continue;
+                }
+
                 ActiveRideDTO dto = new ActiveRideDTO();
                 dto.setId(ride.getId());
 
@@ -607,8 +613,11 @@ public class RideServiceImpl implements IRideService {
                 dto.setStatus(ride.getStatus().toString());
                 dto.setPrice(ride.getTotalPrice());
 
-                if (ride.getDriver() != null && ride.getDriver().getEmail() != null) {
-                    dto.setDriverEmail(ride.getDriver().getEmail());
+                if (driver != null) {
+                    if (driver.getEmail() != null) {
+                        dto.setDriverEmail(driver.getEmail());
+                    }
+                    dto.setDriverFirstName(driver.getName());
                 }
 
                 if (ride.getStartTime() != null) {
@@ -620,6 +629,63 @@ public class RideServiceImpl implements IRideService {
         }
 
         return new RidesOverviewDTO(activeRidesList);
+    }
+
+    public ActiveRideDTO getActiveRideById(Long rideId) {
+        Optional<Ride> found = allRides.findById(rideId);
+        if (found.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
+        }
+        Ride ride = found.get();
+
+        ActiveRideDTO dto = new ActiveRideDTO();
+        dto.setId(ride.getId());
+
+        if (ride.getLocations() != null && !ride.getLocations().isEmpty()) {
+            dto.setOrigin(ride.getLocations().get(0));
+            if (ride.getLocations().size() > 1) {
+                dto.setDestination(ride.getLocations().get(ride.getLocations().size() - 1));
+            }
+        }
+
+        if (ride.getStartTime() != null) {
+            dto.setDepartureTime(ride.getStartTime().toString());
+        }
+        if (ride.getEndTime() != null) {
+            dto.setArrivalTime(ride.getEndTime().toString());
+        }
+
+        dto.setPanic(ride.isPanic());
+        dto.setStatus(ride.getStatus().toString());
+        dto.setPrice(ride.getTotalPrice());
+
+        Driver driver = ride.getDriver();
+        if (driver != null) {
+            dto.setDriverEmail(driver.getEmail());
+            dto.setDriverFirstName(driver.getName());
+        }
+
+        if (ride.getStartTime() != null) {
+            dto.setDate(ride.getStartTime().toLocalDate().toString());
+        }
+
+        return dto;
+    }
+
+    private boolean matchesDriverName(Driver driver, String normalizedDriverName) {
+        if (normalizedDriverName.isBlank()) {
+            return true;
+        }
+        if (driver == null) {
+            return false;
+        }
+        String firstName = driver.getName() == null ? "" : driver.getName();
+        String lastName = driver.getLastName() == null ? "" : driver.getLastName();
+        String fullName = (firstName + " " + lastName).trim();
+
+        return firstName.toLowerCase(Locale.ROOT).contains(normalizedDriverName)
+                || lastName.toLowerCase(Locale.ROOT).contains(normalizedDriverName)
+                || fullName.toLowerCase(Locale.ROOT).contains(normalizedDriverName);
     }
 
     @Override

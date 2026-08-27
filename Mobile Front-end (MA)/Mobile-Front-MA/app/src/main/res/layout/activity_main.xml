@@ -16,6 +16,20 @@
         android:orientation="horizontal">
 
         <Button
+            android:id="@+id/rideTrackingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/ride_tracking_button" />
+
+        <Button
+            android:id="@+id/activeRidesButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="Active Rides"
+            android:visibility="gone" />
+
+        <Button
             android:id="@+id/horDriverButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

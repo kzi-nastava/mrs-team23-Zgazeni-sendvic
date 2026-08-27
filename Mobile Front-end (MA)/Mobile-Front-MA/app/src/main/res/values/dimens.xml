@@ -14,4 +14,5 @@
         text don't stretch edge to edge. Graded on both phone and tablet.
     -->
     <dimen name="hor_detail_h_padding">16dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
 </resources>

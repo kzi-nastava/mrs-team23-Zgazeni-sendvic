@@ -7,10 +7,16 @@ import androidx.annotation.NonNull;
 import com.example.mobile_front_ma.data.network.ApiCallback;
 import com.example.mobile_front_ma.data.network.ApiClient;
 import com.example.mobile_front_ma.data.network.RideApi;
+import com.example.mobile_front_ma.models.dto.ActiveRideDTO;
 import com.example.mobile_front_ma.models.dto.PanicResponse;
 import com.example.mobile_front_ma.models.dto.RideCancelRequest;
+import com.example.mobile_front_ma.models.dto.RideDriverRatingDTO;
+import com.example.mobile_front_ma.models.dto.RideEndDto;
+import com.example.mobile_front_ma.models.dto.RideNoteDTO;
 import com.example.mobile_front_ma.models.dto.RideStopRequest;
 import com.example.mobile_front_ma.models.dto.RideStoppedResponse;
+import com.example.mobile_front_ma.models.dto.RidesOverviewDTO;
+import com.example.mobile_front_ma.models.dto.VehiclePositionsDto;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -98,6 +104,115 @@ public class RideRepository {
         });
     }
 
+    public void getVehiclePositions(ApiCallback<VehiclePositionsDto> callback) {
+        api.getVehiclePositions().enqueue(new Callback<VehiclePositionsDto>() {
+            @Override
+            public void onResponse(@NonNull Call<VehiclePositionsDto> call,
+                                   @NonNull Response<VehiclePositionsDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onError("Failed to fetch vehicle positions (HTTP " + response.code() + ").");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<VehiclePositionsDto> call, @NonNull Throwable t) {
+                callback.onError("Cannot reach the server: " + t.getMessage());
+            }
+        });
+    }
+
+    public void endRide(RideEndDto request, ApiCallback<Void> callback) {
+        api.endRide(request).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(null);
+                } else {
+                    callback.onError(errorMessage(response));
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                callback.onError("Cannot reach the server.");
+            }
+        });
+    }
+
+    public void rateRide(long userId, RideDriverRatingDTO rating, ApiCallback<Void> callback) {
+        api.rateRide(userId, rating).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(null);
+                } else {
+                    callback.onError(errorMessage(response));
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                callback.onError("Cannot reach the server.");
+            }
+        });
+    }
+
+    public void addNote(long userId, RideNoteDTO note, ApiCallback<Void> callback) {
+        api.addNote(userId, note).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(null);
+                } else {
+                    callback.onError(errorMessage(response));
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                callback.onError("Cannot reach the server.");
+            }
+        });
+    }
+
+    public void getRidesOverview(String driverName, ApiCallback<RidesOverviewDTO> callback) {
+        api.getRidesOverview(driverName).enqueue(new Callback<RidesOverviewDTO>() {
+            @Override
+            public void onResponse(@NonNull Call<RidesOverviewDTO> call, @NonNull Response<RidesOverviewDTO> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onError("Failed to fetch rides overview.");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<RidesOverviewDTO> call, @NonNull Throwable t) {
+                callback.onError("Cannot reach the server.");
+            }
+        });
+    }
+
+    public void getRideById(long rideId, ApiCallback<ActiveRideDTO> callback) {
+        api.getRideById(rideId).enqueue(new Callback<ActiveRideDTO>() {
+            @Override
+            public void onResponse(@NonNull Call<ActiveRideDTO> call, @NonNull Response<ActiveRideDTO> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onError("Failed to fetch ride details.");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ActiveRideDTO> call, @NonNull Throwable t) {
+                callback.onError("Cannot reach the server.");
+            }
+        });
+    }
+
     private String panicErrorMessage(Response<?> response) {
         // Prefer the backend's own reason (e.g. "Only active rides can be panicked",
         // "Panic has already been activated for this ride").
@@ -148,13 +263,13 @@ public class RideRepository {
         // clear, ride-specific message instead of a bare "403 Forbidden".
         switch (response.code()) {
             case 400:
-                return "This ride can't be stopped – it may have already finished.";
+                return "Action could not be completed. Check if the ride is still active.";
             case 403:
-                return "You are not the driver of this ride.";
+                return "You are not authorized for this action.";
             case 404:
                 return "Ride not found.";
             default:
-                return "Could not stop the ride (error " + response.code() + ").";
+                return "Action failed (error " + response.code() + ").";
         }
     }
 

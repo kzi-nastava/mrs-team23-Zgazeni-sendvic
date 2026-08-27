@@ -2,12 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <!-- osmdroid checks connectivity before hitting the tile/route servers -->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Spec 2.6.3: show Android system notifications for panic alerts (runtime-requested on 13+) -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <!-- Spec 2.6.3: keep the panic listener alive in the background for admins -->
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- osmdroid checks connectivity before hitting the tile/route servers -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- Spec 2.6.3: show Android system notifications for panic alerts (runtime-requested on 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- Spec 2.6.3: keep the panic listener alive in the background for admins -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
@@ -22,7 +19,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MobileFrontMA">
-
+        <activity
+            android:name=".RideTrackingActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MobileFrontMA" />
         <!-- Login is the entry point of the app -->
         <activity
             android:name=".activities.LoginActivity"
@@ -60,10 +60,11 @@
         <activity
             android:name=".MainActivity"
             android:exported="false" />
-
-        <!-- Keeps the panic WebSocket alive in the background for a logged-in admin (spec 2.6.3).
+        <!--
+ Keeps the panic WebSocket alive in the background for a logged-in admin (spec 2.6.3).
              specialUse: it maintains a connection to receive emergency alerts (no other FGS type
-             fits). stopWithTask: swiping the app away stops the listener. -->
+             fits). stopWithTask: swiping the app away stops the listener.
+        -->
         <service
             android:name=".data.realtime.PanicForegroundService"
             android:exported="false"

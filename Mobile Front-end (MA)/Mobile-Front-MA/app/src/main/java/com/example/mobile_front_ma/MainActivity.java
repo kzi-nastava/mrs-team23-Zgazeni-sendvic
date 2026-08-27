@@ -28,7 +28,9 @@ import com.example.mobile_front_ma.data.SessionManager;
 import com.example.mobile_front_ma.data.network.ApiCallback;
 import com.example.mobile_front_ma.data.realtime.PanicForegroundService;
 import com.example.mobile_front_ma.models.dto.PanicResponse;
+import com.example.mobile_front_ma.ui.admin.ActiveRidesFragment;
 import com.example.mobile_front_ma.ui.map.MapFragment;
+import com.example.mobile_front_ma.ui.map.RideTrackingFragment;
 import com.example.mobile_front_ma.ui.navbar.NavBarFragment;
 
 public class MainActivity extends AppCompatActivity
@@ -52,15 +54,19 @@ public class MainActivity extends AppCompatActivity
         configureHORDriverButton();
         configurePanicButton();
         configureRaisePanicButton();
+        configureRideTrackingButton();
+        configureActiveRidesButton();
 
 
         if (savedInstanceState == null) {
             // Load default fragments
+            MapFragment homeFragment = new MapFragment();
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.mainFragmentContainer, new MapFragment())
+                    .replace(R.id.mainFragmentContainer, homeFragment)
                     .replace(R.id.navBarContainer, new NavBarFragment())
                     .commit();
+            updateHeaderVisibility(homeFragment);
         }
     }
 
@@ -75,11 +81,37 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void navigateTo(Fragment fragment) {
+        updateHeaderVisibility(fragment);
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.mainFragmentContainer, fragment)
                 .addToBackStack(null)
                 .commit();
+    }
+
+    private void updateHeaderVisibility(Fragment fragment) {
+        Button raisePanicButton = findViewById(R.id.raisePanicButton);
+        Button rideTrackingButton = findViewById(R.id.rideTrackingButton);
+        Button horDriverButton = findViewById(R.id.horDriverButton);
+        Button panicAlertsButton = findViewById(R.id.panicAlertsButton);
+        Button activeRidesButton = findViewById(R.id.activeRidesButton);
+
+        boolean isTrackingOrActiveRides = fragment instanceof RideTrackingFragment || fragment instanceof ActiveRidesFragment;
+
+        if (isTrackingOrActiveRides) {
+            if (raisePanicButton != null) raisePanicButton.setVisibility(View.GONE);
+            if (rideTrackingButton != null) rideTrackingButton.setVisibility(View.GONE);
+            if (horDriverButton != null) horDriverButton.setVisibility(View.GONE);
+            if (panicAlertsButton != null) panicAlertsButton.setVisibility(View.GONE);
+            if (activeRidesButton != null) activeRidesButton.setVisibility(View.GONE);
+        } else {
+            // Re-apply role-based visibility rules when not tracking
+            configurePanicButton();
+            configureRaisePanicButton();
+            configureRideTrackingButton();
+            configureActiveRidesButton();
+            if (horDriverButton != null) horDriverButton.setVisibility(View.VISIBLE);
+        }
     }
     
     private void configureHORDriverButton() {
@@ -88,12 +120,16 @@ public class MainActivity extends AppCompatActivity
         //  - administrator    -> pick whose history to view (spec 2.9.3)
         //  - driver           -> driver history (existing screen)
         Button horDriverButton = findViewById(R.id.horDriverButton);
-        horDriverButton.setOnClickListener(v -> startActivity(historyIntentForRole()));
+        if (horDriverButton != null) {
+            horDriverButton.setOnClickListener(v -> startActivity(historyIntentForRole()));
+        }
     }
 
     private void configurePanicButton() {
         // The panic-alerts screen (spec 2.6.3) is for administrators only.
         Button panicButton = findViewById(R.id.panicAlertsButton);
+        if (panicButton == null) return;
+
         boolean isAdmin = "ADMIN".equalsIgnoreCase(new SessionManager(this).getRole());
         if (!isAdmin) {
             panicButton.setVisibility(View.GONE);
@@ -117,6 +153,8 @@ public class MainActivity extends AppCompatActivity
         // PANIC (spec 2.6.3) is raised by a ride participant (driver/passenger), not an admin —
         // admins handle incoming alerts on the panic-alerts screen instead, so hide it for them.
         Button raisePanicButton = findViewById(R.id.raisePanicButton);
+        if (raisePanicButton == null) return;
+
         boolean isAdmin = "ADMIN".equalsIgnoreCase(new SessionManager(this).getRole());
         if (isAdmin) {
             raisePanicButton.setVisibility(View.GONE);
@@ -124,6 +162,36 @@ public class MainActivity extends AppCompatActivity
         }
         raisePanicButton.setVisibility(View.VISIBLE);
         raisePanicButton.setOnClickListener(v -> confirmPanic(raisePanicButton));
+    }
+
+    private void configureRideTrackingButton() {
+        Button rideTrackingButton = findViewById(R.id.rideTrackingButton);
+        if (rideTrackingButton == null) return;
+
+        String role = new SessionManager(this).getRole();
+        boolean isUserOrDriver = "USER".equalsIgnoreCase(role) || "DRIVER".equalsIgnoreCase(role);
+        
+        if (!isUserOrDriver) {
+            rideTrackingButton.setVisibility(View.GONE);
+            return;
+        }
+        
+        rideTrackingButton.setVisibility(View.VISIBLE);
+        rideTrackingButton.setOnClickListener(v -> navigateTo(new RideTrackingFragment()));
+    }
+
+    private void configureActiveRidesButton() {
+        Button activeRidesButton = findViewById(R.id.activeRidesButton);
+        if (activeRidesButton == null) return;
+
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(new SessionManager(this).getRole());
+        if (!isAdmin) {
+            activeRidesButton.setVisibility(View.GONE);
+            return;
+        }
+
+        activeRidesButton.setVisibility(View.VISIBLE);
+        activeRidesButton.setOnClickListener(v -> navigateTo(new ActiveRidesFragment()));
     }
 
     /** Ask for confirmation before raising the alarm, to avoid accidental panics (spec 2.6.3). */
@@ -152,8 +220,10 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(MainActivity.this, R.string.hor_panic_success, Toast.LENGTH_LONG).show();
                 // Reset the button after 3 seconds so it can be pressed again.
                 raisePanicButton.postDelayed(() -> {
-                    raisePanicButton.setEnabled(true);
-                    raisePanicButton.setText(R.string.hor_panic_button);
+                    if (!isDestroyed()) {
+                        raisePanicButton.setEnabled(true);
+                        raisePanicButton.setText(R.string.hor_panic_button);
+                    }
                 }, 3000);
             }
 

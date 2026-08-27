@@ -1,10 +1,12 @@
 package com.example.mobile_front_ma.ui.map;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,9 +15,13 @@ import androidx.fragment.app.Fragment;
 
 import com.example.mobile_front_ma.R;
 import com.example.mobile_front_ma.data.GeoRepository;
+import com.example.mobile_front_ma.data.RideRepository;
+import com.example.mobile_front_ma.data.network.ApiCallback;
 import com.example.mobile_front_ma.models.LatLng;
 import com.example.mobile_front_ma.models.Place;
 import com.example.mobile_front_ma.models.RouteEstimate;
+import com.example.mobile_front_ma.models.dto.VehiclePositionDto;
+import com.example.mobile_front_ma.models.dto.VehiclePositionsDto;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
@@ -38,6 +44,7 @@ import java.util.Locale;
 public class MapFragment extends Fragment
         implements RideEstimateBottomSheetFragment.Listener {
 
+    private static final String TAG = "MapFragment";
     private static final double DEFAULT_ZOOM = 13.5;
     private static final int ROUTE_PADDING_PX = 100;
     // Per-kilometre component of the fare formula from spec 2.4.1 (cena + km * 120).
@@ -55,6 +62,9 @@ public class MapFragment extends Fragment
     private Marker startMarker;
     private Marker endMarker;
 
+    private RideRepository rideRepository;
+    private final List<Marker> vehicleMarkers = new ArrayList<>();
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -65,6 +75,8 @@ public class MapFragment extends Fragment
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        rideRepository = new RideRepository(requireContext());
 
         map = view.findViewById(R.id.map);
         resultCard = view.findViewById(R.id.resultCard);
@@ -82,6 +94,49 @@ public class MapFragment extends Fragment
         estimateFab = view.findViewById(R.id.estimateFab);
         estimateFab.setOnClickListener(v -> openEstimateForm());
         view.findViewById(R.id.resultClose).setOnClickListener(v -> clearRoute());
+
+        fetchAndShowVehicles();
+    }
+
+    private void fetchAndShowVehicles() {
+        rideRepository.getVehiclePositions(new ApiCallback<VehiclePositionsDto>() {
+            @Override
+            public void onSuccess(VehiclePositionsDto result) {
+                if (getActivity() == null || map == null) return;
+                
+                // Clear old vehicle markers from the map and the list
+                for (Marker m : vehicleMarkers) {
+                    map.getOverlays().remove(m);
+                }
+                vehicleMarkers.clear();
+
+                if (result != null && result.getVehiclePositions() != null) {
+                    Log.d(TAG, "Fetched " + result.getVehiclePositions().size() + " vehicles");
+                    for (VehiclePositionDto v : result.getVehiclePositions()) {
+                        if (v.getLatitude() == null || v.getLongitude() == null) continue;
+
+                        int iconRes = ("SCHEDULED".equals(v.getStatus()) || "ACTIVE".equals(v.getStatus()))
+                                ? R.drawable.ic_marker_end : R.drawable.ic_marker_start;
+                        
+                        Marker marker = createMarker(new GeoPoint(v.getLatitude(), v.getLongitude()),
+                                iconRes, "Vehicle: " + v.getVehicleId() + " (" + v.getStatus() + ")");
+                        vehicleMarkers.add(marker);
+                        map.getOverlays().add(marker);
+                    }
+                } else {
+                    Log.d(TAG, "No vehicles returned from backend");
+                }
+                map.invalidate();
+            }
+
+            @Override
+            public void onError(String message) {
+                if (getContext() != null) {
+                    Log.e(TAG, "Error fetching vehicles: " + message);
+                    Toast.makeText(getContext(), "Error fetching vehicles: " + message, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void openEstimateForm() {
@@ -191,6 +246,7 @@ public class MapFragment extends Fragment
         if (map != null) {
             map.onResume();
         }
+        fetchAndShowVehicles();
     }
 
     @Override

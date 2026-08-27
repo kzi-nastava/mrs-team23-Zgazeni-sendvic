@@ -235,9 +235,23 @@ class RideController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "rides-overview", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RidesOverviewDTO> getRidesOverview() {
-        RidesOverviewDTO ridesOverview = rideService.getRidesOverview();
+    public ResponseEntity<RidesOverviewDTO> getRidesOverview(
+            @RequestParam(required = false, defaultValue = "") String driverName
+    ) {
+        RidesOverviewDTO ridesOverview = rideService.getRidesOverview(driverName);
         return new ResponseEntity<>(ridesOverview, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "ride/{rideId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ActiveRideDTO> getRideById(@PathVariable("rideId") Long rideId) {
+        try {
+            ActiveRideDTO dto = rideService.getActiveRideById(rideId);
+            return ResponseEntity.ok(dto);
+        } catch (org.springframework.web.server.ResponseStatusException ex) {
+            return ResponseEntity.status(ex.getStatusCode()).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 }

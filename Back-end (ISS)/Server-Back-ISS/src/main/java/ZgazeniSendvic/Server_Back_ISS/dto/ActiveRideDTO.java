@@ -24,6 +24,8 @@ public class ActiveRideDTO {
     @Getter @Setter
     private String driverEmail;
     @Getter @Setter
+    private String driverFirstName;
+    @Getter @Setter
     private String date;
 
     public ActiveRideDTO() {}

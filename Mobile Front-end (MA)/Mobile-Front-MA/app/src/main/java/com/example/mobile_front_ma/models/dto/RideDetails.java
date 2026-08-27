@@ -15,6 +15,6 @@ public class RideDetails {
 
     public AccountDetails driver;
     public List<AccountDetails> passengers;     // admin payload only
-    public List<RideNoteDto> rideNotes;
+    public List<RideNoteDTO> rideNotes;
     public List<RideRatingDto> rideDriverRatings;
 }
